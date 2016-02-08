@@ -76,7 +76,7 @@ void App_t::OnCmd(Shell_t *PShell) {
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    PShell->Printf(">%S\r", PCmd->Name);
     Uart.Printf("%S\r", PCmd->Name);
-    UsbCDC.Printf("%S\r", PCmd->Name);
+//    UsbCDC.Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(OK);

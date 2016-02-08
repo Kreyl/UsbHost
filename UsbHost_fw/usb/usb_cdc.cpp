@@ -50,6 +50,12 @@ static const USBEndpointConfig ep2config = {
 #endif
 
 #if 1 // ============================ Events ===================================
+static void SOFHandler(USBDriver *usbp) {
+  osalSysLockFromISR();
+  sduSOFHookI(&UsbCDC.SDU1);
+  osalSysUnlockFromISR();
+}
+
 static void usb_event(USBDriver *usbp, usbevent_t event) {
     switch (event) {
         case USB_EVENT_RESET:
@@ -83,7 +89,7 @@ const USBConfig UsbCfg = {
     usb_event,          // This callback is invoked when an USB driver event is registered
     GetDescriptor,      // Device GET_DESCRIPTOR request callback
     sduRequestsHook,    // This hook allows to be notified of standard requests or to handle non standard requests
-    NULL                // Start Of Frame callback
+    SOFHandler          // Start Of Frame callback
 };
 
 // Serial over USB driver configuration
@@ -131,14 +137,13 @@ void UsbCDC_t::Init() {
 
 void UsbCDC_t::Connect() {
     usbDisconnectBus(SerUsbCfg.usbp);
-    chThdSleepMilliseconds(1500);
+    chThdSleepMilliseconds(1008);
     usbStart(SerUsbCfg.usbp, &UsbCfg);
     usbConnectBus(SerUsbCfg.usbp);
 }
 
 static inline void uFPutChar(char c) {
-    msg_t r = UsbCDC.SDU1.vmt->put(&UsbCDC.SDU1, c);
-    Uart.Printf("put: %d\r", r);
+    UsbCDC.SDU1.vmt->put(&UsbCDC.SDU1, c);
 }
 
 void UsbCDC_t::Printf(const char *format, ...) {
