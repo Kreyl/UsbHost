@@ -13,8 +13,6 @@
 
 App_t App;
 
-//#define USB_ENABLED     TRUE
-
 int main(void) {
     // ==== Setup clock frequency ====
     Clk.EnablePrefetch();

@@ -10,6 +10,9 @@
 #include "main.h"
 #include "cc1101.h"
 #include "uart.h"
+#include "board.h"
+
+#include "usb_cdc.h"
 
 #define DBG_PINS
 
@@ -41,7 +44,14 @@ void rLevel1_t::ITask() {
         int8_t Rssi;
         uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
         if(RxRslt == OK) {
-            Uart.Printf("\rRssi=%d", Rssi);
+//            Uart.Printf("\rRssi=%d", Rssi);
+#if USB_ENABLED
+            UsbCDC.Printf("%u; %d %d %d; %d %d %d; %d %d %d\r\n", Pkt.Time,
+                    Pkt.AccData[0], Pkt.AccData[1], Pkt.AccData[2],
+                    Pkt.AccData[3], Pkt.AccData[4], Pkt.AccData[5],
+                    Pkt.AccData[6], Pkt.AccData[7], Pkt.AccData[8]
+            );
+#endif
         }
 
 #if 0        // Demo

@@ -24,8 +24,6 @@
 
 #include "hal.h"
 
-extern void PrintfC(const char *format, ...); // @KL
-
 #if (HAL_USE_SERIAL_USB == TRUE) || defined(__DOXYGEN__)
 
 /*===========================================================================*/
@@ -77,7 +75,6 @@ static size_t read(void *ip, uint8_t *bp, size_t n) {
 }
 
 static msg_t put(void *ip, uint8_t b) {
-    PrintfC("put: %X\r", b);
   if (usbGetDriverStateI(((SerialUSBDriver *)ip)->config->usbp) != USB_ACTIVE) {
     return MSG_RESET;
   }
@@ -170,21 +167,17 @@ static void ibnotify(io_buffers_queue_t *bqp) {
 static void obnotify(io_buffers_queue_t *bqp) {
   size_t n;
   SerialUSBDriver *sdup = bqGetLinkX(bqp);
-  PrintfC("obn\r");
   /* If the USB driver is not in the appropriate state then transactions
      must not be started.*/
   if ((usbGetDriverStateI(sdup->config->usbp) != USB_ACTIVE) ||
       (sdup->state != SDU_READY)) {
     return;
   }
-  PrintfC("obn1\r");
   /* Checking if there is already a transaction ongoing on the endpoint.*/
   if (!usbGetTransmitStatusI(sdup->config->usbp, sdup->config->bulk_in)) {
-      PrintfC("obn2\r");
     /* Trying to get a full buffer.*/
     uint8_t *buf = obqGetFullBufferI(&sdup->obqueue, &n);
     if (buf != NULL) {
-        PrintfC("obn3\r");
       /* Buffer found, starting a new transaction.*/
       usbStartTransmitI(sdup->config->usbp, sdup->config->bulk_in, buf, n);
     }

@@ -15,9 +15,11 @@
 // MCU type as defined in the ST header.
 #define STM32F072xB
 
-#define CRYSTAL_FREQ_HZ     12000000    // Freq of external crystal - not used
+#define CRYSTAL_FREQ_HZ 12000000    // Freq of external crystal - not used
 
-#define SYS_TIM_CLK         (Clk.APBFreqHz * Clk.TimerClkMulti)
+#define SYS_TIM_CLK     (Clk.APBFreqHz * Clk.TimerClkMulti)
+
+#define USB_ENABLED     TRUE
 
 #if 1 // ========================== GPIO =======================================
 // UART
