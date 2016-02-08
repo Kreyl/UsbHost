@@ -9,10 +9,11 @@
 #include "SimpleSensors.h"
 #include "usb_cdc.h"
 #include "color.h"
+#include "radio_lvl1.h"
 
 App_t App;
 
-
+//#define USB_ENABLED     TRUE
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -23,6 +24,7 @@ int main(void) {
     // Init OS
     halInit();
     chSysInit();
+    App.InitThread();
 
     // ==== Init hardware ====
     SYSCFG->CFGR1 |= SYSCFG_CFGR1_USART1TX_DMA_RMP | SYSCFG_CFGR1_USART1RX_DMA_RMP;
@@ -30,7 +32,7 @@ int main(void) {
     Uart.Printf("\r%S %S\r", APP_NAME, APP_VERSION);
     Clk.PrintFreqs();
 
-    App.InitThread();
+#if USB_ENABLED
     UsbCDC.Init();
     chThdSleepMilliseconds(450);
     // Enable HSI48
@@ -45,6 +47,12 @@ int main(void) {
         UsbCDC.Connect();
     }
     else Uart.Printf("Hsi Fail\r");
+#endif
+
+    if(Radio.Init() != OK) {
+//        Led.StartSequence(lsqFailure);
+        chThdSleepMilliseconds(2700);
+    }
 
     // Main cycle
     App.ITask();

@@ -14,7 +14,7 @@
 #include "clocking.h"
 
 // Lib version
-#define KL_LIB_VERSION      "20160206_1234"
+#define KL_LIB_VERSION      "20160208_1924"
 
 #if defined STM32L1XX
 #include "stm32l1xx.h"
@@ -29,7 +29,7 @@
 #endif
 
 #if 1 // ============================ General ==================================
-#define __PACKED __attribute__ ((__packed__))
+#define __NORETURN  __attribute__((noreturn))
 #ifndef countof
 #define countof(A)  (sizeof(A)/sizeof(A[0]))
 #endif
@@ -403,8 +403,8 @@ enum PinAF_t {
 
 // Set/clear
 #if defined STM32L1XX || defined STM32F2XX || defined STM32F4XX || defined STM32F042x6
-static inline void PinSet    (GPIO_TypeDef *PGpioPort, const uint16_t APinNumber) { PGpioPort->BSRRL = (uint16_t)(1<<APinNumber); }
-static inline void PinClear  (GPIO_TypeDef *PGpioPort, const uint16_t APinNumber) { PGpioPort->BSRRH = (uint16_t)(1<<APinNumber); }
+#define PinSet(PGpio, APin)     PGpio->BSRRL = ((uint16_t)(1 << (APin)))
+#define PinClear(PGpio, APin)   PGpio->BSRRH = ((uint16_t)(1 << (APin)))
 #elif defined STM32F0XX || defined STM32F10X_LD_VL
 #define PinSet(PGpio, APin)     PGpio->BSRR = ((uint32_t)(1 << (APin)))
 #define PinClear(PGpio, APin)   PGpio->BRR  = ((uint32_t)(1 << (APin)))
@@ -647,17 +647,27 @@ public:
 };
 #endif
 
-#if 0 // ==== External IRQ ====
+#if 1 // ==== External IRQ ====
 enum ExtiTrigType_t {ttRising, ttFalling, ttRisingFalling};
 
+#if defined STM32L1XX || defined STM32F4XX
+#define PIN2IRQ_CHNL(Pin)   \
+    (((Pin) > 9)? EXTI15_10_IRQn : (((Pin) > 4)? EXTI9_5_IRQn : ((Pin) + EXTI0_IRQn)))
+#elif defined STM32F030 || defined STM32F072xB
+#define PIN2IRQ_CHNL(Pin)   \
+    (((Pin) > 3)? EXTI4_15_IRQn : (((Pin) > 1)? EXTI2_3_IRQn : EXTI0_1_IRQn))
+#endif
+
+// Example:
+// const PinIrq_t GPinDrdy {ACC_DRDY_PIN};
+// GPinDrdy.Init(ACC_DRDY_GPIO, pudNone, ttRising);
 class PinIrq_t {
-private:
-    uint32_t IIrqChnl;
-    GPIO_TypeDef *IGPIO;
-    uint8_t IPinNumber;
 public:
-    void SetTriggerType(ExtiTrigType_t ATriggerType) {
-        uint32_t IrqMsk = 1 << IPinNumber;
+    uint8_t Pin;
+    PinIrq_t(uint16_t APin) { Pin = APin; }
+
+    void SetTriggerType(ExtiTrigType_t ATriggerType) const {
+        uint32_t IrqMsk = 1 << Pin;
         switch(ATriggerType) {
             case ttRising:
                 EXTI->RTSR |=  IrqMsk;  // Rising trigger enabled
@@ -674,37 +684,29 @@ public:
         } // switch
     }
 
-    void Setup(GPIO_TypeDef *GPIO, const uint8_t APinNumber, ExtiTrigType_t ATriggerType) {
-        IGPIO = GPIO;
-        IPinNumber = APinNumber;
+    void Init(GPIO_TypeDef *PGPIO, PinPullUpDown_t APullUpDown, ExtiTrigType_t ATriggerType) const {
+        // Init pin as input
+        PinSetupIn(PGPIO, Pin, APullUpDown);
         rccEnableAPB2(RCC_APB2ENR_SYSCFGEN, FALSE); // Enable sys cfg controller
         // Connect EXTI line to the pin of the port
-        uint8_t Indx   = APinNumber / 4;            // Indx of EXTICR register
-        uint8_t Offset = (APinNumber & 0x03) * 4;   // Offset in EXTICR register
+        uint8_t Indx   = Pin / 4;            // Indx of EXTICR register
+        uint8_t Offset = (Pin & 0x03) * 4;   // Offset in EXTICR register
         SYSCFG->EXTICR[Indx] &= ~((uint32_t)0b1111 << Offset);  // Clear port-related bits
         // GPIOA requires all zeroes => nothing to do in this case
-        if     (GPIO == GPIOB) SYSCFG->EXTICR[Indx] |= (uint32_t)0b0001 << Offset;
-        else if(GPIO == GPIOC) SYSCFG->EXTICR[Indx] |= (uint32_t)0b0010 << Offset;
+        if     (PGPIO == GPIOB) SYSCFG->EXTICR[Indx] |= (uint32_t)0b0001 << Offset;
+        else if(PGPIO == GPIOC) SYSCFG->EXTICR[Indx] |= (uint32_t)0b0010 << Offset;
         // Configure EXTI line
-        uint32_t IrqMsk = 1 << APinNumber;
+        uint32_t IrqMsk = 1 << Pin;
         EXTI->IMR  |=  IrqMsk;      // Interrupt mode enabled
         EXTI->EMR  &= ~IrqMsk;      // Event mode disabled
         SetTriggerType(ATriggerType);
         EXTI->PR    =  IrqMsk;      // Clean irq flag
-        // Get IRQ channel
-#if defined STM32L1XX_MD || defined STM32F4XX
-        if      ((APinNumber >= 0)  and (APinNumber <= 4))  IIrqChnl = EXTI0_IRQn + APinNumber;
-        else if ((APinNumber >= 5)  and (APinNumber <= 9))  IIrqChnl = EXTI9_5_IRQn;
-        else if ((APinNumber >= 10) and (APinNumber <= 15)) IIrqChnl = EXTI15_10_IRQn;
-#elif defined STM32F030
-        if      ((APinNumber >= 0)  and (APinNumber <= 1))  IIrqChnl = EXTI0_1_IRQn;
-        else if ((APinNumber >= 2)  and (APinNumber <= 3))  IIrqChnl = EXTI2_3_IRQn;
-        else if ((APinNumber >= 4)  and (APinNumber <= 15)) IIrqChnl = EXTI4_15_IRQn;
-#endif
     }
-//    void EnableIrq(const uint32_t Priority) { nvicEnableVector(IIrqChnl, CORTEX_PRIORITY_MASK(Priority)); }
-    void DisableIrq() { nvicDisableVector(IIrqChnl); }
-    void CleanIrqFlag() { EXTI->PR = (1 << IPinNumber); }
+    void EnableIrq(const uint32_t Priority) const { nvicEnableVector(PIN2IRQ_CHNL(Pin), Priority); }
+    void DisableIrq() const { nvicDisableVector(PIN2IRQ_CHNL(Pin)); }
+    void CleanIrqFlag() const { EXTI->PR = (1 << Pin); }
+    bool IsIrqPending() const { return BitIsSet(EXTI->PR, (1 << Pin)); }
+    void GenerateIrq()  const { EXTI->SWIER = (1 << Pin); }
 };
 #endif // EXTI
 
@@ -821,8 +823,8 @@ public:
 #elif defined STM32F072xB
         if(BitNumber == bitn16) PSpi->CR2 = (uint16_t)0b1111 << 8;
         else PSpi->CR2 = ((uint16_t)0b0111 << 8) | SPI_CR2_FRXTH; // 8 bit
-#endif
         PSpi->I2SCFGR &= ~((uint16_t)SPI_I2SCFGR_I2SMOD);       // Disable I2S
+#endif
     }
     void Enable () { PSpi->CR1 |=  SPI_CR1_SPE; }
     void Disable() { PSpi->CR1 &= ~SPI_CR1_SPE; }
@@ -832,7 +834,9 @@ public:
     void DisableRxDma() { PSpi->CR2 &= ~SPI_CR2_RXDMAEN; }
     void SetRxOnly()    { PSpi->CR1 |=  SPI_CR1_RXONLY; }
     void SetFullDuplex(){ PSpi->CR1 &= ~SPI_CR1_RXONLY; }
+#if defined STM32F072xB
     void WaitFTLVLZero(){ while(PSpi->SR & SPI_SR_FTLVL); }
+#endif
     void WaitBsyHi2Lo() { while(PSpi->SR & SPI_SR_BSY); }
     void ClearRxBuf()   { while(PSpi->SR & SPI_SR_RXNE) (void)PSpi->DR; }
     uint8_t ReadWriteByte(uint8_t AByte) {
@@ -848,8 +852,13 @@ public:
 };
 #endif
 
-#if 0 // ============================== I2C ====================================
-#define I2C_KL  TRUE
+#if I2C_REQUIRED // ========================= I2C ==============================
+#define I2C_ASYNC       TRUE
+/* Example:
+ * i2c_t i2c (I2C_ACC, ACC_I2C_GPIO, ACC_I2C_SCL_PIN, ACC_I2C_SDA_PIN,
+ * 400000, I2C_ACC_DMA_TX, I2C_ACC_DMA_RX );
+ */
+
 #define I2C_DMATX_MODE  STM32_DMA_CR_CHSEL(DmaChnl) |   \
                         DMA_PRIORITY_LOW | \
                         STM32_DMA_CR_MSIZE_BYTE | \
@@ -900,7 +909,7 @@ private:
     uint8_t WaitBTF();
 public:
     bool Error;
-    Thread *PRequestingThread;
+    thread_reference_t ThdRef;
     const stm32_dma_stream_t *PDmaTx, *PDmaRx;
     void Init();
     void Standby();
@@ -915,9 +924,8 @@ public:
             uint32_t BitrateHz,
             const stm32_dma_stream_t *APDmaTx, const stm32_dma_stream_t *APDmaRx) :
                 ii2c(pi2c), IPGpio(PGpio), ISclPin(SclPin), ISdaPin(SdaPin), IBitrateHz(BitrateHz),
-                Error(false), PRequestingThread(nullptr),
+                Error(false), ThdRef(nullptr),
                 PDmaTx(APDmaTx), PDmaRx(APDmaRx) {}
-
 };
 #endif
 
