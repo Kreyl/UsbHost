@@ -50,11 +50,9 @@ void rLevel1_t::ITask() {
             Led2.SetHi();
 //            Uart.Printf("\rRssi=%d", Rssi);
 #if USB_ENABLED
-            UsbCDC.Printf("%u; %d %d %d; %d %d %d; %d %d %d\r\n", Pkt.Time,
-                    Pkt.AccData[0], Pkt.AccData[1], Pkt.AccData[2],
-                    Pkt.AccData[3], Pkt.AccData[4], Pkt.AccData[5],
-                    Pkt.AccData[6], Pkt.AccData[7], Pkt.AccData[8]
-            );
+            UsbCDC.Printf("%05u ", Pkt.Time);
+            for(uint8_t i=0; i<9; i++) UsbCDC.Printf("%03d ", Pkt.SnsData[i]);
+            UsbCDC.Printf("\r\n");
 #endif
         }
 
