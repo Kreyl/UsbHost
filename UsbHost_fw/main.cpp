@@ -13,6 +13,8 @@
 
 App_t App;
 
+const PinOutput_t Led1 {GPIOB, 0, omPushPull};
+
 int main(void) {
     // ==== Setup clock frequency ====
     Clk.EnablePrefetch();
@@ -29,6 +31,8 @@ int main(void) {
     Uart.Init(115200, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN);
     Uart.Printf("\r%S %S\r", APP_NAME, APP_VERSION);
     Clk.PrintFreqs();
+
+    Led1.Init();
 
 #if USB_ENABLED
     UsbCDC.Init();
@@ -63,6 +67,7 @@ void App_t::ITask() {
 
         if(EvtMsk & EVTMSK_USB_READY) {
             Uart.Printf("UsbReady\r");
+            Led1.SetHi();
         }
 
         if(EvtMsk & EVTMSK_USB_NEW_CMD) {

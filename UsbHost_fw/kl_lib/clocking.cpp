@@ -261,6 +261,7 @@ uint8_t Clk_t::EnablePLL() {
 
 uint8_t Clk_t::EnableHSI48() {
     RCC->CR2 |= RCC_CR2_HSI48ON;
+    for(volatile uint32_t i=0; i<999; i++); // Let it to stabilize. Otherwise program counter flies to space with Ozzy Osbourne
     uint32_t StartUpCounter=0;
     do {
         if(RCC->CR2 & RCC_CR2_HSI48RDY) return 0;   // Clock is ready

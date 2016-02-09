@@ -5,9 +5,6 @@
  *      Author: Kreyl
  */
 
-//#include <inttypes.h>
-//#include <stddef.h>
-//#include "usb.h"
 #include "ch.h"
 #include "hal.h"
 #include "descriptors_cdc.h"
