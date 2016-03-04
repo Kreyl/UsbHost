@@ -14,9 +14,7 @@
 
 #include "usb_cdc.h"
 
-const PinOutput_t Led2 {GPIOB, 1, omPushPull};
-
-#define DBG_PINS
+//#define DBG_PINS
 
 #ifdef DBG_PINS
 #define DBG_GPIO1   GPIOB
@@ -44,10 +42,10 @@ void rLevel1_t::ITask() {
     __unused uint8_t OldID = 0;
     while(true) {
         int8_t Rssi;
-        Led2.SetLo();
+//        Led2.SetLo();
         uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
         if(RxRslt == OK) {
-            Led2.SetHi();
+//            Led2.SetHi();
 //            Uart.Printf("\rRssi=%d", Rssi);
 #if USB_ENABLED
             UsbCDC.Printf("%05u ", Pkt.Time);
@@ -128,7 +126,6 @@ uint8_t rLevel1_t::Init() {
     PinSetupOut(DBG_GPIO1, DBG_PIN1, omPushPull);
     PinSetupOut(DBG_GPIO2, DBG_PIN2, omPushPull);
 #endif
-    Led2.Init();
     // Init radioIC
     if(CC.Init() == OK) {
         CC.SetTxPower(CC_Pwr0dBm);

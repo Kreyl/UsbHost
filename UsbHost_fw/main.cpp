@@ -6,14 +6,15 @@
  */
 
 #include "main.h"
-#include "SimpleSensors.h"
 #include "usb_cdc.h"
 #include "color.h"
 #include "radio_lvl1.h"
+#include "led.h"
+#include "Sequences.h"
 
 App_t App;
 
-const PinOutput_t Led1 {GPIOB, 0, omPushPull};
+LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -29,32 +30,33 @@ int main(void) {
     // ==== Init hardware ====
     SYSCFG->CFGR1 |= SYSCFG_CFGR1_USART1TX_DMA_RMP | SYSCFG_CFGR1_USART1RX_DMA_RMP;
     Uart.Init(115200, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN);
-    Uart.Printf("\r%S %S\r", APP_NAME, APP_VERSION);
+    Uart.Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
-    Led1.Init();
+    Led.Init();
 
 #if USB_ENABLED
     UsbCDC.Init();
-    chThdSleepMilliseconds(450);
+    chThdSleepMilliseconds(45);
     // Enable HSI48
     chSysLock();
-    uint8_t r = Clk.SwitchTo(csHSI48);
+    while(Clk.SwitchTo(csHSI48) != OK) {
+        Uart.PrintfI("Hsi48 Fail\r");
+        chThdSleepS(MS2ST(207));
+    }
     Clk.UpdateFreqValues();
     chSysUnlock();
     Clk.PrintFreqs();
-    if(r == OK) {
-        Clk.SelectUSBClock_HSI48();
-        Clk.EnableCRS();
-        UsbCDC.Connect();
-    }
-    else Uart.Printf("Hsi Fail\r");
+    Clk.SelectUSBClock_HSI48();
+    Clk.EnableCRS();
+    UsbCDC.Connect();
 #endif
 
     if(Radio.Init() != OK) {
-//        Led.StartSequence(lsqFailure);
+        Led.StartSequence(lsqFailure);
         chThdSleepMilliseconds(2700);
     }
+    else Led.StartSequence(lsqStart);
 
     // Main cycle
     App.ITask();
@@ -67,7 +69,7 @@ void App_t::ITask() {
 
         if(EvtMsk & EVTMSK_USB_READY) {
             Uart.Printf("UsbReady\r");
-            Led1.SetHi();
+            Led.StartSequence(lsqUSB);
         }
 
         if(EvtMsk & EVTMSK_USB_NEW_CMD) {
@@ -84,7 +86,7 @@ void App_t::ITask() {
 #if 1 // ======================= Command processing ============================
 void App_t::OnCmd(Shell_t *PShell) {
     Cmd_t *PCmd = &PShell->Cmd;
-    __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
+    __unused int32_t dw32 = 0;  // May be unused in some configurations
 //    PShell->Printf(">%S\r", PCmd->Name);
     Uart.Printf("%S\r", PCmd->Name);
 //    UsbCDC.Printf("%S\r", PCmd->Name);

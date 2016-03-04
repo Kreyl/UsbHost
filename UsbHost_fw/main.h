@@ -13,8 +13,7 @@
 #include "evt_mask.h"
 #include "board.h"
 
-#define APP_NAME            "UsbHost"
-#define APP_VERSION         __DATE__ " " __TIME__
+#define APP_NAME            "UsbHost2"
 
 class App_t {
 private:

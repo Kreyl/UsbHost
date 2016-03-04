@@ -3,7 +3,7 @@
   (general
     (links 136)
     (no_connects 17)
-    (area 166.949999 120.949999 191.050001 193.050001)
+    (area 165.86635 120.949999 192.794538 193.275001)
     (thickness 1.6)
     (drawings 16)
     (tracks 1350)
@@ -14,8 +14,8 @@
 
   (page A3)
   (layers
-    (0 F.Cu signal hide)
-    (31 B.Cu signal hide)
+    (0 F.Cu signal)
+    (31 B.Cu signal)
     (37 F.SilkS user)
     (38 B.Mask user)
     (39 F.Mask user)
@@ -50,7 +50,7 @@
     (aux_axis_origin 0 0)
     (visible_elements 7FFFF37F)
     (pcbplotparams
-      (layerselection 0x00030_80000001)
+      (layerselection 0x010e0_80000001)
       (usegerberextensions true)
       (excludeedgelayer true)
       (linewidth 0.150000)

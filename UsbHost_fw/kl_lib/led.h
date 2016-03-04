@@ -5,44 +5,22 @@
  *      Author: Kreyl
  */
 
-#ifndef LED_RGB_H_
-#define LED_RGB_H_
+#pragma once
 
 #include "hal.h"
 #include "color.h"
 #include "ChunkTypes.h"
 #include "uart.h"
-
-#ifdef STM32F2XX
-#include "kl_lib_f2xx.h"
-#elif defined STM32L1XX_MD || defined STM32L1XX_HD
-#include <kl_lib.h>
-#endif
+#include "kl_lib.h"
 
 #if 1 // =========================== Common auxilary ===========================
 // TimeToWaitBeforeNextAdjustment = SmoothVar / (N+4) + 1, where N - current LED brightness.
 static inline uint32_t ICalcDelay(uint32_t CurrentBrightness, uint32_t SmoothVar) { return (uint32_t)((SmoothVar / (CurrentBrightness+4)) + 1); }
 #endif
 
-#if 0 // ========================= Simple Blinker ==============================
-class LedSimpleBlinker_t : private PinOutput_t {
-private:
-    TmrVirtual_t IVT;
-public:
-    LedSimpleBlinker_t(GPIO_TypeDef *APGpio, uint16_t APin, PinOutMode_t AOutMode) {
-        PinOutput_t(APGpio, APin, AOutMode);
-    }
-    void Hi() const { PinSet(PGpio, Pin); }
-    void Lo() const { PinClear(PGpio, Pin); }
-    void BlinkLo() const {
-        Lo();
-
-    }
-};
-
-#endif
-
 #if 0 // ========================= Single LED blinker ==========================
+#define LED_RGB_BLINKER
+
 class LedBlinker_t : public BaseSequencer_t<BaseChunk_t> {
 protected:
     PinOutputPushPull_t IChnl;
@@ -137,10 +115,10 @@ public:
 };
 #endif
 
-#if 0 // ============================== LedRGB =================================
+#if 1 // ============================== LedRGB =================================
 #define LED_RGB
 #define LED_RGB_TOP_VALUE   255 // Intencity 0...255
-#define LED_RGB_INVERTED    invInverted
+#define LED_RGB_INVERTED    invNotInverted
 
 class LedRGB_t : public BaseSequencer_t<LedRGBChunk_t> {
 private:
@@ -194,5 +172,3 @@ public:
     }
 };
 #endif
-
-#endif /* LED_RGB_H_ */

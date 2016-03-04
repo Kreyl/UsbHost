@@ -11,7 +11,7 @@
 #include "CRS_defins.h"
 
 // ==== General ====
-#define BOARD_NAME          "UsbHost"
+#define BOARD_NAME          "UsbHost2"
 // MCU type as defined in the ST header.
 #define STM32F072xB
 
@@ -28,10 +28,11 @@
 #define UART_RX_PIN     10
 #define UART_AF         AF1
 
-// LEDs
+// LED
 #define LED_GPIO        GPIOB
-#define LED1_PIN        0
-#define LED2_PIN        1
+#define LEDR_PIN        0
+#define LEDG_PIN        4
+#define LEDB_PIN        1
 
 // USB
 #define USB_GPIO		GPIOA
@@ -41,6 +42,11 @@
 #endif
 
 #if 1 // ========================= Timer =======================================
+// LED
+#define LED_TMR         TIM3
+#define LEDR_CHNL       3
+#define LEDG_CHNL       1
+#define LEDB_CHNL       4
 #endif
 
 #if 1 // =========================== SPI =======================================
