@@ -13,7 +13,7 @@
 #include "evt_mask.h"
 #include "board.h"
 
-#define APP_NAME            "UsbHost2"
+#define APP_NAME            "UsbHost2_TL"
 
 class App_t {
 private:

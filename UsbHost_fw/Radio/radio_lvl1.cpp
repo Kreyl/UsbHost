@@ -31,13 +31,13 @@ rLevel1_t Radio;
 
 #if 1 // ================================ Task =================================
 static THD_WORKING_AREA(warLvl1Thread, 256);
-__NORETURN
+__noreturn
 static void rLvl1Thread(void *arg) {
     chRegSetThreadName("rLvl1");
     Radio.ITask();
 }
 
-__NORETURN
+__noreturn
 void rLevel1_t::ITask() {
     __unused uint8_t OldID = 0;
     while(true) {
@@ -47,11 +47,7 @@ void rLevel1_t::ITask() {
         if(RxRslt == OK) {
 //            Led2.SetHi();
 //            Uart.Printf("\rRssi=%d", Rssi);
-#if USB_ENABLED
-            UsbCDC.Printf("%05u ", Pkt.Time);
-            for(uint8_t i=0; i<9; i++) UsbCDC.Printf("%03d ", Pkt.SnsData[i]);
-            UsbCDC.Printf("\r\n");
-#endif
+
         }
 
 #if 0        // Demo
@@ -136,5 +132,10 @@ uint8_t rLevel1_t::Init() {
         return OK;
     }
     else return FAILURE;
+}
+
+uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
+    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
+    return OK;
 }
 #endif

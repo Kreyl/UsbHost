@@ -62,7 +62,7 @@ int main(void) {
     App.ITask();
 }
 
-__attribute__ ((__noreturn__))
+__noreturn
 void App_t::ITask() {
     while(true) {
         uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
@@ -95,27 +95,20 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(OK);
     }
 
-//    else if(PCmd->NameIs("Set")) {
-//        uint8_t Rslt = CMD_ERROR;
-//        for(uint8_t i = 0; i < 3; i++) {
-//            // Get array of params
-//            if(PCmd->GetArray(LedParams[i].Arr, 5) == OK) {
-////                LedParams[i].Print();
-//                if(LedParams[i].Check(PShell) == OK) {
-//                    Rslt = OK;
-//                    uint8_t indx = LedParams[i].Indx - 1;
-//                    chSysLock();
-//                    LedWs.DesiredClr[indx].Set(LedParams[i].R, LedParams[i].G, LedParams[i].B);
-//                    LedWs.SmoothValue[indx] = LedParams[i].Smooth;
-//                    chSysUnlock();
-//                }
-//                else break;
-//            }
-//            else break;
-//        } // for
-//        if(Rslt == OK) LedWs.StartProcess();
-//        PShell->Ack(Rslt);
-//    }
+    else if(PCmd->NameIs("Set")) {
+        uint8_t Rslt = CMD_ERROR;
+        rPkt_t Pkt;
+        // Read cmd
+        if(PCmd->GetNextByte(&Pkt.ID) != OK) goto SetEnd;           // Get ID
+        if(PCmd->GetArray(Pkt.Brightness, 5) != OK) goto SetEnd;    // Get brightnesses
+        // Get IR params
+        if(PCmd->GetNextByte(&Pkt.IRPwr) != OK) goto SetEnd;
+        if(PCmd->GetNextByte(&Pkt.IRData) != OK) goto SetEnd;
+        // Transmit data and wait answer
+        Rslt = Radio.TxRxSync(&Pkt);
+        SetEnd:
+        PShell->Ack(Rslt);
+    } // Set
 
     else PShell->Ack(CMD_UNKNOWN);
 }
