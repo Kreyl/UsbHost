@@ -217,6 +217,13 @@ public:
 };
 #endif
 
+#if 1 // ========================== Random =====================================
+static inline int Random(int LowInclusive, int HighInclusive) {
+    return (rand() % (HighInclusive + 1 - LowInclusive)) + LowInclusive;
+}
+
+#endif
+
 #if 0 // =========================== Time ======================================
 static inline bool TimeElapsed(systime_t *PSince, uint32_t Delay_ms) {
     chSysLock();

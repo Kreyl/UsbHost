@@ -6,9 +6,14 @@
  */
 
 #pragma once
-// Event masks
-#define EVTMSK_UART_NEW_CMD     EVENT_MASK(1)
 
-#define EVTMSK_USB_NEW_CMD      EVENT_MASK(9)
-#define EVTMSK_USB_READY        EVENT_MASK(10)
-#define EVTMSK_USB_SUSPEND      EVENT_MASK(11)
+// Event masks
+#define EVT_UART_NEW_CMD     EVENT_MASK(1)
+
+#define EVT_RADIO_NEW_CMD    EVENT_MASK(2)
+#define EVT_RADIO_OK         EVENT_MASK(3)
+#define EVT_RADIO_TIMEOUT    EVENT_MASK(4)
+
+#define EVT_USB_NEW_CMD      EVENT_MASK(9)
+#define EVT_USB_READY        EVENT_MASK(10)
+#define EVT_USB_SUSPEND      EVENT_MASK(11)

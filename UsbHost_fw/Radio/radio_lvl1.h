@@ -13,8 +13,6 @@
 #include "cc1101.h"
 #include "kl_buf.h"
 
-#define CMD_Q_LEN   27
-
 class rLevel1_t {
 private:
     rPkt_t Pkt;
@@ -22,7 +20,9 @@ private:
         if(SleepDuration >= MIN_SLEEP_DURATION_MS) CC.EnterPwrDown();
         chThdSleepMilliseconds(SleepDuration);
     }
+    uint8_t RChannel = RCHNL_MIN, OldRChannel = 0;
 public:
+    rPkt_t *PTxPkt;
     thread_t *PThd;
     uint8_t Init();
     uint8_t TxRxSync(rPkt_t *PPkt);

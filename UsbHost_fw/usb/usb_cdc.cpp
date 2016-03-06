@@ -70,7 +70,7 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
             usbInitEndpointI(usbp, USBD2_INTERRUPT_REQUEST_EP, &ep2config);
 
             sduConfigureHookI(&UsbCDC.SDU1);   // Resetting the state of the CDC subsystem
-            App.SignalEvtI(EVTMSK_USB_READY);
+            App.SignalEvtI(EVT_USB_READY);
             chSysUnlockFromISR();
             return;
         case USB_EVENT_SUSPEND:
@@ -112,7 +112,7 @@ static THD_FUNCTION(ThdCDCRX, arg) {
 //                UsbCDC.SDU1.vmt->put(&UsbCDC.SDU1, (uint8_t)m);   // repeat what was sent
                 if(UsbCDC.Cmd.PutChar((char)m) == pdrNewCmd) {
                     chSysLock();
-                    App.SignalEvtI(EVTMSK_USB_NEW_CMD);
+                    App.SignalEvtI(EVT_USB_NEW_CMD);
                     chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
                     chSysUnlock();  // Will be here when application signals that cmd processed
                 }

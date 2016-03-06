@@ -39,15 +39,40 @@ static void rLvl1Thread(void *arg) {
 
 __noreturn
 void rLevel1_t::ITask() {
-    __unused uint8_t OldID = 0;
     while(true) {
-        int8_t Rssi;
-//        Led2.SetLo();
-        uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
-        if(RxRslt == OK) {
-//            Led2.SetHi();
-//            Uart.Printf("\rRssi=%d", Rssi);
+        eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
+        if(EvtMsk & EVT_RADIO_NEW_CMD) {
+            if(RChannel != OldRChannel) {
+                CC.SetChannel(RChannel);
+                OldRChannel = RChannel;
+            }
+            // Make several retries
+            int Retries = RETRY_CNT;
+            while(true) {
+                Uart.Printf("Try %d\r", Retries);
+                // Transmit pkt
+                CC.TransmitSync(PTxPkt);
+                // Wait answer
+                int8_t Rssi;
+                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
+                if(RxRslt == OK) {
+                    Uart.Printf("\rRssi=%d", Rssi);
+                    // TODO: Check what received
+                    if(true) {
+                        App.SignalEvt(EVT_RADIO_OK);
+                        break;
+                    }
+                }
+                // Timeout or bad answer
+                if(--Retries <= 0) {
+                    App.SignalEvt(EVT_RADIO_TIMEOUT);
+                    break;
+                }
+                // Wait random time
+                int Delay = Random(RETRY_T_MIN_MS, RETRY_T_MAX_MS);
+                chThdSleepMilliseconds(MS2ST(Delay));
+            } // while(true)
         }
 
 #if 0        // Demo
@@ -126,7 +151,6 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == OK) {
         CC.SetTxPower(CC_Pwr0dBm);
         CC.SetPktSize(RPKT_LEN);
-
         // Thread
         PThd = chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
@@ -136,6 +160,10 @@ uint8_t rLevel1_t::Init() {
 
 uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
     Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
-    return OK;
+    PTxPkt = PPkt;  // copy pointer
+    chEvtSignal(PThd, EVT_RADIO_NEW_CMD);
+    eventmask_t EvtMsk = chEvtWaitAny(EVT_RADIO_OK | EVT_RADIO_TIMEOUT);
+    if(EvtMsk & EVT_RADIO_OK) return OK;
+    else return TIMEOUT;
 }
 #endif

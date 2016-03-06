@@ -62,6 +62,8 @@ struct rPkt_t {
 #define ID2RCHNL(ID)    (RCHNL_MIN + ID)
 
 #define RCHNL_DEFAULT   4
+
+#define RETRY_CNT       4
 #endif
 
 #if 1 // =========================== Timings ===================================
@@ -69,5 +71,8 @@ struct rPkt_t {
 #define RX_T_MS                 27
 
 #define MIN_SLEEP_DURATION_MS   18
+
+#define RETRY_T_MIN_MS          4
+#define RETRY_T_MAX_MS          27
 
 #endif

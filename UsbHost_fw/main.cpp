@@ -67,16 +67,16 @@ void App_t::ITask() {
     while(true) {
         uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
 
-        if(EvtMsk & EVTMSK_USB_READY) {
+        if(EvtMsk & EVT_USB_READY) {
             Uart.Printf("UsbReady\r");
             Led.StartSequence(lsqUSB);
         }
 
-        if(EvtMsk & EVTMSK_USB_NEW_CMD) {
+        if(EvtMsk & EVT_USB_NEW_CMD) {
             OnCmd((Shell_t*)&UsbCDC);
             UsbCDC.SignalCmdProcessed();
         }
-        if(EvtMsk & EVTMSK_UART_NEW_CMD) {
+        if(EvtMsk & EVT_UART_NEW_CMD) {
             OnCmd((Shell_t*)&Uart);
             Uart.SignalCmdProcessed();
         }

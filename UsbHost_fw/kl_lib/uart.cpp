@@ -135,7 +135,7 @@ void Uart_t::IRxTask() {
                 if(RIndx >= UART_RXBUF_SZ) RIndx = 0;
                 if(Cmd.PutChar(c) == pdrNewCmd) {
                     chSysLock();
-                    App.SignalEvtI(EVTMSK_UART_NEW_CMD);
+                    App.SignalEvtI(EVT_UART_NEW_CMD);
                     chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
                     chSysUnlock();  // Will be here when application signals that cmd processed
                 }
