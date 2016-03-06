@@ -19,7 +19,7 @@ Maybe, to calm Eclipse, it will be required to write extra quote in the end: "\"
 */
 
 // Lib version
-#define KL_LIB_VERSION      "20160305_1752"
+#define KL_LIB_VERSION      "20160306_1222"
 
 #if defined STM32L1XX
 #include "stm32l1xx.h"
@@ -221,7 +221,6 @@ public:
 static inline int Random(int LowInclusive, int HighInclusive) {
     return (rand() % (HighInclusive + 1 - LowInclusive)) + LowInclusive;
 }
-
 #endif
 
 #if 0 // =========================== Time ======================================
@@ -377,6 +376,11 @@ public:
 #endif
 
 #if 1 // ===================== Simple pin manipulations ========================
+struct PortPin_t {
+    GPIO_TypeDef *PGpio;
+    uint16_t Pin;
+};
+
 enum PinPullUpDown_t {
     pudNone = 0b00,
     pudPullUp = 0b01,
@@ -502,6 +506,7 @@ static inline void PinSetupOut(
     PGpioPort->OSPEEDR |= (uint32_t)ASpeed << Offset;
 #endif
 }
+
 static inline void PinSetupIn(
         GPIO_TypeDef *PGpioPort,
         const uint16_t APinNumber,
@@ -535,6 +540,11 @@ static inline void PinSetupIn(
     PGpioPort->PUPDR |= (uint32_t)APullUpDown << (APinNumber*2);
 #endif
 }
+
+static inline void PinSetupIn(PortPin_t &PortPin, const PinPullUpDown_t APullUpDown) {
+    PinSetupIn(PortPin.PGpio, PortPin.Pin, APullUpDown);
+}
+
 static inline void PinSetupAnalog(GPIO_TypeDef *PGpioPort, const uint16_t APinNumber) {
     // Clock
     PinClockEnable(PGpioPort);
@@ -551,6 +561,10 @@ static inline void PinSetupAnalog(GPIO_TypeDef *PGpioPort, const uint16_t APinNu
     // Setup mode
     PGpioPort->MODER |= 0b11 << (APinNumber*2);  // Set new bits
 #endif
+}
+
+static inline void PinSetupAnalog(PortPin_t &PortPin) {
+    PinSetupAnalog(PortPin.PGpio, PortPin.Pin);
 }
 
 static inline void PinSetupAlterFunc(
