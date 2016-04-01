@@ -49,11 +49,18 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
-struct rPkt_t {
-    uint8_t ID;
+struct State_t {
     uint8_t Brightness[5];
     uint8_t IRPwr, IRData;
-} __attribute__ ((__packed__));
+} __packed;
+
+struct rPkt_t {
+    uint8_t ID;
+    union {
+        State_t State;
+        uint8_t Status;
+    };
+} __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif
 

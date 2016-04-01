@@ -211,9 +211,17 @@ const LedRGBChunk_t lsqStart[] = {
 };
 
 const LedRGBChunk_t lsqUSB[] = {
-        {csSetup, 0, ((Color_t){0, 9, 0})},
+        {csSetup, 0, clGreen},
         {csEnd}
 };
+
+const LedRGBChunk_t lsqUSBCmd[] = {
+        {csSetup, 0, clBlue},
+        {csWait, 135},
+        {csSetup, 0, clGreen},
+        {csEnd}
+};
+
 
 //#define IND_DUR_MS      90
 //#define INTENCITY       27

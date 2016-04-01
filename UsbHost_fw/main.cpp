@@ -42,6 +42,9 @@ int main(void) {
     chSysLock();
     while(Clk.SwitchTo(csHSI48) != OK) {
         Uart.PrintfI("Hsi48 Fail\r");
+        Led.SetColor(clRed);
+        chThdSleepS(MS2ST(207));
+        Led.SetColor(clBlack);
         chThdSleepS(MS2ST(207));
     }
     Clk.UpdateFreqValues();
@@ -73,6 +76,7 @@ void App_t::ITask() {
         }
 
         if(EvtMsk & EVT_USB_NEW_CMD) {
+            Led.StartSequence(lsqUSBCmd);
             OnCmd((Shell_t*)&UsbCDC);
             UsbCDC.SignalCmdProcessed();
         }
@@ -88,7 +92,7 @@ void App_t::OnCmd(Shell_t *PShell) {
     Cmd_t *PCmd = &PShell->Cmd;
     __unused int32_t dw32 = 0;  // May be unused in some configurations
 //    PShell->Printf(">%S\r", PCmd->Name);
-    Uart.Printf("%S\r", PCmd->Name);
+//    Uart.Printf("%S\r", PCmd->Name);
 //    UsbCDC.Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
@@ -100,10 +104,10 @@ void App_t::OnCmd(Shell_t *PShell) {
         rPkt_t Pkt;
         // Read cmd
         if(PCmd->GetNextByte(&Pkt.ID) != OK) goto SetEnd;           // Get ID
-        if(PCmd->GetArray(Pkt.Brightness, 5) != OK) goto SetEnd;    // Get brightnesses
+        if(PCmd->GetArray(Pkt.State.Brightness, 5) != OK) goto SetEnd;    // Get brightnesses
         // Get IR params
-        if(PCmd->GetNextByte(&Pkt.IRPwr) != OK) goto SetEnd;
-        if(PCmd->GetNextByte(&Pkt.IRData) != OK) goto SetEnd;
+        if(PCmd->GetNextByte(&Pkt.State.IRPwr) != OK) goto SetEnd;
+        if(PCmd->GetNextByte(&Pkt.State.IRData) != OK) goto SetEnd;
         // Transmit data and wait answer
         Rslt = Radio.TxRxSync(&Pkt);
         SetEnd:

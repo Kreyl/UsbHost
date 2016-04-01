@@ -15,7 +15,7 @@
 
 class rLevel1_t {
 private:
-    rPkt_t Pkt;
+    rPkt_t RxPkt;
     void TryToSleep(uint32_t SleepDuration) {
         if(SleepDuration >= MIN_SLEEP_DURATION_MS) CC.EnterPwrDown();
         chThdSleepMilliseconds(SleepDuration);

@@ -55,11 +55,11 @@ void rLevel1_t::ITask() {
                 CC.TransmitSync(PTxPkt);
                 // Wait answer
                 int8_t Rssi;
-                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
+                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &RxPkt, &Rssi);
                 if(RxRslt == OK) {
                     Uart.Printf("\rRssi=%d", Rssi);
-                    // TODO: Check what received
-                    if(true) {
+                    // Check if good answer received, repeat if not
+                    if(RxPkt.ID == PTxPkt->ID and RxPkt.Status == OK) {
                         App.SignalEvt(EVT_RADIO_OK);
                         break;
                     }
@@ -149,7 +149,7 @@ uint8_t rLevel1_t::Init() {
 #endif
     // Init radioIC
     if(CC.Init() == OK) {
-        CC.SetTxPower(CC_Pwr0dBm);
+        CC.SetTxPower(CC_PwrPlus7dBm);
         CC.SetPktSize(RPKT_LEN);
         // Thread
         PThd = chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
@@ -159,7 +159,7 @@ uint8_t rLevel1_t::Init() {
 }
 
 uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
-    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
+//    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
     PTxPkt = PPkt;  // copy pointer
     chEvtSignal(PThd, EVT_RADIO_NEW_CMD);
     eventmask_t EvtMsk = chEvtWaitAny(EVT_RADIO_OK | EVT_RADIO_TIMEOUT);
