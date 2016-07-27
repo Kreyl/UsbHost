@@ -99,21 +99,6 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(OK);
     }
 
-    else if(PCmd->NameIs("Set")) {
-        uint8_t Rslt = CMD_ERROR;
-        rPkt_t Pkt;
-        // Read cmd
-        if(PCmd->GetNextByte(&Pkt.ID) != OK) goto SetEnd;           // Get ID
-        if(PCmd->GetArray(Pkt.State.Brightness, 5) != OK) goto SetEnd;    // Get brightnesses
-        // Get IR params
-        if(PCmd->GetNextByte(&Pkt.State.IRPwr) != OK) goto SetEnd;
-        if(PCmd->GetNextByte(&Pkt.State.IRData) != OK) goto SetEnd;
-        // Transmit data and wait answer
-        Rslt = Radio.TxRxSync(&Pkt);
-        SetEnd:
-        PShell->Ack(Rslt);
-    } // Set
-
     else PShell->Ack(CMD_UNKNOWN);
 }
 #endif

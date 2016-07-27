@@ -55,11 +55,8 @@ struct State_t {
 } __packed;
 
 struct rPkt_t {
-    uint8_t ID;
-    union {
-        State_t State;
-        uint8_t Status;
-    };
+    uint32_t Time;
+    int16_t gyro[3], acc[3], mag[3];
 } __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif

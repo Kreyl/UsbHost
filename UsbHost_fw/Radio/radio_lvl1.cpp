@@ -39,41 +39,20 @@ static void rLvl1Thread(void *arg) {
 
 __noreturn
 void rLevel1_t::ITask() {
+    rPkt_t Pkt;
+    int8_t Rssi;
     while(true) {
-        eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
-
-        if(EvtMsk & EVT_RADIO_NEW_CMD) {
-            if(RChannel != OldRChannel) {
-                CC.SetChannel(RChannel);
-                OldRChannel = RChannel;
+        uint8_t RxRslt = CC.ReceiveSync(360, &Pkt, &Rssi);
+        if(RxRslt == OK) {
+//            Uart.Printf("Rssi=%d\r", Rssi);
+            if(UsbCDC.IsActive()) {
+                UsbCDC.Printf("%u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r", Pkt.Time,
+                        Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+                        Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
+                        Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
             }
-            // Make several retries
-            int Retries = RETRY_CNT;
-            while(true) {
-                Uart.Printf("Try %d\r", Retries);
-                // Transmit pkt
-                CC.TransmitSync(PTxPkt);
-                // Wait answer
-                int8_t Rssi;
-                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &RxPkt, &Rssi);
-                if(RxRslt == OK) {
-                    Uart.Printf("\rRssi=%d", Rssi);
-                    // Check if good answer received, repeat if not
-                    if(RxPkt.ID == PTxPkt->ID and RxPkt.Status == OK) {
-                        App.SignalEvt(EVT_RADIO_OK);
-                        break;
-                    }
-                }
-                // Timeout or bad answer
-                if(--Retries <= 0) {
-                    App.SignalEvt(EVT_RADIO_TIMEOUT);
-                    break;
-                }
-                // Wait random time
-                int Delay = Random(RETRY_T_MIN_MS, RETRY_T_MAX_MS);
-                chThdSleepMilliseconds(MS2ST(Delay));
-            } // while(true)
         }
+
 
 #if 0        // Demo
         if(App.Mode == 0b0001) { // RX
@@ -151,6 +130,7 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == OK) {
         CC.SetTxPower(CC_PwrPlus7dBm);
         CC.SetPktSize(RPKT_LEN);
+        CC.SetChannel(0);
         // Thread
         PThd = chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
