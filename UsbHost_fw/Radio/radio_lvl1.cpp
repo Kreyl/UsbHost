@@ -42,17 +42,29 @@ void rLevel1_t::ITask() {
     rPkt_t Pkt;
     int8_t Rssi;
     while(true) {
-        uint8_t RxRslt = CC.ReceiveSync(360, &Pkt, &Rssi);
-        if(RxRslt == OK) {
-//            Uart.Printf("Rssi=%d\r", Rssi);
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Printf("%u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r", Pkt.Time,
-                        Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
-                        Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
-                        Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
-            }
-        }
+        for(uint8_t i=0; i<ARMLET_CNT; i++) {
+            // ==== TX ====
+            CC.SetChannel(i);
+            ArmletColor[i].Get(&Pkt.R, &Pkt.G, &Pkt.B);
+            Pkt.VibroPwr = ArmletVibro[i];
+            CC.TransmitSync(&Pkt);
 
+            // ==== RX ====
+            while(true) {   // Receive data until it remains
+                uint8_t RxRslt = CC.ReceiveSync(7, &Pkt, &Rssi);
+                if(RxRslt == OK) {
+    //            Uart.Printf("Rssi=%d\r", Rssi);
+                    if(UsbCDC.IsActive()) {
+                        UsbCDC.Printf("%u;   %u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r",
+                                i, Pkt.Time,
+                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+                                Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
+                                Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
+                    }
+                } // RxResult ok
+                else break;
+            } // while true
+        } // for
 
 #if 0        // Demo
         if(App.Mode == 0b0001) { // RX
@@ -136,14 +148,5 @@ uint8_t rLevel1_t::Init() {
         return OK;
     }
     else return FAILURE;
-}
-
-uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
-//    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
-    PTxPkt = PPkt;  // copy pointer
-    chEvtSignal(PThd, EVT_RADIO_NEW_CMD);
-    eventmask_t EvtMsk = chEvtWaitAny(EVT_RADIO_OK | EVT_RADIO_TIMEOUT);
-    if(EvtMsk & EVT_RADIO_OK) return OK;
-    else return TIMEOUT;
 }
 #endif

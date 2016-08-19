@@ -7,7 +7,6 @@
 
 #include "main.h"
 #include "usb_cdc.h"
-#include "color.h"
 #include "radio_lvl1.h"
 #include "led.h"
 #include "Sequences.h"
@@ -15,6 +14,9 @@
 App_t App;
 
 LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
+
+Color_t ArmletColor[ARMLET_CNT] = { clGreen, clGreen };
+uint8_t ArmletVibro[ARMLET_CNT] = { 0, 0 };
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -97,6 +99,26 @@ void App_t::OnCmd(Shell_t *PShell) {
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(OK);
+    }
+
+    else if(PCmd->NameIs("Set")) {
+        int32_t ID = 0;
+        if(PCmd->GetNextInt32(&ID) == OK) {   // Armlet ID
+            Color_t FClr;
+            uint8_t FVibro;
+            chSysLock();
+            uint8_t r = PCmd->GetArray((uint8_t*)&FClr, 3);
+            chSysUnlock();
+            if(r == OK) { // Color
+                if(PCmd->GetNextByte(&FVibro) == OK) {   // Vibro
+                    ArmletColor[ID] = FClr;
+                    ArmletVibro[ID] = FVibro;
+                }
+                else PShell->Ack(CMD_ERROR);
+            }
+            else PShell->Ack(CMD_ERROR);
+        }
+        else PShell->Ack(CMD_ERROR);
     }
 
     else PShell->Ack(CMD_UNKNOWN);

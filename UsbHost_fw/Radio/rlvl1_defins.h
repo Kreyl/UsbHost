@@ -49,14 +49,15 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
-struct State_t {
-    uint8_t Brightness[5];
-    uint8_t IRPwr, IRData;
-} __packed;
-
-struct rPkt_t {
-    uint32_t Time;
-    int16_t gyro[3], acc[3], mag[3];
+union rPkt_t  {
+    struct {
+        uint32_t Time;
+        int16_t gyro[3], acc[3], mag[3];
+    };
+    struct {
+        uint8_t R, G, B;
+        uint8_t VibroPwr;
+    };
 } __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif

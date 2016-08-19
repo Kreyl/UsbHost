@@ -12,8 +12,13 @@
 #include "uart.h"
 #include "evt_mask.h"
 #include "board.h"
+#include "color.h"
 
-#define APP_NAME            "UsbHost2_TL"
+#define APP_NAME            "UsbHost Generation"
+
+#define ARMLET_CNT          2
+extern Color_t ArmletColor[ARMLET_CNT];
+extern uint8_t ArmletVibro[ARMLET_CNT];
 
 class App_t {
 private:
