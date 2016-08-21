@@ -17,8 +17,22 @@
 #define APP_NAME            "UsbHost Generation"
 
 #define ARMLET_CNT          2
-extern Color_t ArmletColor[ARMLET_CNT];
-extern uint8_t ArmletVibro[ARMLET_CNT];
+
+struct ArmletSetup_t {
+    Color_t Clr;
+    int32_t BlinkOn, BlinkOff;
+    uint8_t Vibro;
+    ArmletSetup_t() : Clr(clGreen), BlinkOn(0), BlinkOff(0), Vibro(0) {}
+    ArmletSetup_t& operator = (const ArmletSetup_t &Right) {
+        Clr = Right.Clr;
+        BlinkOn = Right.BlinkOn;
+        BlinkOff = Right.BlinkOff;
+        Vibro = Right.Vibro;
+        return *this;
+    }
+};
+
+extern ArmletSetup_t ArmletSetup [ARMLET_CNT];
 
 class App_t {
 private:

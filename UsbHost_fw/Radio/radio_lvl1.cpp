@@ -45,8 +45,10 @@ void rLevel1_t::ITask() {
         for(uint8_t i=0; i<ARMLET_CNT; i++) {
             // ==== TX ====
             CC.SetChannel(i);
-            ArmletColor[i].Get(&Pkt.R, &Pkt.G, &Pkt.B);
-            Pkt.VibroPwr = ArmletVibro[i];
+            ArmletSetup[i].Clr.Get(&Pkt.R, &Pkt.G, &Pkt.B);
+            Pkt.BlinkOn = ArmletSetup[i].BlinkOn;
+            Pkt.BlinkOff = ArmletSetup[i].BlinkOff;
+            Pkt.VibroPwr = ArmletSetup[i].Vibro;
             CC.TransmitSync(&Pkt);
 
             // ==== RX ====

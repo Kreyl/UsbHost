@@ -61,6 +61,7 @@ union rPkt_t  {
     };
     struct {
         uint8_t R, G, B;
+        uint16_t BlinkOn, BlinkOff;
         uint8_t VibroPwr;
     };
 //    uint32_t Buf[3];
