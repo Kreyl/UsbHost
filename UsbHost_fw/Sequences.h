@@ -210,15 +210,17 @@ const LedRGBChunk_t lsqStart[] = {
         {csEnd}
 };
 
+#define USB_CLR     {0, 27, 0}
+
 const LedRGBChunk_t lsqUSB[] = {
-        {csSetup, 0, clGreen},
+        {csSetup, 0, USB_CLR},
         {csEnd}
 };
 
 const LedRGBChunk_t lsqUSBCmd[] = {
         {csSetup, 0, clBlue},
         {csWait, 135},
-        {csSetup, 0, clGreen},
+        {csSetup, 0, USB_CLR},
         {csEnd}
 };
 

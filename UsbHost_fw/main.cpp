@@ -91,6 +91,7 @@ void App_t::ITask() {
 void App_t::OnCmd(Shell_t *PShell) {
     Cmd_t *PCmd = &PShell->Cmd;
     __unused int32_t dw32 = 0;  // May be unused in some configurations
+    uint8_t DevID;
 //    PShell->Printf(">%S\r", PCmd->Name);
 //    Uart.Printf("%S\r", PCmd->Name);
 //    UsbCDC.Printf("%S\r", PCmd->Name);
@@ -99,20 +100,56 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(OK);
     }
 
-    else if(PCmd->NameIs("Set")) {
-        uint8_t Rslt = CMD_ERROR;
-        rPkt_t Pkt;
-        // Read cmd
-        if(PCmd->GetNextByte(&Pkt.ID) != OK) goto SetEnd;           // Get ID
-        if(PCmd->GetArray(Pkt.State.Brightness, 5) != OK) goto SetEnd;    // Get brightnesses
-        // Get IR params
-        if(PCmd->GetNextByte(&Pkt.State.IRPwr) != OK) goto SetEnd;
-        if(PCmd->GetNextByte(&Pkt.State.IRData) != OK) goto SetEnd;
-        // Transmit data and wait answer
-        Rslt = Radio.TxRxSync(&Pkt);
-        SetEnd:
-        PShell->Ack(Rslt);
-    } // Set
+    else if(PCmd->NameIs("GetInfo")) {
+        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
+        if(Info[DevID].IsValid()) {
+            Uart.Printf("%u, %u, %u, %u, %u, %u\r\n",
+                    Info[DevID].Type, Info[DevID].Group, Info[DevID].Mode,
+                    Info[DevID].State, Info[DevID].HitCnt, Info[DevID].LocalTime);
+        }
+        else PShell->Ack(TIMEOUT);
+    }
+
+    else if(PCmd->NameIs("Reset4Combat")) {
+        // TODO
+        PShell->Ack(OK);
+    }
+
+    else if(PCmd->NameIs("SetState")) {
+        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
+        uint8_t DState=0;
+        if(PCmd->GetNextByte(&DState) != OK) { PShell->Ack(CMD_ERROR); return; }
+        // TODO
+        PShell->Ack(OK);
+    }
+
+    else if(PCmd->NameIs("SetState4Combat")) {
+        uint8_t DState=0;
+        if(PCmd->GetNextByte(&DState) != OK) { PShell->Ack(CMD_ERROR); return; }
+        // TODO
+        PShell->Ack(OK);
+    }
+
+    else if(PCmd->NameIs("SetMode")) {
+        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
+        uint8_t DMode=0;
+        if(PCmd->GetNextByte(&DMode) != OK) { PShell->Ack(CMD_ERROR); return; }
+        // TODO
+        PShell->Ack(OK);
+    }
+
+    else if(PCmd->NameIs("SetParameter")) {
+        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
+        uint8_t ParamID=0, DParamV=0;
+        if(PCmd->GetNextByte(&ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextByte(&DParamV) != OK) { PShell->Ack(CMD_ERROR); return; }
+        // TODO
+        PShell->Ack(OK);
+    }
 
     else PShell->Ack(CMD_UNKNOWN);
 }
