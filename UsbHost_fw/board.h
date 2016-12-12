@@ -19,7 +19,7 @@
 
 #define SYS_TIM_CLK     (Clk.APBFreqHz * Clk.TimerClkMulti)
 
-#define USB_ENABLED     TRUE
+#define USB_ENABLED     FALSE
 
 #if 1 // ========================== GPIO =======================================
 // UART

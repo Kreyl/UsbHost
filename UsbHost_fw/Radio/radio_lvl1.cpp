@@ -55,14 +55,14 @@ void rLevel1_t::ITask() {
             while(true) {   // Receive data until it remains
                 uint8_t RxRslt = CC.ReceiveSync(7, &Pkt, &Rssi);
                 if(RxRslt == OK) {
-    //            Uart.Printf("Rssi=%d\r", Rssi);
-                    if(UsbCDC.IsActive()) {
-                        UsbCDC.Printf("%u;   %u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r",
+//                    Uart.Printf("Rssi=%d\r", Rssi);
+//                    if(UsbCDC.IsActive()) {
+                        Uart.Printf("%u;   %u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r",
                                 i, Pkt.Time,
                                 Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
                                 Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
                                 Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
-                    }
+//                    }
                 } // RxResult ok
                 else break;
             } // while true
