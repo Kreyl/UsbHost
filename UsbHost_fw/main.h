@@ -22,17 +22,7 @@
 #define DEV_MODE_COMBAT     1
 
 struct DevInfo_t {
-    union {
-        uint32_t DWord;
-        struct  {
-            unsigned Type: 2;
-            unsigned Group: 3;
-            unsigned Mode: 1;
-            unsigned State: 3;
-            unsigned HitCnt: 8;
-            unsigned LocalTime: 15;
-        } __packed;
-    } __packed;
+    DevInfoData_t Data;
     systime_t Timestamp = 0;
     bool IsValid() {
         if(Timestamp == 0) return false;
@@ -61,16 +51,18 @@ public:
     }
     uint8_t Cmd4Combat(RadioCmdType_t Cmd, uint8_t Data1 = 0, uint8_t Data2 = 0) {
         // Fill queue of commands
-        QLen=0;
+        QLen = 0;   // Just in case
+        uint32_t Cnt = 0;
         for(int i=0; i<DEVICE_CNT; i++) {
-            if(Info[i].IsValid() and Info[i].Mode == DEV_MODE_COMBAT) {
-                QPkt[QLen].ID = i;
-                QPkt[QLen].Cmd = (uint8_t)Cmd;
-                QPkt[QLen].Data1 = Data1;
-                QPkt[QLen].Data2 = Data2;
-                QLen++;
+            if(Info[i].IsValid() and Info[i].Data.Mode == DEV_MODE_COMBAT) {
+                QPkt[Cnt].ID = i;
+                QPkt[Cnt].Cmd = (uint8_t)Cmd;
+                QPkt[Cnt].Data1 = Data1;
+                QPkt[Cnt].Data2 = Data2;
+                Cnt++;
             }
         } // for
+        QLen = Cnt; // Do it here to make things atomic
         // Wait answer
         if(QLen != 0) {
 

@@ -10,7 +10,6 @@
 #include "main.h"
 #include "cc1101.h"
 #include "uart.h"
-//#include "led.h"
 
 //#define DBG_PINS
 
@@ -29,6 +28,7 @@
 #endif
 
 rLevel1_t Radio;
+static rPkt_t PktTxInfo;
 
 #if 1 // ================================ Task =================================
 static THD_WORKING_AREA(warLvl1Thread, 256);
@@ -40,92 +40,28 @@ static void rLvl1Thread(void *arg) {
 
 __noreturn
 void rLevel1_t::ITask() {
+    PktTxInfo.Cmd = cmdGetInfo; // Init pkt for info requests
+    uint32_t n = 0;
     while(true) {
-        int8_t Rssi;
-        uint8_t RxRslt = CC.ReceiveSync(7, &PktRx, &Rssi);
-        if(RxRslt == OK) {
-            Uart.Printf("\rRssi=%d", Rssi);
+        // Check if cmd injection is waiting
+        if(DevMgr.QLen != 0) {
 
-//            // Blink or steady?
-//            if(PktRx.BlinkOn != 0) {
-//                lsqBlink[0].Color.Set(PktRx.R, PktRx.G, PktRx.B);
-//                lsqBlink[1].Time_ms = PktRx.BlinkOn;
-//                lsqBlink[3].Time_ms = PktRx.BlinkOff;
-////                if(Led.GetCurrentSequence() == nullptr) Led.StartSequence(lsqBlink);
-//            }
-//            else {
-//                if(Led.GetCurrentSequence() != nullptr) Led.Stop();
-////                Led.SetColor(PktRx.R, PktRx.G, PktRx.B);
-//            }
-//
-//            Vibro.Set(PktRx.VibroPwr);
-//            // Send all data in queue
-//            while(TxBuf.GetFullCount() != 0) {
-//                // Get data
-//                chSysLock();
-//                rPkt_t PktTx;
-//                TxBuf.Get(&PktTx);
-//                chSysUnlock();
-//                DBG1_SET();
-//                CC.TransmitSync(&PktTx);
-//                DBG1_CLR();
-//                chThdSleepMilliseconds(1);
-//            } // while
-//        } // if rx rslt
-
-#if 0        // Demo
-        if(App.Mode == 0b0001) { // RX
-            int8_t Rssi;
-            Color_t Clr;
-            uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
-            if(RxRslt == OK) {
-                Uart.Printf("\rRssi=%d", Rssi);
-                Clr = clWhite;
-                if     (Rssi < -100) Clr = clRed;
-                else if(Rssi < -90) Clr = clYellow;
-                else if(Rssi < -80) Clr = clGreen;
-                else if(Rssi < -70) Clr = clCyan;
-                else if(Rssi < -60) Clr = clBlue;
-                else if(Rssi < -50) Clr = clMagenta;
-            }
-            else Clr = clBlack;
-            Led.SetColor(Clr);
-            chThdSleepMilliseconds(99);
         }
-        else {  // TX
-            DBG1_SET();
-            CC.TransmitSync(&Pkt);
-            DBG1_CLR();
-//            chThdSleepMilliseconds(99);
-        }
-//#else
-#endif
-
-//        uint8_t RxRslt = CC.ReceiveSync(360, &Pkt, &Rssi);
-//        if(RxRslt == OK and Pkt.DWord == THE_WORD) {
-//            Uart.Printf("Rssi=%d\r", Rssi);
-//            App.SignalEvt(EVT_SOMEONE_NEAR);
-//        }
-//        else Uart.Printf("#\r");
-
-#if 0
-        // Listen if nobody found, and do not if found
-        int8_t Rssi;
-        // Iterate channels
-        for(int32_t i = ID_MIN; i <= ID_MAX; i++) {
-            if(i == App.ID) continue;   // Do not listen self
-            CC.SetChannel(ID2RCHNL(i));
-            uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
+        else {
+            // Ask everyone for info
+            PktTxInfo.ID = n;
+            CC.TransmitSync(&PktTxInfo);
+            // Wait for answer
+            uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
             if(RxRslt == OK) {
-//                    Uart.Printf("\rCh=%d; Rssi=%d", i, Rssi);
-                App.SignalEvt(EVTMSK_SOMEONE_NEAR);
-                break; // No need to listen anymore if someone already found
-            }
-        } // for
-        CC.SetChannel(ID2RCHNL(App.ID));    // Set self channel back
-        DBG2_CLR();
-        TryToSleep(RX_SLEEP_T_MS);
-#endif
+                Uart.Printf("ID=%u; Rssi=%d\r", Rssi);
+                DevInfo_t *PInfo = &DevMgr.Info[n];
+                PInfo->Data = PktRx.DevInfoData;    // Save what received
+                PInfo->Timestamp = chVTGetSystemTimeX();
+            } // if RxRslt ok
+            n++;
+            if(n >= DEVICE_CNT) n = 0;
+        }
     } // while true
 }
 #endif // task

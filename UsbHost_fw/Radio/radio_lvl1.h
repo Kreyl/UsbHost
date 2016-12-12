@@ -54,6 +54,22 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
+union DevInfoData_t {
+    uint32_t DWord;
+    struct  {
+        unsigned Type: 2;
+        unsigned Group: 3;
+        unsigned Mode: 1;
+        unsigned State: 3;
+        unsigned HitCnt: 8;
+        unsigned LocalTime: 15;
+    } __packed;
+    DevInfoData_t& operator = (const DevInfoData_t &Right) {
+        DWord = Right.DWord;
+        return *this;
+    }
+} __packed;
+
 union rPkt_t  {
     uint32_t __dummy;
     struct {
@@ -62,14 +78,7 @@ union rPkt_t  {
         uint8_t Data1;
         uint8_t Data2;
     };
-
-    //    uint32_t Buf[3];
-//    rPkt_t& operator = (const rPkt_t &Right) {
-//        Buf[0] = Right.Buf[0];
-//        Buf[1] = Right.Buf[1];
-//        Buf[2] = Right.Buf[2];
-//        return *this;
-//    }
+    DevInfoData_t DevInfoData;
 } __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif

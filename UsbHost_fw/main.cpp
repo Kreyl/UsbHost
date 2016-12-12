@@ -105,11 +105,11 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("GetInfo")) {
         if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        DevInfo_t *PInfo = &DevMgr.Info[DevID];
+        DevInfoData_t *PData = &DevMgr.Info[DevID].Data;
         if(DevMgr.Info[DevID].IsValid()) {
             PShell->Printf("%u, %u, %u, %u, %u, %u\r\n",
-                    PInfo->Type, PInfo->Group, PInfo->Mode,
-                    PInfo->State, PInfo->HitCnt, PInfo->LocalTime);
+                    PData->Type, PData->Group, PData->Mode,
+                    PData->State, PData->HitCnt, PData->LocalTime);
         }
         else PShell->Ack(TIMEOUT);
         //PShell->Printf("%u, %u, %u, %u, %u, %u\r\n", 0, 1, 0, 2, 4, 630);
