@@ -10,21 +10,22 @@
 #include "main.h"
 #include "cc1101.h"
 #include "uart.h"
-#include "board.h"
-
-#include "usb_cdc.h"
+//#include "led.h"
 
 //#define DBG_PINS
 
 #ifdef DBG_PINS
 #define DBG_GPIO1   GPIOB
-#define DBG_PIN1    12
-#define DBG1_SET()  PinSet(DBG_GPIO1, DBG_PIN1)
-#define DBG1_CLR()  PinClear(DBG_GPIO1, DBG_PIN1)
-#define DBG_GPIO2   GPIOB
-#define DBG_PIN2    13
-#define DBG2_SET()  PinSet(DBG_GPIO2, DBG_PIN2)
-#define DBG2_CLR()  PinClear(DBG_GPIO2, DBG_PIN2)
+#define DBG_PIN1    0
+#define DBG1_SET()  PinSetHi(DBG_GPIO1, DBG_PIN1)
+#define DBG1_CLR()  PinSetLo(DBG_GPIO1, DBG_PIN1)
+//#define DBG_GPIO2   GPIOB
+//#define DBG_PIN2    9
+//#define DBG2_SET()  PinSet(DBG_GPIO2, DBG_PIN2)
+//#define DBG2_CLR()  PinClear(DBG_GPIO2, DBG_PIN2)
+#else
+#define DBG1_SET()
+#define DBG1_CLR()
 #endif
 
 rLevel1_t Radio;
@@ -40,40 +41,37 @@ static void rLvl1Thread(void *arg) {
 __noreturn
 void rLevel1_t::ITask() {
     while(true) {
-        eventmask_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
+        int8_t Rssi;
+        uint8_t RxRslt = CC.ReceiveSync(7, &PktRx, &Rssi);
+        if(RxRslt == OK) {
+            Uart.Printf("\rRssi=%d", Rssi);
 
-        if(EvtMsk & EVT_RADIO_NEW_CMD) {
-            if(RChannel != OldRChannel) {
-                CC.SetChannel(RChannel);
-                OldRChannel = RChannel;
-            }
-            // Make several retries
-            int Retries = RETRY_CNT;
-            while(true) {
-                Uart.Printf("Try %d\r", Retries);
-                // Transmit pkt
-                CC.TransmitSync(PTxPkt);
-                // Wait answer
-                int8_t Rssi;
-                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &RxPkt, &Rssi);
-                if(RxRslt == OK) {
-                    Uart.Printf("\rRssi=%d", Rssi);
-                    // Check if good answer received, repeat if not
-                    if(RxPkt.ID == PTxPkt->ID and RxPkt.Status == OK) {
-                        App.SignalEvt(EVT_RADIO_OK);
-                        break;
-                    }
-                }
-                // Timeout or bad answer
-                if(--Retries <= 0) {
-                    App.SignalEvt(EVT_RADIO_TIMEOUT);
-                    break;
-                }
-                // Wait random time
-                int Delay = Random(RETRY_T_MIN_MS, RETRY_T_MAX_MS);
-                chThdSleepMilliseconds(MS2ST(Delay));
-            } // while(true)
-        }
+//            // Blink or steady?
+//            if(PktRx.BlinkOn != 0) {
+//                lsqBlink[0].Color.Set(PktRx.R, PktRx.G, PktRx.B);
+//                lsqBlink[1].Time_ms = PktRx.BlinkOn;
+//                lsqBlink[3].Time_ms = PktRx.BlinkOff;
+////                if(Led.GetCurrentSequence() == nullptr) Led.StartSequence(lsqBlink);
+//            }
+//            else {
+//                if(Led.GetCurrentSequence() != nullptr) Led.Stop();
+////                Led.SetColor(PktRx.R, PktRx.G, PktRx.B);
+//            }
+//
+//            Vibro.Set(PktRx.VibroPwr);
+//            // Send all data in queue
+//            while(TxBuf.GetFullCount() != 0) {
+//                // Get data
+//                chSysLock();
+//                rPkt_t PktTx;
+//                TxBuf.Get(&PktTx);
+//                chSysUnlock();
+//                DBG1_SET();
+//                CC.TransmitSync(&PktTx);
+//                DBG1_CLR();
+//                chThdSleepMilliseconds(1);
+//            } // while
+//        } // if rx rslt
 
 #if 0        // Demo
         if(App.Mode == 0b0001) { // RX
@@ -103,39 +101,30 @@ void rLevel1_t::ITask() {
 //#else
 #endif
 
-#if 0
-        // ==== Transmitter ====
-        if(App.MustTransmit) {
-            if(App.ID != OldID) {
-                OldID = App.ID;
-                CC.SetChannel(ID2RCHNL(App.ID));
-                Pkt.DWord = App.ID;
-            }
-            DBG1_SET();
-            CC.TransmitSync(&Pkt);
-            DBG1_CLR();
-        }
+//        uint8_t RxRslt = CC.ReceiveSync(360, &Pkt, &Rssi);
+//        if(RxRslt == OK and Pkt.DWord == THE_WORD) {
+//            Uart.Printf("Rssi=%d\r", Rssi);
+//            App.SignalEvt(EVT_SOMEONE_NEAR);
+//        }
+//        else Uart.Printf("#\r");
 
-        // ==== Receiver ====
-        else {
-            DBG2_SET();
-            // Listen if nobody found, and do not if found
-            int8_t Rssi;
-            // Iterate channels
-            for(int32_t i = ID_MIN; i <= ID_MAX; i++) {
-                if(i == App.ID) continue;   // Do not listen self
-                CC.SetChannel(ID2RCHNL(i));
-                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
-                if(RxRslt == OK) {
+#if 0
+        // Listen if nobody found, and do not if found
+        int8_t Rssi;
+        // Iterate channels
+        for(int32_t i = ID_MIN; i <= ID_MAX; i++) {
+            if(i == App.ID) continue;   // Do not listen self
+            CC.SetChannel(ID2RCHNL(i));
+            uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
+            if(RxRslt == OK) {
 //                    Uart.Printf("\rCh=%d; Rssi=%d", i, Rssi);
-                    App.SignalEvt(EVTMSK_SOMEONE_NEAR);
-                    break; // No need to listen anymore if someone already found
-                }
-            } // for
-            CC.SetChannel(ID2RCHNL(App.ID));    // Set self channel back
-            DBG2_CLR();
-            TryToSleep(RX_SLEEP_T_MS);
-        }
+                App.SignalEvt(EVTMSK_SOMEONE_NEAR);
+                break; // No need to listen anymore if someone already found
+            }
+        } // for
+        CC.SetChannel(ID2RCHNL(App.ID));    // Set self channel back
+        DBG2_CLR();
+        TryToSleep(RX_SLEEP_T_MS);
 #endif
     } // while true
 }
@@ -145,25 +134,17 @@ void rLevel1_t::ITask() {
 uint8_t rLevel1_t::Init() {
 #ifdef DBG_PINS
     PinSetupOut(DBG_GPIO1, DBG_PIN1, omPushPull);
-    PinSetupOut(DBG_GPIO2, DBG_PIN2, omPushPull);
-#endif
-    // Init radioIC
+//    PinSetupOut(DBG_GPIO2, DBG_PIN2, omPushPull);
+#endif    // Init radioIC
     if(CC.Init() == OK) {
-        CC.SetTxPower(CC_PwrPlus7dBm);
+        CC.SetTxPower(CC_PwrPlus5dBm);
         CC.SetPktSize(RPKT_LEN);
+        CC.SetChannel(2);
+//        CC.EnterPwrDown();
         // Thread
         PThd = chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
     }
     else return FAILURE;
-}
-
-uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
-//    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
-    PTxPkt = PPkt;  // copy pointer
-    chEvtSignal(PThd, EVT_RADIO_NEW_CMD);
-    eventmask_t EvtMsk = chEvtWaitAny(EVT_RADIO_OK | EVT_RADIO_TIMEOUT);
-    if(EvtMsk & EVT_RADIO_OK) return OK;
-    else return TIMEOUT;
 }
 #endif

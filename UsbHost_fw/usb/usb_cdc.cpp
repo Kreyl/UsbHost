@@ -115,6 +115,7 @@ static THD_FUNCTION(ThdCDCRX, arg) {
                     App.SignalEvtI(EVT_USB_NEW_CMD);
                     chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
                     chSysUnlock();  // Will be here when application signals that cmd processed
+                    chThdSleepMilliseconds(18);
                 }
             } // if >0
         } // if active
