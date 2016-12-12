@@ -45,7 +45,7 @@ void rLevel1_t::ITask() {
     while(true) {
         // Check if cmd injection is waiting
         if(DevMgr.QLen != 0) {
-
+            DevMgr.QLen = 0;// XXX
         }
         else {
             // Ask everyone for info
