@@ -45,16 +45,33 @@ void rLevel1_t::ITask() {
     while(true) {
         // Check if cmd injection is waiting
         if(DevMgr.QLen != 0) {
-            DevMgr.QLen = 0;// XXX
+            LastPktRx.Data1 = FAILURE;  // Set Reply result
+            rPkt_t *pPktTx;
+            while((pPktTx = DevMgr.GetNextPktFromQ()) != nullptr) {
+                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
+                for(int i=0; i<RETRY_CNT; i++) {
+                    Uart.Printf("  Try %u\r", i);
+                    CC.TransmitSync(pPktTx);
+                    // Wait for answer
+                    uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
+                    if(RxRslt == OK) {
+                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
+                        LastPktRx = PktRx;
+                        break; // Stop trying
+                    } // if RxRslt ok
+                } // for
+            } // while
+            // Awake asker thread
+            DevMgr.Awake();
         }
         else {
             // Ask everyone for info
             PktTxInfo.ID = n;
             CC.TransmitSync(&PktTxInfo);
             // Wait for answer
-            uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
+            uint8_t RxRslt = CC.ReceiveSync(11, &PktRx, &Rssi);
             if(RxRslt == OK) {
-                Uart.Printf("ID=%u; Rssi=%d\r", Rssi);
+                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", n, Rssi);
                 DevInfo_t *PInfo = &DevMgr.Info[n];
                 PInfo->Data = PktRx.DevInfoData;    // Save what received
                 PInfo->Timestamp = chVTGetSystemTimeX();

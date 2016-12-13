@@ -93,7 +93,6 @@ void App_t::OnCmd(Shell_t *PShell) {
     uint8_t DevID, r;
 //    PShell->Printf(">%S\r", PCmd->Name);
 //    Uart.Printf("%S\r", PCmd->Name);
-//    UsbCDC.Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(OK);
@@ -105,6 +104,7 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("GetInfo")) {
         if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
         DevInfoData_t *PData = &DevMgr.Info[DevID].Data;
         if(DevMgr.Info[DevID].IsValid()) {
             PShell->Printf("%u, %u, %u, %u, %u, %u\r\n",
@@ -112,7 +112,8 @@ void App_t::OnCmd(Shell_t *PShell) {
                     PData->State, PData->HitCnt, PData->LocalTime);
         }
         else PShell->Ack(TIMEOUT);
-        //PShell->Printf("%u, %u, %u, %u, %u, %u\r\n", 0, 1, 0, 2, 4, 630);
+        // DEBUG
+//        PShell->Printf("%u, %u, %u, %u, %u, %u\r\n", 0, 1, 0, 2, 4, 630);
     }
 
     else if(PCmd->NameIs("Reset4Combat")) {
@@ -122,6 +123,7 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("SetState")) {
         if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
         uint8_t DState=0;
         if(PCmd->GetNextByte(&DState) != OK) { PShell->Ack(CMD_ERROR); return; }
         r = DevMgr.Cmd4One(DevID, cmdSetState, DState);
@@ -137,6 +139,7 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("SetMode")) {
         if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
         uint8_t DMode=0;
         if(PCmd->GetNextByte(&DMode) != OK) { PShell->Ack(CMD_ERROR); return; }
         r = DevMgr.Cmd4One(DevID, cmdSetMode, DMode);
@@ -145,6 +148,7 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("SetParameter")) {
         if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
         uint8_t ParamID=0, DParamV=0;
         if(PCmd->GetNextByte(&ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
         if(PCmd->GetNextByte(&DParamV) != OK) { PShell->Ack(CMD_ERROR); return; }

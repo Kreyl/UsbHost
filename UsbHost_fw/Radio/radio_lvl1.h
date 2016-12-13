@@ -71,7 +71,7 @@ union DevInfoData_t {
 } __packed;
 
 union rPkt_t  {
-    uint32_t __dummy;
+    uint32_t DWord;
     struct {
         uint8_t ID;
         uint8_t Cmd;
@@ -79,6 +79,10 @@ union rPkt_t  {
         uint8_t Data2;
     };
     DevInfoData_t DevInfoData;
+    rPkt_t& operator = (const rPkt_t &Right) {
+        DWord = Right.DWord;
+        return *this;
+    }
 } __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif
@@ -98,6 +102,7 @@ union rPkt_t  {
 #define RX_T_MS                 180      // pkt duration at 10k is around 12 ms
 #define RX_SLEEP_T_MS           810
 #define MIN_SLEEP_DURATION_MS   18
+#define RETRY_CNT               4
 
 #endif
 
@@ -153,17 +158,17 @@ private:
 public:
     thread_t *PThd;
     int8_t Rssi;
-    CircBuf_t<rPkt_t, 9> TxBuf;
+//    CircBuf_t<rPkt_t, 9> TxBuf;
     uint8_t Init();
-    RadioData_t TxData, RxData;
-    void Reply() {}
-    void Reply(uint8_t b0) {
-        TxData.DWord = b0;
-        Reply();
-    }
+    rPkt_t LastPktRx;
+//    RadioData_t TxData, RxData;
+//    void Reply() {}
+//    void Reply(uint8_t b0) {
+//        TxData.DWord = b0;
+//        Reply();
+//    }
     // Inner use
     void ITask();
-//    rLevel1_t(): PThd(nullptr) Pkt({0}) {}
 };
 
 extern rLevel1_t Radio;
