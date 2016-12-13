@@ -70,16 +70,19 @@ union DevInfoData_t {
     }
 } __packed;
 
-union rPkt_t  {
-    uint32_t DWord;
-    struct {
-        uint8_t ID;
-        uint8_t Cmd;
-        uint8_t Data1;
-        uint8_t Data2;
-    };
-    DevInfoData_t DevInfoData;
+struct rPkt_t  {
+    union {
+        uint32_t DWord;
+        DevInfoData_t DevInfoData;
+        struct {
+            uint8_t Cmd;
+            uint8_t Data1;
+            uint8_t Data2;
+        };
+    } __packed;
+    uint8_t ID;
     rPkt_t& operator = (const rPkt_t &Right) {
+        ID = Right.ID;
         DWord = Right.DWord;
         return *this;
     }
@@ -123,30 +126,6 @@ enum ParamID_t {
     parReloadTime = 6
 };
 
-union RadioData_t {
-    uint32_t DWord;
-    // GetInfo reply
-    struct {
-        unsigned Type: 2;
-        unsigned Group: 3;
-        unsigned Mode: 1;
-        unsigned State: 3;
-        unsigned HitCnt: 8;
-        unsigned LocalTime: 15;
-    } Info __packed;
-    // Command
-    struct {
-        uint8_t CmdType;
-        uint8_t ID;
-        union {
-            uint8_t NewState;
-            uint8_t NewMode;
-            uint8_t ParamID;
-        };
-        uint8_t ParamValue;
-    } __packed;
-} __packed;
-
 class rLevel1_t {
 private:
     rPkt_t PktRx;
@@ -154,19 +133,11 @@ private:
         if(SleepDuration >= MIN_SLEEP_DURATION_MS) CC.EnterPwrDown();
         chThdSleepMilliseconds(SleepDuration);
     }
-    uint8_t MsgID;
 public:
-    thread_t *PThd;
+    thread_reference_t ThdRef;
     int8_t Rssi;
-//    CircBuf_t<rPkt_t, 9> TxBuf;
     uint8_t Init();
     rPkt_t LastPktRx;
-//    RadioData_t TxData, RxData;
-//    void Reply() {}
-//    void Reply(uint8_t b0) {
-//        TxData.DWord = b0;
-//        Reply();
-//    }
     // Inner use
     void ITask();
 };

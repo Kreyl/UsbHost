@@ -48,16 +48,18 @@ void rLevel1_t::ITask() {
             LastPktRx.Data1 = FAILURE;  // Set Reply result
             rPkt_t *pPktTx;
             while((pPktTx = DevMgr.GetNextPktFromQ()) != nullptr) {
-                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
+//                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
                 for(int i=0; i<RETRY_CNT; i++) {
-                    Uart.Printf("  Try %u\r", i);
+//                    Uart.Printf("  Try %u\r", i);
                     CC.TransmitSync(pPktTx);
                     // Wait for answer
                     uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
                     if(RxRslt == OK) {
-                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
-                        LastPktRx = PktRx;
-                        break; // Stop trying
+//                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
+                        if(PktRx.ID == pPktTx->ID) { //Check replier
+                            LastPktRx = PktRx;
+                            break; // Stop trying
+                        }
                     } // if RxRslt ok
                 } // for
             } // while
@@ -71,10 +73,12 @@ void rLevel1_t::ITask() {
             // Wait for answer
             uint8_t RxRslt = CC.ReceiveSync(11, &PktRx, &Rssi);
             if(RxRslt == OK) {
-                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", n, Rssi);
-                DevInfo_t *PInfo = &DevMgr.Info[n];
-                PInfo->Data = PktRx.DevInfoData;    // Save what received
-                PInfo->Timestamp = chVTGetSystemTimeX();
+//                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
+                if(PktRx.ID == n) {
+                    DevInfo_t *PInfo = &DevMgr.Info[n];
+                    PInfo->Data = PktRx.DevInfoData;    // Save what received
+                    PInfo->Timestamp = chVTGetSystemTimeX();
+                }
             } // if RxRslt ok
             n++;
             if(n >= DEVICE_CNT) n = 0;
@@ -95,7 +99,7 @@ uint8_t rLevel1_t::Init() {
         CC.SetChannel(2);
 //        CC.EnterPwrDown();
         // Thread
-        PThd = chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
+        chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
     }
     else return FAILURE;
