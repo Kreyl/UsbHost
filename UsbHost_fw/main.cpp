@@ -36,29 +36,37 @@ int main(void) {
 
     Led.Init();
 
+    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
+    else Led.StartSequence(lsqFailure);
+    chThdSleepMilliseconds(810);
+
 #if USB_ENABLED
     UsbCDC.Init();
     chThdSleepMilliseconds(45);
     // Enable HSI48
-    chSysLock();
-    while(Clk.SwitchTo(csHSI48) != OK) {
-        Uart.PrintfI("Hsi48 Fail\r");
-        Led.SetColor(clRed);
-        chThdSleepS(MS2ST(207));
-        Led.SetColor(clBlack);
-        chThdSleepS(MS2ST(207));
+    uint8_t ClkState = FAILURE;
+    while(true) {
+        chSysLock();
+        ClkState = Clk.SwitchTo(csHSI48);
+        chSysUnlock();
+        if(ClkState == OK) {
+            Led.StartSequence(lsq48Ok);
+            break;
+        }
+        else {
+            Uart.PrintfI("Hsi48 Fail\r");
+            Led.StartSequence(lsq48Fail);
+            chThdSleepMilliseconds(MS2ST(540));
+        }
     }
     Clk.UpdateFreqValues();
-    chSysUnlock();
     Clk.PrintFreqs();
     Clk.SelectUSBClock_HSI48();
     Clk.EnableCRS();
     UsbCDC.Connect();
 #endif
 
-    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
-    else Led.StartSequence(lsqFailure);
-    chThdSleepMilliseconds(1206);
+
 
     // Main cycle
     App.ITask();

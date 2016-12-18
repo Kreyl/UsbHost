@@ -206,9 +206,28 @@ const LedRGBChunk_t lsqFailure[] = {
 };
 
 const LedRGBChunk_t lsqStart[] = {
-        {csSetup, 720, ((Color_t){9, 9, 0})},
+        {csSetup, 0, clRed},
+        {csWait, 135},
+        {csSetup, 0, clGreen},
+        {csWait, 135},
+        {csSetup, 0, clBlue},
+        {csWait, 135},
+        {csSetup, 0, clBlack},
         {csEnd}
 };
+
+const LedRGBChunk_t lsq48Ok[] = {
+        {csSetup, 0, {0,4,0}},
+        {csEnd}
+};
+const LedRGBChunk_t lsq48Fail[] = {
+        {csSetup, 0, clYellow},
+        {csWait, 135},
+        {csSetup, 0, clBlack},
+        {csWait, 135},
+        {csEnd}
+};
+
 
 #define USB_CLR     {0, 27, 0}
 
