@@ -54,77 +54,32 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
-union DevInfoData_t {
+union rPkt_t  {
     uint32_t DWord;
-    struct  {
-        unsigned Type: 2;
-        unsigned Group: 3;
-        unsigned Mode: 1;
-        unsigned State: 3;
-        unsigned HitCnt: 8;
-        unsigned LocalTime: 15;
+    struct {
+        uint8_t Cmd;
+        union {
+            int16_t t[8];   // Temperature
+            struct {
+                uint8_t Data1;
+                uint8_t Data2;
+            } __packed;
+            uint8_t Result;
+        } __packed;
     } __packed;
-    DevInfoData_t& operator = (const DevInfoData_t &Right) {
-        DWord = Right.DWord;
-        return *this;
-    }
-} __packed;
-
-struct rPkt_t  {
-    union {
-        uint32_t DWord;
-        DevInfoData_t DevInfoData;
-        struct {
-            uint8_t Cmd;
-            uint8_t Data1;
-            uint8_t Data2;
-        };
-    } __packed;
-    uint8_t ID;
-    rPkt_t& operator = (const rPkt_t &Right) {
-        ID = Right.ID;
-        DWord = Right.DWord;
-        return *this;
-    }
+//    rPkt_t& operator = (const rPkt_t &Right) {
+//        DWord = Right.DWord;
+//        return *this;
+//    }
 } __packed;
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif
 
-#define THE_WORD        0xCA115EA1
-
-// ==== Sizes ====
-#define RXTABLE_SZ      54
-#define RXTABLE_MAX_CNT 3   // Do not receive if this count reached. Will not indicate more anyway.
-
-#if 1 // ======================= Channels & cycles =============================
-#define RCHNL_MIN       0
-#define ID2RCHNL(ID)    (RCHNL_MIN + ID)
-#endif
-
-#if 1 // =========================== Timings ===================================
-#define RX_T_MS                 180      // pkt duration at 10k is around 12 ms
-#define RX_SLEEP_T_MS           810
 #define MIN_SLEEP_DURATION_MS   18
 #define RETRY_CNT               4
-
-#endif
-
-enum RadioCmdType_t {
-    cmdGetInfo = 0,
-    cmdSetState = 1,
-    cmdSetMode = 2,
-    cmdSetParameter = 3,
-    cmdReset = 4
-};
-
-enum ParamID_t {
-    parDefaultHitCnt = 1,
-    parCurrentHitCnt = 2,
-    parGroup = 3,
-    parIRPower = 4,
-    parIRDamage = 5,
-    parReloadTime = 6
-};
+#define RX_T_MS                 27
+#define RETRY_T_MIN_MS          4
+#define RETRY_T_MAX_MS          18
 
 class rLevel1_t {
 private:
@@ -138,8 +93,9 @@ public:
     int8_t Rssi;
     uint8_t Init();
     rPkt_t LastPktRx;
+    uint8_t TxAndGetAnswer(rPkt_t *PPkt);
     // Inner use
-    void ITask();
+//    void ITask();
 };
 
 extern rLevel1_t Radio;

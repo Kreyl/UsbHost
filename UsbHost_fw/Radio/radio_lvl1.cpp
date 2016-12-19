@@ -28,9 +28,8 @@
 #endif
 
 rLevel1_t Radio;
-static rPkt_t PktTxInfo;
 
-#if 1 // ================================ Task =================================
+#if 0 // ================================ Task =================================
 static THD_WORKING_AREA(warLvl1Thread, 256);
 __noreturn
 static void rLvl1Thread(void *arg) {
@@ -40,49 +39,49 @@ static void rLvl1Thread(void *arg) {
 
 __noreturn
 void rLevel1_t::ITask() {
-    PktTxInfo.Cmd = cmdGetInfo; // Init pkt for info requests
-    uint32_t n = 0;
+//    uint32_t n = 0;
     while(true) {
-        // Check if cmd injection is waiting
-        if(DevMgr.QLen != 0) {
-            LastPktRx.Data1 = FAILURE;  // Set Reply result
-            rPkt_t *pPktTx;
-            while((pPktTx = DevMgr.GetNextPktFromQ()) != nullptr) {
-//                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
-                for(int i=0; i<RETRY_CNT; i++) {
-//                    Uart.Printf("  Try %u\r", i);
-                    CC.TransmitSync(pPktTx);
-                    // Wait for answer
-                    uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
-                    if(RxRslt == OK) {
-//                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
-                        if(PktRx.ID == pPktTx->ID) { //Check replier
-                            LastPktRx = PktRx;
-                            break; // Stop trying
-                        }
-                    } // if RxRslt ok
-                } // for
-            } // while
-            // Awake asker thread
-            DevMgr.Awake();
-        }
-        else {
-            // Ask everyone for info
-            PktTxInfo.ID = n;
-            CC.TransmitSync(&PktTxInfo);
-            // Wait for answer
-            uint8_t RxRslt = CC.ReceiveSync(11, &PktRx, &Rssi);
-            if(RxRslt == OK) {
-//                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
-                if(PktRx.ID == n) {
-                    DevInfo_t *PInfo = &DevMgr.Info[n];
-                    PInfo->Data = PktRx.DevInfoData;    // Save what received
-                    PInfo->Timestamp = chVTGetSystemTimeX();
-                }
-            } // if RxRslt ok
-            n++;
-            if(n >= DEVICE_CNT) n = 0;
-        }
+        chThdSleepMilliseconds(999);
+//        // Check if cmd injection is waiting
+//        if(DevMgr.QLen != 0) {
+//            LastPktRx.Data1 = FAILURE;  // Set Reply result
+//            rPkt_t *pPktTx;
+//            while((pPktTx = DevMgr.GetNextPktFromQ()) != nullptr) {
+////                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
+//                for(int i=0; i<RETRY_CNT; i++) {
+////                    Uart.Printf("  Try %u\r", i);
+//                    CC.TransmitSync(pPktTx);
+//                    // Wait for answer
+//                    uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
+//                    if(RxRslt == OK) {
+////                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
+//                        if(PktRx.ID == pPktTx->ID) { //Check replier
+//                            LastPktRx = PktRx;
+//                            break; // Stop trying
+//                        }
+//                    } // if RxRslt ok
+//                } // for
+//            } // while
+//            // Awake asker thread
+//            DevMgr.Awake();
+//        }
+//        else {
+//            // Ask everyone for info
+//            PktTxInfo.ID = n;
+//            CC.TransmitSync(&PktTxInfo);
+//            // Wait for answer
+//            uint8_t RxRslt = CC.ReceiveSync(11, &PktRx, &Rssi);
+//            if(RxRslt == OK) {
+////                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
+//                if(PktRx.ID == n) {
+//                    DevInfo_t *PInfo = &DevMgr.Info[n];
+//                    PInfo->Data = PktRx.DevInfoData;    // Save what received
+//                    PInfo->Timestamp = chVTGetSystemTimeX();
+//                }
+//            } // if RxRslt ok
+//            n++;
+//            if(n >= DEVICE_CNT) n = 0;
+//        }
     } // while true
 }
 #endif // task
@@ -96,12 +95,35 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == OK) {
         CC.SetTxPower(CC_PwrPlus5dBm);
         CC.SetPktSize(RPKT_LEN);
-        CC.SetChannel(2);
+        CC.SetChannel(3);
 //        CC.EnterPwrDown();
         // Thread
-        chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
+//        chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
     }
     else return FAILURE;
+}
+
+uint8_t rLevel1_t::TxAndGetAnswer(rPkt_t *PPkt) {
+    // Make several retries
+    int Retries = RETRY_CNT;
+    while(true) {
+        Uart.Printf("Try %d\r", Retries);
+        // Transmit pkt
+        systime_t start = chVTGetSystemTimeX();
+        CC.TransmitSync(PPkt);
+        Uart.Printf("elapsed %u\r", ST2MS(chVTTimeElapsedSinceX(start)));
+        // Wait answer
+        uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &LastPktRx, &Rssi);
+        if(RxRslt == OK) {
+            Uart.Printf("\rRssi=%d", Rssi);
+            if(LastPktRx.Cmd == 0) return OK;   // GetInfo has no ack inside
+            else return LastPktRx.Result;
+        }
+        // Timeout or bad answer
+        if(--Retries <= 0) return TIMEOUT;
+        // Wait random time
+        chThdSleepMilliseconds(MS2ST(11));
+    } // while(true)
 }
 #endif

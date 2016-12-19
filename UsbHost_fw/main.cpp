@@ -15,8 +15,6 @@ App_t App;
 
 LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
 
-DeviceMgr_t DevMgr;
-
 int main(void) {
     // ==== Setup clock frequency ====
     Clk.EnablePrefetch();
@@ -66,8 +64,6 @@ int main(void) {
     UsbCDC.Connect();
 #endif
 
-
-
     // Main cycle
     App.ITask();
 }
@@ -98,7 +94,6 @@ void App_t::ITask() {
 void App_t::OnCmd(Shell_t *PShell) {
     Cmd_t *PCmd = &PShell->Cmd;
     __unused int32_t dw32 = 0;  // May be unused in some configurations
-    uint8_t DevID, r;
 //    PShell->Printf(">%S\r", PCmd->Name);
 //    Uart.Printf("%S\r", PCmd->Name);
     // Handle command
@@ -111,57 +106,25 @@ void App_t::OnCmd(Shell_t *PShell) {
     }
 
     else if(PCmd->NameIs("GetInfo")) {
-        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
-        DevInfoData_t *PData = &DevMgr.Info[DevID].Data;
-        if(DevMgr.Info[DevID].IsValid()) {
-            PShell->Printf("%u, %u, %u, %u, %u, %u\r\n",
-                    PData->Type, PData->Group, PData->Mode,
-                    PData->State, PData->HitCnt, PData->LocalTime);
+        rPkt_t Pkt;
+        Pkt.Cmd = 0;    // GetInfo
+        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
+        if(Rslt == OK) {
+            rPkt_t *p = &Radio.LastPktRx;
+            PShell->Printf("Info %d %d %d %d %d %d %d %d\r\n",
+                        p->t[0], p->t[1], p->t[2], p->t[3], p->t[4], p->t[5], p->t[6], p->t[7]);
         }
-        else PShell->Ack(TIMEOUT);
-        // DEBUG
-//        PShell->Printf("%u, %u, %u, %u, %u, %u\r\n", 0, 1, 0, 2, 4, 630);
+        else PShell->Ack(Rslt);
     }
 
-    else if(PCmd->NameIs("Reset4Combat")) {
-        r = DevMgr.Cmd4Combat(cmdReset);
-        PShell->Ack(r);
-    }
-
-    else if(PCmd->NameIs("SetState")) {
-        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
-        uint8_t DState=0;
-        if(PCmd->GetNextByte(&DState) != OK) { PShell->Ack(CMD_ERROR); return; }
-        r = DevMgr.Cmd4One(DevID, cmdSetState, DState);
-        PShell->Ack(r);
-    }
-
-    else if(PCmd->NameIs("SetState4Combat")) {
-        uint8_t DState=0;
-        if(PCmd->GetNextByte(&DState) != OK) { PShell->Ack(CMD_ERROR); return; }
-        r = DevMgr.Cmd4Combat(cmdSetState, DState);
-        PShell->Ack(r);
-    }
-
-    else if(PCmd->NameIs("SetMode")) {
-        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
-        uint8_t DMode=0;
-        if(PCmd->GetNextByte(&DMode) != OK) { PShell->Ack(CMD_ERROR); return; }
-        r = DevMgr.Cmd4One(DevID, cmdSetMode, DMode);
-        PShell->Ack(r);
-    }
-
-    else if(PCmd->NameIs("SetParameter")) {
-        if(PCmd->GetNextByte(&DevID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(DevID >= DEVICE_CNT) { PShell->Ack(CMD_ERROR); return; }
-        uint8_t ParamID=0, DParamV=0;
-        if(PCmd->GetNextByte(&ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(PCmd->GetNextByte(&DParamV) != OK) { PShell->Ack(CMD_ERROR); return; }
-        r = DevMgr.Cmd4One(DevID, cmdSetParameter, ParamID, DParamV);
-        PShell->Ack(r);
+    else if(PCmd->NameIs("SetParam")) {
+        rPkt_t Pkt;
+        Pkt.Cmd = 1;    // SetParam
+        if(PCmd->GetNextByte(&Pkt.Data1) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextByte(&Pkt.Data2) != OK) { PShell->Ack(CMD_ERROR); return; }
+//        Uart.Printf("%S %d %d\r", PCmd->Name, Pkt.Data1, Pkt.Data2);
+        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
+        PShell->Ack(Rslt);
     }
 
     else PShell->Ack(CMD_UNKNOWN);
