@@ -79,7 +79,7 @@ union rPkt_t  {
 #define RETRY_CNT               4
 #define RX_T_MS                 27
 #define RETRY_T_MIN_MS          4
-#define RETRY_T_MAX_MS          18
+#define RETRY_T_MAX_MS          27
 
 class rLevel1_t {
 private:

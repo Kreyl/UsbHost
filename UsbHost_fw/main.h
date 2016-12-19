@@ -14,7 +14,7 @@
 #include "board.h"
 #include "radio_lvl1.h"
 
-#define APP_NAME            "UsbHost2_Robotlon"
+#define APP_NAME            "UsbHost2_Python"
 
 #define DEVICE_CNT          32
 #define NO_REPLY_TIMEOUT_ms 4500

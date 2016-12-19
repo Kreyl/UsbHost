@@ -108,11 +108,9 @@ uint8_t rLevel1_t::TxAndGetAnswer(rPkt_t *PPkt) {
     // Make several retries
     int Retries = RETRY_CNT;
     while(true) {
-        Uart.Printf("Try %d\r", Retries);
+//        Uart.Printf("Try %d\r", Retries);
         // Transmit pkt
-        systime_t start = chVTGetSystemTimeX();
         CC.TransmitSync(PPkt);
-        Uart.Printf("elapsed %u\r", ST2MS(chVTTimeElapsedSinceX(start)));
         // Wait answer
         uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &LastPktRx, &Rssi);
         if(RxRslt == OK) {
@@ -123,7 +121,8 @@ uint8_t rLevel1_t::TxAndGetAnswer(rPkt_t *PPkt) {
         // Timeout or bad answer
         if(--Retries <= 0) return TIMEOUT;
         // Wait random time
-        chThdSleepMilliseconds(MS2ST(11));
+        uint32_t Delay = Random(RETRY_T_MIN_MS, RETRY_T_MAX_MS);
+        chThdSleepMilliseconds(Delay);
     } // while(true)
 }
 #endif
