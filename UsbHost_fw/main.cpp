@@ -99,6 +99,15 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(OK);
     }
 
+    else if(PCmd->NameIs("Tx")) {
+        systime_t start = chVTGetSystemTimeX();
+        rPkt_t Pkt;
+        while(chVTTimeElapsedSinceX(start) < MS2ST(4500)) {
+            CC.TransmitSync(&Pkt);
+        }
+        PShell->Ack(OK);
+    }
+
     else if(PCmd->NameIs("Set")) {
         uint8_t Rslt = CMD_ERROR;
         rPkt_t Pkt;
