@@ -51,9 +51,9 @@ void rLevel1_t::ITask() {
 //                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
                 for(int i=0; i<RETRY_CNT; i++) {
 //                    Uart.Printf("  Try %u\r", i);
-                    CC.TransmitSync(pPktTx);
+                    CC.Transmit(pPktTx);
                     // Wait for answer
-                    uint8_t RxRslt = CC.ReceiveSync(9, &PktRx, &Rssi);
+                    uint8_t RxRslt = CC.Receive(9, &PktRx, &Rssi);
                     if(RxRslt == OK) {
 //                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
                         if(PktRx.ID == pPktTx->ID) { //Check replier
@@ -69,9 +69,9 @@ void rLevel1_t::ITask() {
         else {
             // Ask everyone for info
             PktTxInfo.ID = n;
-            CC.TransmitSync(&PktTxInfo);
+            CC.Transmit(&PktTxInfo);
             // Wait for answer
-            uint8_t RxRslt = CC.ReceiveSync(11, &PktRx, &Rssi);
+            uint8_t RxRslt = CC.Receive(11, &PktRx, &Rssi);
             if(RxRslt == OK) {
 //                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
                 if(PktRx.ID == n) {

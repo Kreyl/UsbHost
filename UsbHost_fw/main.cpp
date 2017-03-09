@@ -55,9 +55,9 @@ int main(void) {
     UsbCDC.Connect();
 #endif
 
-    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
+    if(Radio.Init() == OK) Led.StartOrRestart(lsqStart);
     else {
-        Led.StartSequence(lsqFailure);
+        Led.StartOrRestart(lsqFailure);
         chThdSleepMilliseconds(4500);
     }
 
@@ -72,11 +72,11 @@ void App_t::ITask() {
 
         if(EvtMsk & EVT_USB_READY) {
             Uart.Printf("UsbReady\r");
-            Led.StartSequence(lsqUSB);
+            Led.StartOrRestart(lsqUSB);
         }
 
         if(EvtMsk & EVT_USB_NEW_CMD) {
-            Led.StartSequence(lsqUSBCmd);
+            Led.StartOrRestart(lsqUSBCmd);
             OnCmd((Shell_t*)&UsbCDC);
             UsbCDC.SignalCmdProcessed();
         }

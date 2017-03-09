@@ -39,7 +39,19 @@
 #define USB_DM_PIN		11
 #define USB_DP_PIN		12
 
+// CC
+#define CC_GPIO         GPIOA
+#define CC_GDO2         2
+#define CC_GDO0_IRQ     CC_GPIO, 3, pudNone
+#define CC_SCK          5
+#define CC_MISO         6
+#define CC_MOSI         7
+#define CC_CS           4
+#define CC_SPI_AF       AF0
+
 #endif
+
+
 
 #if 1 // ========================= Timer =======================================
 // LED
@@ -50,6 +62,7 @@
 #endif
 
 #if 1 // =========================== SPI =======================================
+#define CC_SPI          SPI1
 #endif
 
 #if 1 // ========================== USART ======================================
