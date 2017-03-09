@@ -28,11 +28,10 @@
 #define UART_RX_PIN     10
 #define UART_AF         AF1
 
-// LED
-#define LED_GPIO        GPIOB
-#define LEDR_PIN        0
-#define LEDG_PIN        4
-#define LEDB_PIN        1
+// RGB LED
+#define LED_RED_CH      { GPIOB, 0, TIM3, 3, invNotInverted, omPushPull, 255 }
+#define LED_GREEN_CH    { GPIOB, 4, TIM3, 1, invNotInverted, omPushPull, 255 }
+#define LED_BLUE_CH     { GPIOB, 1, TIM3, 4, invNotInverted, omPushPull, 255 }
 
 // USB
 #define USB_GPIO		GPIOA
@@ -48,17 +47,6 @@
 #define CC_MOSI         7
 #define CC_CS           4
 #define CC_SPI_AF       AF0
-
-#endif
-
-
-
-#if 1 // ========================= Timer =======================================
-// LED
-#define LED_TMR         TIM3
-#define LEDR_CHNL       3
-#define LEDG_CHNL       1
-#define LEDB_CHNL       4
 #endif
 
 #if 1 // =========================== SPI =======================================

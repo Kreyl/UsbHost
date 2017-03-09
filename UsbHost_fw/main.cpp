@@ -12,7 +12,7 @@
 #include "Sequences.h"
 
 App_t App;
-LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
+LedRGB_t Led { LED_RED_CH, LED_GREEN_CH, LED_BLUE_CH };
 DeviceMgr_t DevMgr;
 QToDevices_t QToDevices;
 QToHost_t QToHost;
@@ -55,11 +55,12 @@ int main(void) {
     UsbCDC.Connect();
 #endif
 
-    if(Radio.Init() == OK) Led.StartOrRestart(lsqStart);
-    else {
-        Led.StartOrRestart(lsqFailure);
-        chThdSleepMilliseconds(4500);
-    }
+//    if(Radio.Init() == OK)
+    Led.StartOrRestart(lsqStart);
+//    else {
+//        Led.StartOrRestart(lsqFailure);
+//        chThdSleepMilliseconds(4500);
+//    }
 
     // Main cycle
     App.ITask();
