@@ -16,7 +16,7 @@
 
 #define APP_NAME            "UsbHost2_Robotlon"
 
-#define DEVICE_CNT          32
+#define DEVICE_CNT          36
 #define NO_REPLY_TIMEOUT_ms 4500
 #define DEV_MODE_TRAINING   0
 #define DEV_MODE_COMBAT     1
@@ -119,3 +119,52 @@ public:
 
 extern DeviceMgr_t DevMgr;
 #endif
+#if 1 // Message structs
+union MsgToDevice_t {
+    uint32_t DWord[2];
+    struct {
+        uint8_t DevID, MsgID, ParamID, ParamV;
+    } __packed;
+} __packed;
+
+union MsgToHost_t {
+    struct {
+        uint32_t DWord0, DWord1;
+        uint16_t Word;
+    } __packed;
+    struct {
+        uint8_t DevID, MsgID, MsgType;
+        uint8_t Type, Group, HitCnt, ShotCnt, LastAttacker, State, GameMode;
+    } __packed;
+    void Printf(Shell_t *PShell) {
+        PShell->Printf("%u %u %u %u %u %u %u %u %u %u\r\n",
+                DevID, MsgID, MsgType,
+                Type, Group, HitCnt, ShotCnt, LastAttacker, State, GameMode);
+    }
+} __packed;
+#endif
+
+// ==== Queues ====
+#define Q2D_MSG_CNT     207
+
+class QToDevices_t {
+private:
+    MsgToDevice_t IBuf[Q2D_MSG_CNT], *PRead=IBuf, *PWrite=IBuf;
+public:
+    int Cnt = 0;
+    uint8_t Put(uint8_t DevID, uint8_t MsgID, uint8_t ParamID, uint8_t ParamV);
+};
+extern QToDevices_t QToDevices;
+
+#define Q2H_MSG_CNT     99
+
+class QToHost_t {
+private:
+    MsgToHost_t IBuf[Q2H_MSG_CNT], *PRead=IBuf, *PWrite=IBuf;
+public:
+    int Cnt = 0;
+    uint8_t Put(uint8_t DevID, uint8_t MsgID, uint8_t Rslt);
+    //uint8_t Put(uint8_t DevID, uint8_t MsgID, uint8_t Rslt, );
+    uint8_t Get(MsgToHost_t *pmsg);
+};
+extern QToHost_t QToHost;
