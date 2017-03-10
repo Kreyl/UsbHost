@@ -33,6 +33,8 @@ int main(void) {
     Uart.Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
+//    Uart.Printf("pkt: %u\r\n", RPKT_LEN);
+
     Led.Init();
 
 #if USB_ENABLED
@@ -42,10 +44,8 @@ int main(void) {
     chSysLock();
     while(Clk.SwitchTo(csHSI48) != OK) {
         Uart.PrintfI("Hsi48 Fail\r");
-        Led.SetColor(clRed);
-        chThdSleepS(MS2ST(207));
-        Led.SetColor(clBlack);
-        chThdSleepS(MS2ST(207));
+        Led.StartOrRestart(lsqFailure);
+        chThdSleepMilliseconds(450);
     }
     Clk.UpdateFreqValues();
     chSysUnlock();
@@ -55,12 +55,11 @@ int main(void) {
     UsbCDC.Connect();
 #endif
 
-//    if(Radio.Init() == OK)
-    Led.StartOrRestart(lsqStart);
-//    else {
-//        Led.StartOrRestart(lsqFailure);
-//        chThdSleepMilliseconds(4500);
-//    }
+    if(Radio.Init() == OK) Led.StartOrRestart(lsqStart);
+    else {
+        Led.StartOrRestart(lsqFailure);
+        chThdSleepMilliseconds(4500);
+    }
 
     // Main cycle
     App.ITask();
@@ -105,9 +104,16 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("GetInfo")) {
         // Unload there everything!
-        PShell->Printf("Cnt %u\r\n", QToHost.Cnt);
+        uint32_t Cnt = QToHost.Cnt; // Save Cnt
+        PShell->Printf("Cnt %u\r\n", Cnt);
+//        Uart.Printf("Cnt %u\r\n", Cnt);
         MsgToHost_t fmsg;
-        while(QToHost.Get(&fmsg) == OK) fmsg.Printf(PShell);
+        while(Cnt) {
+            QToHost.Get(&fmsg);
+            fmsg.Printf(PShell);
+//            fmsg.Printf((Shell_t*)&Uart);
+            Cnt--;
+        }
     }
 
     else if(PCmd->NameIs("SetParam")) {
@@ -119,8 +125,6 @@ void App_t::OnCmd(Shell_t *PShell) {
         if(PCmd->GetNextByte(&ParamID) != OK) { QToHost.Put(DevID, MsgID, CMD_ERROR); return; }
         if(PCmd->GetNextByte(&ParamV) != OK) { QToHost.Put(DevID, MsgID, CMD_ERROR); return; }
         QToDevices.Put(DevID, MsgID, ParamID, ParamV);
-        //r = DevMgr.Cmd4One(DevID, cmdSetParameter, ParamID, DParamV);
-        //PShell->Ack(r);
     }
 
     else PShell->Ack(CMD_UNKNOWN);
@@ -129,18 +133,47 @@ void App_t::OnCmd(Shell_t *PShell) {
 
 #if 1 // ============================ Queues ===================================
 uint8_t QToDevices_t::Put(uint8_t DevID, uint8_t MsgID, uint8_t ParamID, uint8_t ParamV) {
-    Uart.Printf("H2D: ID %u; Msg %u; ParID %u; ParV %u\r\n", DevID, MsgID, ParamID, ParamV);
-    QToHost.Put(DevID, MsgID, OK);
-
+    //Uart.Printf("H2D: ID %u; Msg %u; ParID %u; ParV %u\r\n", DevID, MsgID, ParamID, ParamV);
+    //QToHost.Put(DevID, MsgID, OK);
+    if(Cnt >= Q2D_MSG_CNT) return OVERFLOW;   // Overflow
+    chSysLock();
+    PWrite->DevID = DevID;
+    PWrite->MsgID = MsgID;
+    PWrite->ParamID = ParamID;
+    PWrite->ParamV = ParamV;
+    if(++PWrite > (IBuf + (Q2D_MSG_CNT - 1))) PWrite = IBuf;   // Circulate buffer
+    Cnt++;
+    chSysUnlock();
     return OK;
 }
 
+uint8_t QToDevices_t::Get(MsgToDevice_t *PMsg) {
+    if(Cnt == 0) return EMPTY;
+    chSysLock();
+    *PMsg = *PRead;
+    if(++PRead > (IBuf + (Q2H_MSG_CNT - 1))) PRead = IBuf;     // Circulate buffer
+    Cnt--;
+    chSysUnlock();
+    return OK;
+}
+
+
 uint8_t QToHost_t::Put(uint8_t DevID, uint8_t MsgID, uint8_t Rslt) {
-    if(Cnt > Q2H_MSG_CNT) return OVERFLOW;   // Overflow
+    if(Cnt >= Q2H_MSG_CNT) return OVERFLOW;   // Overflow
     chSysLock();
     PWrite->DevID = DevID;
     PWrite->MsgID = MsgID;
     PWrite->MsgType = Rslt;
+    if(++PWrite > (IBuf + (Q2H_MSG_CNT - 1))) PWrite = IBuf;   // Circulate buffer
+    Cnt++;
+    chSysUnlock();
+    return OK;
+}
+
+uint8_t QToHost_t::Put(MsgToHost_t &Msg) {
+    if(Cnt >= Q2H_MSG_CNT) return OVERFLOW;   // Overflow
+    chSysLock();
+    *PWrite = Msg;
     if(++PWrite > (IBuf + (Q2H_MSG_CNT - 1))) PWrite = IBuf;   // Circulate buffer
     Cnt++;
     chSysUnlock();

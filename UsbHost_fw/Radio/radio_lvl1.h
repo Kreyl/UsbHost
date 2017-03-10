@@ -54,35 +54,42 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
-union DevInfoData_t {
+union DevInfo_t {
     uint32_t DWord;
     struct  {
         unsigned Type: 2;
         unsigned Group: 3;
-        unsigned Mode: 1;
+        unsigned HitCnt: 6;
+        unsigned ShotCnt: 8;
+        unsigned LastAttacker: 8;
         unsigned State: 3;
-        unsigned HitCnt: 8;
-        unsigned LocalTime: 15;
+        unsigned Mode: 2;
     } __packed;
-    DevInfoData_t& operator = (const DevInfoData_t &Right) {
-        DWord = Right.DWord;
-        return *this;
-    }
 } __packed;
 
-struct rPkt_t  {
-    union {
+union rPkt_t  {
+    struct {
         uint32_t DWord;
-        DevInfoData_t DevInfoData;
-        struct {
-            uint8_t Cmd;
-            uint8_t Data1;
-            uint8_t Data2;
-        };
+        uint8_t b;
     } __packed;
-    uint8_t ID;
+    // Real data
+    struct {
+        union {
+            // Host to Device
+            struct {
+                uint8_t ParamID;
+                uint8_t ParamValue;
+            } __packed;
+            // Device to Host
+            DevInfo_t DevInfo;
+        } __packed;
+        // Common
+        uint8_t ID;
+    } __packed;
+    rPkt_t() : DWord(0) { }
+    rPkt_t(uint8_t AID, uint8_t AParamID, uint8_t AParamValue) :
+        ParamID(AParamID), ParamValue(AParamValue), ID(AID) { }
     rPkt_t& operator = (const rPkt_t &Right) {
-        ID = Right.ID;
         DWord = Right.DWord;
         return *this;
     }

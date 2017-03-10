@@ -28,7 +28,6 @@
 #endif
 
 rLevel1_t Radio;
-static rPkt_t PktTxInfo;
 
 #if 1 // ================================ Task =================================
 static THD_WORKING_AREA(warLvl1Thread, 256);
@@ -38,51 +37,60 @@ static void rLvl1Thread(void *arg) {
     Radio.ITask();
 }
 
+static systime_t LastRxT[DEVICE_CNT];
+
 __noreturn
 void rLevel1_t::ITask() {
-    PktTxInfo.Cmd = cmdGetInfo; // Init pkt for info requests
-    uint32_t n = 0;
+    rPkt_t PktTxGetInfo(1, 0, 0);  // 0 as paramID means data request
+    uint8_t RxRslt;
     while(true) {
-        // Check if cmd injection is waiting
-        if(DevMgr.QLen != 0) {
-            LastPktRx.Data1 = FAILURE;  // Set Reply result
-            rPkt_t *pPktTx;
-            while((pPktTx = DevMgr.GetNextPktFromQ()) != nullptr) {
-//                Uart.Printf("Q: ID=%u, Cmd=%u\r", pPktTx->ID, pPktTx->Cmd);
-                for(int i=0; i<RETRY_CNT; i++) {
-//                    Uart.Printf("  Try %u\r", i);
-                    CC.Transmit(pPktTx);
-                    // Wait for answer
-                    uint8_t RxRslt = CC.Receive(9, &PktRx, &Rssi);
-                    if(RxRslt == OK) {
-//                        Uart.Printf("Cmd ID=%u; Rssi=%d\r", pPktTx->ID, Rssi);
-                        if(PktRx.ID == pPktTx->ID) { //Check replier
-                            LastPktRx = PktRx;
-                            break; // Stop trying
-                        }
-                    } // if RxRslt ok
-                } // for
-            } // while
-            // Awake asker thread
-            DevMgr.Awake();
+//        uint32_t t = chVTGetSystemTimeX();
+        // Process request queue
+        MsgToDevice_t MsgD;
+        while(QToDevices.Get(&MsgD) == OK) {
+            MsgD.Printf();
+            // Prepare RPkt
+            rPkt_t PktTx(MsgD.DevID, MsgD.ParamID, MsgD.ParamV);
+            MsgToHost_t MsgH(MsgD.DevID, MsgD.MsgID, FAILURE);
+            for(int i=0; i<RETRY_CNT; i++) {
+                CC.Transmit(&PktTx);
+                RxRslt = CC.Receive(7, &PktRx, &Rssi);
+                if(RxRslt == OK) {
+                    if(PktRx.ID == MsgD.DevID) { //Check replier
+                        MsgH.SetInfo(PktRx.DevInfo);
+                        LastRxT[MsgD.DevID - 1] = chVTGetSystemTimeX();
+                        break; // Stop trying
+                    }
+                } // if rslt
+            } // for retry
+            QToHost.Put(MsgH);
+        } // while Q is not empty
+
+        // Ask everyone for info, one by one
+        CC.Transmit(&PktTxGetInfo);
+        // Wait for answer
+        RxRslt = CC.Receive(7, &PktRx, &Rssi);
+        if(RxRslt == OK) {
+            Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
+            if(PktRx.ID == PktTxGetInfo.ID) {
+                LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
+                MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 2);   // 2 means general getinfo
+                MsgH.SetInfo(PktRx.DevInfo);
+                QToHost.Put(MsgH);
+            }
         }
-        else {
-            // Ask everyone for info
-            PktTxInfo.ID = n;
-            CC.Transmit(&PktTxInfo);
-            // Wait for answer
-            uint8_t RxRslt = CC.Receive(11, &PktRx, &Rssi);
-            if(RxRslt == OK) {
-//                Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
-                if(PktRx.ID == n) {
-                    DevInfo_t *PInfo = &DevMgr.Info[n];
-                    PInfo->Data = PktRx.DevInfoData;    // Save what received
-                    PInfo->Timestamp = chVTGetSystemTimeX();
-                }
-            } // if RxRslt ok
-            n++;
-            if(n >= DEVICE_CNT) n = 0;
+        else { // No answer
+            if(ST2MS(chVTTimeElapsedSinceX(LastRxT[PktTxGetInfo.ID - 1])) > NO_REPLY_TIMEOUT_ms) {
+                MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 3);   // 3 means general timeout
+                QToHost.Put(MsgH);
+            }
         }
+
+//        uint32_t Elapsed = chVTGetSystemTimeX() - t;
+//        Uart.Printf("Elapsed: %u\r");
+        // Switch to next ID
+        PktTxGetInfo.ID++;
+        if(PktTxGetInfo.ID > DEV_ID_MAX) PktTxGetInfo.ID = DEV_ID_MIN;
     } // while true
 }
 #endif // task
@@ -94,10 +102,9 @@ uint8_t rLevel1_t::Init() {
 //    PinSetupOut(DBG_GPIO2, DBG_PIN2, omPushPull);
 #endif    // Init radioIC
     if(CC.Init() == OK) {
-        CC.SetTxPower(CC_PwrPlus5dBm);
+        CC.SetTxPower(CC_PwrPlus10dBm);
         CC.SetPktSize(RPKT_LEN);
         CC.SetChannel(2);
-//        CC.EnterPwrDown();
         // Thread
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), HIGHPRIO, (tfunc_t)rLvl1Thread, NULL);
         return OK;
