@@ -44,20 +44,19 @@ void rLevel1_t::ITask() {
     rPkt_t PktTxGetInfo(1, 0, 0);  // 0 as paramID means data request
     uint8_t RxRslt;
     while(true) {
-//        uint32_t t = chVTGetSystemTimeX();
         // Process request queue
         MsgToDevice_t MsgD;
         while(QToDevices.Get(&MsgD) == OK) {
-            MsgD.Printf();
             // Prepare RPkt
             rPkt_t PktTx(MsgD.DevID, MsgD.ParamID, MsgD.ParamV);
             MsgToHost_t MsgH(MsgD.DevID, MsgD.MsgID, FAILURE);
             for(int i=0; i<RETRY_CNT; i++) {
                 CC.Transmit(&PktTx);
-                RxRslt = CC.Receive(7, &PktRx, &Rssi);
+                RxRslt = CC.Receive(3, &PktRx, &Rssi);
                 if(RxRslt == OK) {
                     if(PktRx.ID == MsgD.DevID) { //Check replier
                         MsgH.SetInfo(PktRx.DevInfo);
+                        MsgH.MsgType = OK;
                         LastRxT[MsgD.DevID - 1] = chVTGetSystemTimeX();
                         break; // Stop trying
                     }
@@ -69,9 +68,9 @@ void rLevel1_t::ITask() {
         // Ask everyone for info, one by one
         CC.Transmit(&PktTxGetInfo);
         // Wait for answer
-        RxRslt = CC.Receive(7, &PktRx, &Rssi);
+        RxRslt = CC.Receive(3, &PktRx, &Rssi);
         if(RxRslt == OK) {
-            Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
+//            Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
             if(PktRx.ID == PktTxGetInfo.ID) {
                 LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
                 MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 2);   // 2 means general getinfo
@@ -86,8 +85,6 @@ void rLevel1_t::ITask() {
             }
         }
 
-//        uint32_t Elapsed = chVTGetSystemTimeX() - t;
-//        Uart.Printf("Elapsed: %u\r");
         // Switch to next ID
         PktTxGetInfo.ID++;
         if(PktTxGetInfo.ID > DEV_ID_MAX) PktTxGetInfo.ID = DEV_ID_MIN;

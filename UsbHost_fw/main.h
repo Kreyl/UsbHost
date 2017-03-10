@@ -16,7 +16,7 @@
 
 #define APP_NAME            "UsbHost2_Robotlon"
 
-#define DEVICE_CNT          10
+#define DEVICE_CNT          33
 #define DEV_ID_MIN          1
 #define DEV_ID_MAX          32
 
@@ -186,7 +186,7 @@ public:
 };
 extern QToDevices_t QToDevices;
 
-#define Q2H_MSG_CNT     99
+#define Q2H_MSG_CNT     207
 
 class QToHost_t {
 private:

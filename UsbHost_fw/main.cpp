@@ -106,12 +106,10 @@ void App_t::OnCmd(Shell_t *PShell) {
         // Unload there everything!
         uint32_t Cnt = QToHost.Cnt; // Save Cnt
         PShell->Printf("Cnt %u\r\n", Cnt);
-//        Uart.Printf("Cnt %u\r\n", Cnt);
         MsgToHost_t fmsg;
         while(Cnt) {
             QToHost.Get(&fmsg);
             fmsg.Printf(PShell);
-//            fmsg.Printf((Shell_t*)&Uart);
             Cnt--;
         }
     }
