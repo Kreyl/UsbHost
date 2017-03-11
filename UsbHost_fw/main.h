@@ -118,3 +118,41 @@ public:
     uint8_t Get(MsgToHost_t *pmsg);
 };
 extern QToHost_t QToHost;
+
+#if 1 // ======================== Device info list =============================
+struct DInfoState_t {
+    DevInfo_t Info;
+    uint8_t InfoState;
+} __packed;
+
+#define ISTATE_EMPTY    0
+#define ISTATE_INFO     1
+#define ISTATE_TIMEOUT  2
+
+class DevInfoList_t {
+private:
+    DInfoState_t IBuf[DEVICE_CNT];
+public:
+    void PutData(rPkt_t &Pkt) {
+        DInfoState_t *p = &IBuf[Pkt.ID-1];
+        // Nothing to do if such info already presents
+        if((p->InfoState == ISTATE_INFO) and (p->Info.DWord == Pkt.DevInfo.DWord)) return;
+        p->Info.DWord = Pkt.DevInfo.DWord;
+        p->InfoState = ISTATE_INFO;
+        // Put message to queue
+        MsgToHost_t MsgH(Pkt.ID, 0, 2);   // 2 means general getinfo ok
+        MsgH.SetInfo(Pkt.DevInfo);
+        QToHost.Put(MsgH);
+    }
+    void PutTimeout(uint8_t ID) {
+        if(IBuf[ID-1].InfoState == ISTATE_TIMEOUT) return;
+        IBuf[ID-1].InfoState = ISTATE_TIMEOUT;
+        MsgToHost_t MsgH(ID, 0, 3);   // 3 means general timeout
+        QToHost.Put(MsgH);
+    }
+    void Flush() {
+        for(int i=0; i<DEVICE_CNT; i++) IBuf[i].InfoState = ISTATE_EMPTY;
+    }
+};
+extern DevInfoList_t DevInfoList;
+#endif

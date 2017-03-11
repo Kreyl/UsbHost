@@ -115,23 +115,6 @@ union rPkt_t  {
 
 #endif
 
-enum RadioCmdType_t {
-    cmdGetInfo = 0,
-    cmdSetState = 1,
-    cmdSetMode = 2,
-    cmdSetParameter = 3,
-    cmdReset = 4
-};
-
-enum ParamID_t {
-    parDefaultHitCnt = 1,
-    parCurrentHitCnt = 2,
-    parGroup = 3,
-    parIRPower = 4,
-    parIRDamage = 5,
-    parReloadTime = 6
-};
-
 class rLevel1_t {
 private:
     rPkt_t PktRx;

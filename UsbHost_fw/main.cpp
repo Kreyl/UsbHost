@@ -15,6 +15,7 @@ App_t App;
 LedRGB_t Led { LED_RED_CH, LED_GREEN_CH, LED_BLUE_CH };
 QToDevices_t QToDevices;
 QToHost_t QToHost;
+DevInfoList_t DevInfoList;
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -99,6 +100,11 @@ void App_t::OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("Version")) {
         PShell->Printf("%S %S\r\n", APP_NAME, BUILD_TIME);
+    }
+
+    else if(PCmd->NameIs("Flush")) {
+        DevInfoList.Flush();
+        PShell->Ack(OK);
     }
 
     else if(PCmd->NameIs("GetInfo")) {
@@ -210,5 +216,4 @@ uint8_t QToHost_t::Get(MsgToHost_t *pmsg) {
     chSysUnlock();
     return OK;
 }
-
 #endif
