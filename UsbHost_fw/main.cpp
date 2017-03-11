@@ -13,7 +13,6 @@
 
 App_t App;
 LedRGB_t Led { LED_RED_CH, LED_GREEN_CH, LED_BLUE_CH };
-DeviceMgr_t DevMgr;
 QToDevices_t QToDevices;
 QToHost_t QToHost;
 
@@ -106,6 +105,7 @@ void App_t::OnCmd(Shell_t *PShell) {
         // Unload there everything!
         uint32_t Cnt = QToHost.Cnt; // Save Cnt
         PShell->Printf("Cnt %u\r\n", Cnt);
+        Uart.Printf("Cnt %u\r\n", Cnt);
         MsgToHost_t fmsg;
         while(Cnt) {
             QToHost.Get(&fmsg);
@@ -178,12 +178,33 @@ uint8_t QToHost_t::Put(MsgToHost_t &Msg) {
     return OK;
 }
 
+void QToHost_t::AddOrReplaceSameID(MsgToHost_t &Msg) {
+    int FCnt = Cnt;
+    MsgToHost_t *p = PWrite;
+    while(true) {
+        if(FCnt == 0) {
+            Put(Msg);
+            return;
+        }
+        // Move pointer back
+        if(p == IBuf) p = &IBuf[Q2H_MSG_CNT - 1];
+        else p--;
+        // Check ID
+        if(p->DevID == Msg.DevID) { // Replace item
+            chSysLock();
+            *p = Msg;
+            chSysUnlock();
+            return;
+        }
+        else FCnt--;
+    } // while
+}
+
+
 uint8_t QToHost_t::Get(MsgToHost_t *pmsg) {
     if(Cnt == 0) return EMPTY;
     chSysLock();
-    pmsg->DWord0 = PRead->DWord0;
-    pmsg->DWord1 = PRead->DWord1;
-    pmsg->Word = PRead->Word;
+    *pmsg = *PRead;
     if(++PRead > (IBuf + (Q2H_MSG_CNT - 1))) PRead = IBuf;     // Circulate buffer
     Cnt--;
     chSysUnlock();

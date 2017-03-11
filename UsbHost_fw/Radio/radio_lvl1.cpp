@@ -52,7 +52,7 @@ void rLevel1_t::ITask() {
             MsgToHost_t MsgH(MsgD.DevID, MsgD.MsgID, FAILURE);
             for(int i=0; i<RETRY_CNT; i++) {
                 CC.Transmit(&PktTx);
-                RxRslt = CC.Receive(3, &PktRx, &Rssi);
+                RxRslt = CC.Receive(RX_T_MS, &PktRx, &Rssi);
                 if(RxRslt == OK) {
                     if(PktRx.ID == MsgD.DevID) { //Check replier
                         MsgH.SetInfo(PktRx.DevInfo);
@@ -68,20 +68,18 @@ void rLevel1_t::ITask() {
         // Ask everyone for info, one by one
         CC.Transmit(&PktTxGetInfo);
         // Wait for answer
-        RxRslt = CC.Receive(3, &PktRx, &Rssi);
+        RxRslt = CC.Receive(RX_T_MS, &PktRx, &Rssi);
         if(RxRslt == OK) {
 //            Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
-            if(PktRx.ID == PktTxGetInfo.ID) {
-                LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
-                MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 2);   // 2 means general getinfo
-                MsgH.SetInfo(PktRx.DevInfo);
-                QToHost.Put(MsgH);
-            }
+            LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
+            MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 2);   // 2 means general getinfo
+            MsgH.SetInfo(PktRx.DevInfo);
+            QToHost.AddOrReplaceSameID(MsgH);
         }
         else { // No answer
             if(ST2MS(chVTTimeElapsedSinceX(LastRxT[PktTxGetInfo.ID - 1])) > NO_REPLY_TIMEOUT_ms) {
                 MsgToHost_t MsgH(PktTxGetInfo.ID, 0, 3);   // 3 means general timeout
-                QToHost.Put(MsgH);
+                QToHost.AddOrReplaceSameID(MsgH);
             }
         }
 
