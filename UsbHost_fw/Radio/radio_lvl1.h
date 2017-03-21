@@ -108,10 +108,10 @@ union rPkt_t  {
 #endif
 
 #if 1 // =========================== Timings ===================================
-#define RX_T_MS                 3      // pkt duration at 500k is around 1 ms
+#define RX_T_MS                 7      // pkt duration at 500k is around 1 ms
 #define RX_SLEEP_T_MS           810
 #define MIN_SLEEP_DURATION_MS   18
-#define RETRY_CNT               4
+#define RETRY_CNT               7
 
 #endif
 

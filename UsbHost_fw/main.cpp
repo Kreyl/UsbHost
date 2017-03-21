@@ -33,8 +33,6 @@ int main(void) {
     Uart.Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
-//    Uart.Printf("pkt: %u\r\n", RPKT_LEN);
-
     Led.Init();
 
 #if USB_ENABLED
@@ -113,10 +111,10 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Printf("Cnt %u\r\n", Cnt);
 //        Uart.Printf("Cnt %u\r\n", Cnt);
         MsgToHost_t fmsg;
-        while(Cnt) {
+        while(Cnt--) {
             QToHost.Get(&fmsg);
             fmsg.Printf(PShell);
-            Cnt--;
+//            fmsg.Printf((Shell_t*)&Uart);
         }
     }
 

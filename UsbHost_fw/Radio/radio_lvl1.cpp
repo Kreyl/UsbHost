@@ -65,18 +65,24 @@ void rLevel1_t::ITask() {
         } // while Q is not empty
 
         // Ask everyone for info, one by one
+        uint8_t ID = PktTxGetInfo.ID;
+//        chThdSleepMilliseconds(1);
+        DBG1_SET();
         CC.Transmit(&PktTxGetInfo);
+        DBG1_CLR();
         // Wait for answer
         RxRslt = CC.Receive(RX_T_MS, &PktRx, &Rssi);
         if(RxRslt == OK) {
+//            if(ID == 23) Uart.Printf("ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
 //            Uart.Printf("GetInfo ID=%u; Rssi=%d\r", PktRx.ID, Rssi);
-            LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
+            LastRxT[ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
             DevInfoList.PutData(PktRx);
+//            chThdSleepMilliseconds(1);
         }
         else { // No answer
             if(ST2MS(chVTTimeElapsedSinceX(LastRxT[PktTxGetInfo.ID - 1])) > NO_REPLY_TIMEOUT_ms) {
-                LastRxT[PktTxGetInfo.ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
-                DevInfoList.PutTimeout(PktTxGetInfo.ID);
+                LastRxT[ID - 1] = chVTGetSystemTimeX();  // Reset RxTime info
+                DevInfoList.PutTimeout(ID);
             }
         }
 
