@@ -114,7 +114,7 @@ uint8_t rLevel1_t::TxAndGetAnswer(rPkt_t *PPkt) {
         // Wait answer
         uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &LastPktRx, &Rssi);
         if(RxRslt == OK) {
-            Uart.Printf("\rRssi=%d", Rssi);
+//            Uart.Printf("\rRssi=%d", Rssi);
             if(LastPktRx.Cmd == 0) return OK;   // GetInfo has no ack inside
             else return LastPktRx.Result;
         }

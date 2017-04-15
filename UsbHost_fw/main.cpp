@@ -120,8 +120,8 @@ void App_t::OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("SetParam")) {
         rPkt_t Pkt;
         Pkt.Cmd = 1;    // SetParam
-        if(PCmd->GetNextByte(&Pkt.Data1) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(PCmd->GetNextByte(&Pkt.Data2) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextByte(&Pkt.ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        if(PCmd->GetNextInt32(&Pkt.Value) != OK) { PShell->Ack(CMD_ERROR); return; }
 //        Uart.Printf("%S %d %d\r", PCmd->Name, Pkt.Data1, Pkt.Data2);
         uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
         PShell->Ack(Rslt);

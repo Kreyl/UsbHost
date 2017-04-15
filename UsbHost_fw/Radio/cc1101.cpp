@@ -110,6 +110,7 @@ void cc1101_t::SetChannel(uint8_t AChannel) {
 void cc1101_t::TransmitSync(void *Ptr) {
     // WaitUntilChannelIsBusy();   // If this is not done, time after time FIFO is destroyed
     while(IState != CC_STB_IDLE) EnterIdle();
+    Recalibrate();
     WriteTX((uint8_t*)Ptr, IPktSz);
     // Enter TX and wait IRQ
     chSysLock();
@@ -121,6 +122,7 @@ void cc1101_t::TransmitSync(void *Ptr) {
 // Enter RX mode and wait reception for Timeout_ms.
 uint8_t cc1101_t::ReceiveSync(uint32_t Timeout_ms, void *Ptr, int8_t *PRssi) {
     FlushRxFIFO();
+    Recalibrate();
     chSysLock();
     EnterRX();
     msg_t Rslt = chThdSuspendTimeoutS(&ThdRef, MS2ST(Timeout_ms));    // Wait IRQ

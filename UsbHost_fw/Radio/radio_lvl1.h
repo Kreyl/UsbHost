@@ -61,8 +61,8 @@ union rPkt_t  {
         union {
             int16_t t[8];   // Temperature
             struct {
-                uint8_t Data1;
-                uint8_t Data2;
+                uint8_t ParamID;
+                int32_t Value;
             } __packed;
             uint8_t Result;
         } __packed;
