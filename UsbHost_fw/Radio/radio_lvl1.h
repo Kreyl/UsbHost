@@ -63,8 +63,8 @@ union rPkt_t  {
             struct {
                 uint8_t ParamID;
                 int32_t Value;
+                uint8_t Result;
             } __packed;
-            uint8_t Result;
         } __packed;
     } __packed;
 //    rPkt_t& operator = (const rPkt_t &Right) {

@@ -127,6 +127,17 @@ void App_t::OnCmd(Shell_t *PShell) {
         PShell->Ack(Rslt);
     }
 
+    else if(PCmd->NameIs("GetParam")) {
+        rPkt_t Pkt;
+        Pkt.Cmd = 2;    // GetParam
+        if(PCmd->GetNextByte(&Pkt.ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
+        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
+        if(Rslt == OK) {
+            PShell->Printf("Param %d\r\n", Radio.LastPktRx.Value);
+        }
+        else PShell->Ack(Rslt);
+    }
+
     else PShell->Ack(CMD_UNKNOWN);
 }
 #endif
