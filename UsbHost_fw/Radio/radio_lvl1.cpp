@@ -41,32 +41,33 @@ __noreturn
 void rLevel1_t::ITask() {
     rPkt_t Pkt;
     int8_t Rssi;
+    CC.SetChannel(1);
     while(true) {
-        for(uint8_t i=0; i<ARMLET_CNT; i++) {
+//        for(uint8_t i=0; i<ARMLET_CNT; i++) {
             // ==== TX ====
-            CC.SetChannel(i);
-            ArmletSetup[i].Clr.Get(&Pkt.R, &Pkt.G, &Pkt.B);
-            Pkt.BlinkOn = ArmletSetup[i].BlinkOn;
-            Pkt.BlinkOff = ArmletSetup[i].BlinkOff;
-            Pkt.VibroPwr = ArmletSetup[i].Vibro;
+//            CC.SetChannel(1);
+//            ArmletSetup[i].Clr.Get(&Pkt.R, &Pkt.G, &Pkt.B);
+//            Pkt.BlinkOn = ArmletSetup[i].BlinkOn;
+//            Pkt.BlinkOff = ArmletSetup[i].BlinkOff;
+//            Pkt.VibroPwr = ArmletSetup[i].Vibro;
             CC.TransmitSync(&Pkt);
 
             // ==== RX ====
-            while(true) {   // Receive data until it remains
-                uint8_t RxRslt = CC.ReceiveSync(7, &Pkt, &Rssi);
+//            while(true) {   // Receive data until it remains
+                uint8_t RxRslt = CC.ReceiveSync(5, &Pkt, &Rssi);
                 if(RxRslt == OK) {
 //                    Uart.Printf("Rssi=%d\r", Rssi);
 //                    if(UsbCDC.IsActive()) {
                         Uart.Printf("%u;   %u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r",
-                                i, Pkt.Time,
+                                0, Pkt.Time,
                                 Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
                                 Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
                                 Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
 //                    }
                 } // RxResult ok
-                else break;
-            } // while true
-        } // for
+//                else break;
+//            } // while true
+//        } // for
 
 #if 0        // Demo
         if(App.Mode == 0b0001) { // RX
