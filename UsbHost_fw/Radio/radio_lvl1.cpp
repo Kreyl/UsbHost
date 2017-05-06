@@ -43,94 +43,16 @@ void rLevel1_t::ITask() {
     int8_t Rssi;
     CC.SetChannel(1);
     while(true) {
-//        for(uint8_t i=0; i<ARMLET_CNT; i++) {
-            // ==== TX ====
-//            CC.SetChannel(1);
-//            ArmletSetup[i].Clr.Get(&Pkt.R, &Pkt.G, &Pkt.B);
-//            Pkt.BlinkOn = ArmletSetup[i].BlinkOn;
-//            Pkt.BlinkOff = ArmletSetup[i].BlinkOff;
-//            Pkt.VibroPwr = ArmletSetup[i].Vibro;
-            CC.TransmitSync(&Pkt);
-
-            // ==== RX ====
-//            while(true) {   // Receive data until it remains
-                uint8_t RxRslt = CC.ReceiveSync(5, &Pkt, &Rssi);
-                if(RxRslt == OK) {
-//                    Uart.Printf("Rssi=%d\r", Rssi);
-//                    if(UsbCDC.IsActive()) {
-                        Uart.Printf("%u;   %u;   %d; %d; %d;   %d; %d; %d;   %d; %d; %d\r",
-                                0, Pkt.Time,
-                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
-                                Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
-                                Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
-//                    }
-                } // RxResult ok
-//                else break;
-//            } // while true
-//        } // for
-
-#if 0        // Demo
-        if(App.Mode == 0b0001) { // RX
-            int8_t Rssi;
-            Color_t Clr;
-            uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
-            if(RxRslt == OK) {
-                Uart.Printf("\rRssi=%d", Rssi);
-                Clr = clWhite;
-                if     (Rssi < -100) Clr = clRed;
-                else if(Rssi < -90) Clr = clYellow;
-                else if(Rssi < -80) Clr = clGreen;
-                else if(Rssi < -70) Clr = clCyan;
-                else if(Rssi < -60) Clr = clBlue;
-                else if(Rssi < -50) Clr = clMagenta;
-            }
-            else Clr = clBlack;
-            Led.SetColor(Clr);
-            chThdSleepMilliseconds(99);
-        }
-        else {  // TX
-            DBG1_SET();
-            CC.TransmitSync(&Pkt);
-            DBG1_CLR();
-//            chThdSleepMilliseconds(99);
-        }
-//#else
-#endif
-
-#if 0
-        // ==== Transmitter ====
-        if(App.MustTransmit) {
-            if(App.ID != OldID) {
-                OldID = App.ID;
-                CC.SetChannel(ID2RCHNL(App.ID));
-                Pkt.DWord = App.ID;
-            }
-            DBG1_SET();
-            CC.TransmitSync(&Pkt);
-            DBG1_CLR();
-        }
-
-        // ==== Receiver ====
-        else {
-            DBG2_SET();
-            // Listen if nobody found, and do not if found
-            int8_t Rssi;
-            // Iterate channels
-            for(int32_t i = ID_MIN; i <= ID_MAX; i++) {
-                if(i == App.ID) continue;   // Do not listen self
-                CC.SetChannel(ID2RCHNL(i));
-                uint8_t RxRslt = CC.ReceiveSync(RX_T_MS, &Pkt, &Rssi);
-                if(RxRslt == OK) {
-//                    Uart.Printf("\rCh=%d; Rssi=%d", i, Rssi);
-                    App.SignalEvt(EVTMSK_SOMEONE_NEAR);
-                    break; // No need to listen anymore if someone already found
-                }
-            } // for
-            CC.SetChannel(ID2RCHNL(App.ID));    // Set self channel back
-            DBG2_CLR();
-            TryToSleep(RX_SLEEP_T_MS);
-        }
-#endif
+        uint8_t RxRslt = CC.ReceiveSync(99, &Pkt, &Rssi);
+        if(RxRslt == OK) {
+//              Uart.Printf("Rssi=%d\r", Rssi);
+//        chThdSleepMilliseconds(5);
+            Uart.Printf("%u;%d;%d;%d;%d;%d;%d;%d;%d;%d\r",
+                    Pkt.Time,
+                    Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+                    Pkt.acc[0],  Pkt.acc[1],  Pkt.acc[2],
+                    Pkt.mag[0],  Pkt.mag[1],  Pkt.mag[2]);
+        } // RxResult ok
     } // while true
 }
 #endif // task

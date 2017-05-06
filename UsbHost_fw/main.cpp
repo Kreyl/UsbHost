@@ -30,7 +30,7 @@ int main(void) {
 
     // ==== Init hardware ====
     SYSCFG->CFGR1 |= SYSCFG_CFGR1_USART1TX_DMA_RMP | SYSCFG_CFGR1_USART1RX_DMA_RMP;
-    Uart.Init(115200, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN);
+    Uart.Init(256000, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN);
     Uart.Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
