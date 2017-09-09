@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!--***************************************-->
-<!--   File    : UsbHost.fsproj            -->
-<!--   Format  : TopoR Project file        -->
-<!--   Version : 2                         -->
-<!--   Program : TopoR Lite 6.3.17658 Beta -->
-<!--   Date    : Monday, September 4, 2017 -->
-<!--   Time    : 15:24                     -->
-<!--***************************************-->
+<!--*****************************************-->
+<!--   File    : UsbHost.fsproj              -->
+<!--   Format  : TopoR Project file          -->
+<!--   Version : 2                           -->
+<!--   Program : TopoR Lite 6.3.17658 Beta   -->
+<!--   Date    : Saturday, September 9, 2017 -->
+<!--   Time    : 17:48                       -->
+<!--*****************************************-->
 
 <Project>
    <Version current="2"/>
    <GUID>{715A9CCA-2EB8-4203-944D-3D27942DE37A}</GUID>
    <Documents>
       <Section name="PCB">
-         <File path=".\UsbHost.fsx" isopened="1" dateChange="2017-09-04 13:34:24"/>
+         <File path=".\UsbHost.fsx" isopened="0" dateChange="2017-09-04 14:55:02"/>
       </Section>
       <Section name="AutoRouting"/>
    </Documents>
