@@ -15,6 +15,7 @@
 App_t App;
 
 LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
+bool CCok = true;
 
 int main(void) {
     // ==== Setup clock frequency ====
@@ -34,10 +35,10 @@ int main(void) {
     Clk.PrintFreqs();
 
     Led.Init();
+    Led.SetColor(clYellow);
 
 #if USB_ENABLED
-    UsbCDC.Init();
-    chThdSleepMilliseconds(45);
+    chThdSleepMilliseconds(207);
     // Enable HSI48
     chSysLock();
     while(Clk.SwitchTo(csHSI48) != OK) {
@@ -48,16 +49,21 @@ int main(void) {
         chThdSleepS(MS2ST(207));
     }
     Clk.UpdateFreqValues();
+    Clk.SelectUSBClock_HSI48();
     chSysUnlock();
     Clk.PrintFreqs();
-    Clk.SelectUSBClock_HSI48();
-    Clk.EnableCRS();
+
+    UsbCDC.Init();
     UsbCDC.Connect();
+
+    chSysLock();
+    Clk.EnableCRS();
+    chSysUnlock();
 #endif
 
     if(Radio.Init() != OK) {
         Led.StartSequence(lsqFailure);
-        chThdSleepMilliseconds(2700);
+        CCok = false;
     }
     else Led.StartSequence(lsqStart);
 
@@ -72,7 +78,7 @@ void App_t::ITask() {
 
         if(EvtMsk & EVT_USB_READY) {
             Uart.Printf("UsbReady\r");
-            Led.StartSequence(lsqUSB);
+            if(CCok) Led.StartSequence(lsqUSB);
         }
 
         if(EvtMsk & EVT_USB_NEW_CMD) {

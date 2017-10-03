@@ -65,7 +65,7 @@
 #define CRS_PRESCALER   RCC_CRS_SYNC_DIV1
 #define CRS_SOURCE      RCC_CRS_SYNC_SOURCE_USB
 #define CRS_POLARITY    RCC_CRS_SYNC_POLARITY_RISING
-#define CRS_RELOAD_VAL  ((48000000 / 1000) - 1) // Ftarget / Fsync - 1
+#define CRS_RELOAD_VAL  ((48000000UL / 1000UL) - 1UL) // Ftarget / Fsync - 1
 #define CRS_ERROR_LIMIT 34
 #define HSI48_CALIBRATN 32
 #endif

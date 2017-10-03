@@ -5,3 +5,5 @@ UsbHost_fw/.settings/language.settings.xml
 UsbHost_hw/_autosave-UsbHost.kicad_pcb
 UsbHost_hw/UsbHost.ses
 3D/~$Front.SLDPRT
+UsbHost_hw/UsbHost.csv
+UsbHost_hw/UsbHost.xml
