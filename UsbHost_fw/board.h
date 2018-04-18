@@ -12,6 +12,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHost2"
+#define APP_NAME            "Tindenet"
 // MCU type as defined in the ST header.
 #define STM32F072xB
 
@@ -26,7 +27,6 @@
 #define UART_GPIO       GPIOA
 #define UART_TX_PIN     9
 #define UART_RX_PIN     10
-#define UART_AF         AF1
 
 // LED
 #define LED_GPIO        GPIOB
@@ -38,6 +38,9 @@
 #define USB_GPIO		GPIOA
 #define USB_DM_PIN		11
 #define USB_DP_PIN		12
+
+// Radio: SPI, PGpio, Sck, Miso, Mosi, Cs, Gdo0
+#define CC_Setup0       SPI1, GPIOA, 5,6,7, 4, 3
 
 #endif
 
@@ -53,9 +56,10 @@
 #endif
 
 #if 1 // ========================== USART ======================================
-#define UART            USART1
-#define UART_TX_REG     UART->TDR
-#define UART_RX_REG     UART->RDR
+#define PRINTF_FLOAT_EN FALSE
+#define CMD_UART        USART1
+#define UART_USE_INDEPENDENT_CLK    TRUE
+#define UART_TXBUF_SZ   256
 #endif
 
 #if 1 // ========================== USB ========================================

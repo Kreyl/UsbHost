@@ -1,4 +1,4 @@
-update=08.02.2016 13:28:00
+update=18.04.2018 20:29:50
 version=1
 last_client=eeschema
 [cvpcb]
@@ -38,16 +38,4 @@ LibName6=Special
 LibName7=Antennas_kl
 [eeschema]
 version=1
-LibDir=D:/libs/Kicad
-[eeschema/libraries]
-LibName1=UsbHost-rescue
-LibName2=Antennas_kl
-LibName3=Connectors_kl
-LibName4=pcb_details
-LibName5=power
-LibName6=Power_kl
-LibName7=st_kl
-LibName8=Tittar_kl
-LibName9=Transistors_kl
-LibName10=RF ICs
-LibName11=memory
+LibDir=

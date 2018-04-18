@@ -8,7 +8,8 @@
 #include "usb_cdc.h"
 #include "usb.h"
 #include "descriptors_cdc.h"
-#include "main.h"
+#include "MsgQ.h"
+#include "EvtMsgIDs.h"
 
 UsbCDC_t UsbCDC;
 
@@ -70,7 +71,7 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
             usbInitEndpointI(usbp, USBD2_INTERRUPT_REQUEST_EP, &ep2config);
 
             sduConfigureHookI(&UsbCDC.SDU1);   // Resetting the state of the CDC subsystem
-            App.SignalEvtI(EVT_USB_READY);
+            EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbReady));
             chSysUnlockFromISR();
             return;
         case USB_EVENT_SUSPEND:
@@ -112,7 +113,7 @@ static THD_FUNCTION(ThdCDCRX, arg) {
 //                UsbCDC.SDU1.vmt->put(&UsbCDC.SDU1, (uint8_t)m);   // repeat what was sent
                 if(UsbCDC.Cmd.PutChar((char)m) == pdrNewCmd) {
                     chSysLock();
-                    App.SignalEvtI(EVT_USB_NEW_CMD);
+                    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbNewCmd));
                     chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
                     chSysUnlock();  // Will be here when application signals that cmd processed
                 }
@@ -132,7 +133,7 @@ void UsbCDC_t::Init() {
     sduObjectInit(&SDU1);
     sduStart(&SDU1, &SerUsbCfg);
     // RX thread
-    IPThd = chThdCreateStatic(waThdCDCRX, sizeof(waThdCDCRX), NORMALPRIO, ThdCDCRX, NULL);
+    chThdCreateStatic(waThdCDCRX, sizeof(waThdCDCRX), NORMALPRIO, ThdCDCRX, NULL);
 }
 
 void UsbCDC_t::Connect() {
@@ -149,6 +150,6 @@ static inline void uFPutChar(char c) {
 void UsbCDC_t::Printf(const char *format, ...) {
     va_list args;
     va_start(args, format);
-    kl_vsprintf(uFPutChar, 0xFFFF, format, args);
+//    kl_vsprintf(uFPutChar, 0xFFFF, format, args);
     va_end(args);
 }

@@ -163,7 +163,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_SEMAPHORES               FALSE
+#define CH_CFG_USE_SEMAPHORES               TRUE
 
 /**
  * @brief   Semaphores queuing mode.
@@ -492,7 +492,7 @@
 #ifdef __cplusplus
 extern "C" {
 #endif
-extern void PrintfCNow(const char *format, ...);
+extern void PrintfC(const char *format, ...);
 #ifdef __cplusplus
 }
 #endif
@@ -500,7 +500,7 @@ extern void PrintfCNow(const char *format, ...);
 
 #define CH_CFG_SYSTEM_HALT_HOOK(reason, message) {                          \
   /* System halt code here.*/                                               \
-        PrintfCNow("\rHalt: %S: %S", reason, message);                      \
+        PrintfC("\rHalt: %S: %S", reason, message);                      \
 }
 
 /** @} */
