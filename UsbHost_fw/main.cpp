@@ -76,12 +76,12 @@ int main(void) {
     chSysUnlock();
     Clk.PrintFreqs();
 
-    UsbCDC.Init();
-    UsbCDC.Connect();
-
     chSysLock();
     Clk.EnableCRS();
     chSysUnlock();
+
+    UsbCDC.Init();
+    UsbCDC.Connect();
 #endif
 
     if(CC.Init() == retvOk) {
@@ -121,10 +121,7 @@ void ITask() {
 //            OnCmd((Shell_t*)&UsbCDC);
 //            UsbCDC.SignalCmdProcessed();
 //        }
-//        if(EvtMsk & EVT_UART_NEW_CMD) {
-//            OnCmd((Shell_t*)&Uart);
-//            Uart.SignalCmdProcessed();
-//        }
+
     } // while true
 }
 

@@ -60,10 +60,13 @@ static void SOFHandler(USBDriver *usbp) {
 static void usb_event(USBDriver *usbp, usbevent_t event) {
     switch (event) {
         case USB_EVENT_RESET:
+            PrintfI("UsbRst\r");
             return;
         case USB_EVENT_ADDRESS:
+            PrintfI("UsbAddr\r");
             return;
         case USB_EVENT_CONFIGURED:
+            PrintfI("UsbCfgrd\r");
             chSysLockFromISR();
             /* Enable the endpoints specified in the configuration.
             Note, this callback is invoked from an ISR so I-Class functions must be used.*/
@@ -75,9 +78,7 @@ static void usb_event(USBDriver *usbp, usbevent_t event) {
             chSysUnlockFromISR();
             return;
         case USB_EVENT_SUSPEND:
-            return;
         case USB_EVENT_WAKEUP:
-            return;
         case USB_EVENT_STALLED:
             return;
     } // switch
