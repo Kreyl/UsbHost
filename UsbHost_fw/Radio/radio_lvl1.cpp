@@ -47,12 +47,12 @@ void rLevel1_t::ITask() {
     while(true) {
         EvtMsg_t Msg = EvtQRadio.Fetch(TIME_INFINITE);
         switch(Msg.ID) {
-            case evtIdNewAcgRslt:
-                CC.Recalibrate();
-                DBG1_SET();
-                CC.Transmit(&PktTx, RPKTACG_LEN);
-                DBG1_CLR();
-                break;
+//            case evtIdNewAcgRslt:
+//                CC.Recalibrate();
+//                DBG1_SET();
+//                CC.Transmit(&PktTx, RPKTACG_LEN);
+//                DBG1_CLR();
+//                break;
 
             default: break;
         }

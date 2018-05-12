@@ -17,17 +17,14 @@ enum EvtMsgId_t {
 
     evtIdButtons,
 
+    evtIdMenuTimeout,
+    evtIdRadioRx,
+
     // Usb
     evtIdUsbConnect,
     evtIdUsbDisconnect,
     evtIdUsbReady,
+    evtIdUsbNewCmd,
     evtIdUsbInDone,
     evtIdUsbOutDone,
-
-
-    evtIdMenuTimeout,
-    evtIdRadioRx,
-    evtIdLinkLost,
-
-    evtIdNewAcgRslt,
 };

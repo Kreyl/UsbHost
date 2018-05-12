@@ -1,18 +1,13 @@
-/*
- * main.cpp
- *
- *  Created on: 26 дек. 2015 г.
- *      Author: Kreyl
- */
-
 #include "hal.h"
 #include "board.h"
 #include "MsgQ.h"
-#include "shell.h"
 #include "uart.h"
-#include "led.h"
+#include "shell.h"
 #include "kl_lib.h"
+#include "led.h"
 #include "Sequences.h"
+#include "radio_lvl1.h"
+#include "usb_cdc.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -21,56 +16,35 @@ extern CmdUart_t Uart;
 void OnCmd(Shell_t *PShell);
 void ITask();
 
-LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
+LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
 #endif
 
 int main(void) {
-    // ==== Setup clock frequency ====
-//    Clk.EnablePrefetch();
-//    Clk.SetupBusDividers(ahbDiv2, apbDiv1);
+    // ==== Init Clock system ====
+    Clk.EnablePrefetch();
+    Clk.SetupFlashLatency(48000000);
+    Clk.SwitchTo(csHSI48);
     Clk.UpdateFreqValues();
 
-    // Init OS
+    // === Init OS ===
     halInit();
     chSysInit();
 
     // ==== Init hardware ====
+    EvtQMain.Init();
     Uart.Init(115200);
     Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
-//    Led.Init();
+    // LEDs
+    Led.Init();
+//    LedLink.StartOrRestart(lbsqBlink1s);
 
-//    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
-//    else Led.StartSequence(lsqFailure);
-//    chThdSleepMilliseconds(810);
+//    if(Radio.Init() == retvOk) LedLink.StartOrRestart(lbsqBlink1s);
+//    else LedLink.StartOrRestart(lbsqFailure);
 
-#if USB_ENABLED
-    UsbCDC.Init();
-    chThdSleepMilliseconds(45);
-    // Enable HSI48
-    uint8_t ClkState = FAILURE;
-    while(true) {
-        chSysLock();
-        ClkState = Clk.SwitchTo(csHSI48);
-        chSysUnlock();
-        if(ClkState == OK) {
-            Led.StartSequence(lsq48Ok);
-            break;
-        }
-        else {
-            Uart.PrintfI("Hsi48 Fail\r");
-            Led.StartSequence(lsq48Fail);
-            chThdSleepMilliseconds(MS2ST(540));
-        }
-    }
-    Clk.UpdateFreqValues();
-    Clk.PrintFreqs();
-    Clk.SelectUSBClock_HSI48();
-    Clk.EnableCRS();
-    UsbCDC.Connect();
-#endif
+//    UsbCDC.Init();
 
     // Main cycle
     ITask();
@@ -81,24 +55,62 @@ void ITask() {
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
         switch(Msg.ID) {
+            case evtIdUsbNewCmd:
             case evtIdShellCmd:
                 OnCmd((Shell_t*)Msg.Ptr);
                 ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
                 break;
 
+            case evtIdRadioRx: {
+//                Printf("Rx: %d\r", Msg.Value);
+
+            } break;
+
+#if 1 // ======= USB =======
+            case evtIdUsbConnect:
+                Printf("USB connect\r");
+                Clk.EnableCRS();
+                Clk.SelectUSBClock_HSI48();
+                UsbCDC.Connect();
+                break;
+            case evtIdUsbDisconnect:
+                Printf("USB disconnect\r");
+//                UsbCDC.Disconnect();
+                Clk.DisableCRS();
+                break;
+            case evtIdUsbReady:
+                Printf("USB ready\r");
+                break;
+#endif
+
             default: break;
         } // switch
     } // while true
-}
+} // ITask()
+
 
 #if UART_RX_ENABLED // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
-    Cmd_t *PCmd = &PShell->Cmd;
+	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    Uart.Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("SetChannel")) {
+        uint32_t Chnl;
+        if(PCmd->GetNext<uint32_t>(&Chnl) == retvOk) {
+            if(Chnl <= 99) {
+                PShell->Ack(retvOk);
+            }
+            else PShell->Ack(retvBadValue);
+        }
+        else PShell->Ack(retvBadValue);
+    }
+
+    else if(PCmd->NameIs("Send")) {
     }
 
     else PShell->Ack(retvCmdUnknown);
