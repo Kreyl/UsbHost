@@ -40,9 +40,9 @@
 #define USB_DP          GPIOA, 12
 
 // LED
-#define LED_R_PIN       { GPIOB, 1, TIM3, 4, invInverted, omOpenDrain, 255 }
-#define LED_G_PIN       { GPIOB, 0, TIM3, 3, invInverted, omOpenDrain, 255 }
-#define LED_B_PIN       { GPIOB, 5, TIM3, 2, invInverted, omOpenDrain, 255 }
+#define LED_R_PIN       { GPIOB, 0, TIM3, 3, invNotInverted, omPushPull, 255 }
+#define LED_G_PIN       { GPIOB, 4, TIM3, 1, invNotInverted, omPushPull, 255 }
+#define LED_B_PIN       { GPIOB, 1, TIM3, 4, invNotInverted, omPushPull, 255 }
 
 
 // Radio: SPI, PGpio, Sck, Miso, Mosi, Cs, Gdo0

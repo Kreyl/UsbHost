@@ -39,10 +39,10 @@ int main(void) {
 
     // LEDs
     Led.Init();
-//    LedLink.StartOrRestart(lbsqBlink1s);
+    Led.StartOrRestart(lsqStart);
 
-//    if(Radio.Init() == retvOk) LedLink.StartOrRestart(lbsqBlink1s);
-//    else LedLink.StartOrRestart(lbsqFailure);
+//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
+//    else Led.StartOrRestart(lsqFailure);
 
 //    UsbCDC.Init();
 
