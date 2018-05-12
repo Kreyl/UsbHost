@@ -128,7 +128,7 @@ static THD_FUNCTION(ThdCDCRX, arg) {
 }
 
 uint8_t UsbCDC_t::IPutChar(char c) {
-    return (SDU1.vmt->put(&SDU1, (uint8_t)c) == MSG_OK)? retvOk : retvFail;
+    return (SDU1.vmt->putt(&SDU1, (uint8_t)c, MS2ST(999)) == MSG_OK)? retvOk : retvFail;
 }
 
 void UsbCDC_t::SignalCmdProcessed() {

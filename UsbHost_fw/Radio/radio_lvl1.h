@@ -64,7 +64,7 @@ union AccSpd_t {
         int16_t g[3];
         int16_t a[3];
     } __packed;
-    void Print() { Printf("%d %d %d; %d %d %d\r", a[0],a[1],a[2], g[0],g[1],g[2]); }
+    void Print() { Printf("%d %d %d; %d %d %d;   ", a[0],a[1],a[2], g[0],g[1],g[2]); }
     AccSpd_t& operator = (const AccSpd_t &Right) {
         DWord[0] = Right.DWord[0];
         DWord[1] = Right.DWord[1];
@@ -85,6 +85,10 @@ struct rPktAcg_t  {
         Acg[4] = Right.Acg[4];
         Acg[5] = Right.Acg[5];
         return *this;
+    }
+    void Print() {
+        for(int i=0; i<6; i++) Acg[i].Print();
+        PrintfEOL();
     }
 } __packed;
 
@@ -125,7 +129,7 @@ private:
 public:
     int8_t Rssi;
     rPktAcg_t PktTx;
-//    rPkt_t PktRx;
+    rPktAcg_t PktRxAcg;
 //    rPktReply_t PktReply;
     uint8_t Init();
     void SetChannel(uint8_t NewChannel);
