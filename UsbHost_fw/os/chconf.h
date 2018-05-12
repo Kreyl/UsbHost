@@ -222,7 +222,7 @@
  *
  * @note    The default is @p TRUE.
  */
-#define CH_CFG_USE_EVENTS                   TRUE
+#define CH_CFG_USE_EVENTS                   FALSE
 
 /**
  * @brief   Events Flags APIs with timeout.

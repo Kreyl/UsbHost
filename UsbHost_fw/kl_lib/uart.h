@@ -11,6 +11,7 @@
 #include <cstring>
 #include "shell.h"
 #include "board.h"
+#include "stdarg.h"
 
 struct UartParams_t {
     USART_TypeDef* Uart;
