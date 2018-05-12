@@ -5,38 +5,46 @@
  *      Author: Kreyl
  */
 
-#include "main.h"
-#include "usb_cdc.h"
-#include "color.h"
+#include "hal.h"
+#include "board.h"
+#include "MsgQ.h"
+#include "shell.h"
+#include "uart.h"
 #include "led.h"
+#include "kl_lib.h"
 #include "Sequences.h"
 
-App_t App;
+#if 1 // ======================== Variables and defines ========================
+// Forever
+EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
+extern CmdUart_t Uart;
+void OnCmd(Shell_t *PShell);
+void ITask();
 
 LedRGB_t Led { {LED_GPIO, LEDR_PIN, LED_TMR, LEDR_CHNL}, {LED_GPIO, LEDG_PIN, LED_TMR, LEDG_CHNL}, {LED_GPIO, LEDB_PIN, LED_TMR, LEDB_CHNL} };
 
+#endif
+
 int main(void) {
     // ==== Setup clock frequency ====
-    Clk.EnablePrefetch();
-    Clk.SetupBusDividers(ahbDiv2, apbDiv1);
+//    Clk.EnablePrefetch();
+//    Clk.SetupBusDividers(ahbDiv2, apbDiv1);
     Clk.UpdateFreqValues();
 
     // Init OS
     halInit();
     chSysInit();
-    App.InitThread();
 
     // ==== Init hardware ====
-    SYSCFG->CFGR1 |= SYSCFG_CFGR1_USART1TX_DMA_RMP | SYSCFG_CFGR1_USART1RX_DMA_RMP;
-    Uart.Init(115200, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN);
-    Uart.Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
+    Uart.Init(115200);
+    Printf("\r%S %S\r", APP_NAME, BUILD_TIME);
     Clk.PrintFreqs();
 
-    Led.Init();
+//    Led.Init();
 
-    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
-    else Led.StartSequence(lsqFailure);
-    chThdSleepMilliseconds(810);
+//    if(Radio.Init() == OK) Led.StartSequence(lsqStart);
+//    else Led.StartSequence(lsqFailure);
+//    chThdSleepMilliseconds(810);
 
 #if USB_ENABLED
     UsbCDC.Init();
@@ -65,79 +73,34 @@ int main(void) {
 #endif
 
     // Main cycle
-    App.ITask();
+    ITask();
 }
 
 __noreturn
-void App_t::ITask() {
+void ITask() {
     while(true) {
-        uint32_t EvtMsk = chEvtWaitAny(ALL_EVENTS);
+        EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
+        switch(Msg.ID) {
+            case evtIdShellCmd:
+                OnCmd((Shell_t*)Msg.Ptr);
+                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
+                break;
 
-        if(EvtMsk & EVT_USB_READY) {
-            Uart.Printf("UsbReady\r");
-            Led.StartSequence(lsqUSB);
-        }
-
-        if(EvtMsk & EVT_USB_NEW_CMD) {
-            Led.StartSequence(lsqUSBCmd);
-            OnCmd((Shell_t*)&UsbCDC);
-            UsbCDC.SignalCmdProcessed();
-        }
-        if(EvtMsk & EVT_UART_NEW_CMD) {
-            OnCmd((Shell_t*)&Uart);
-            Uart.SignalCmdProcessed();
-        }
+            default: break;
+        } // switch
     } // while true
 }
 
-#if 1 // ======================= Command processing ============================
-void App_t::OnCmd(Shell_t *PShell) {
+#if UART_RX_ENABLED // ================= Command processing ====================
+void OnCmd(Shell_t *PShell) {
     Cmd_t *PCmd = &PShell->Cmd;
-    __unused int32_t dw32 = 0;  // May be unused in some configurations
-//    PShell->Printf(">%S\r", PCmd->Name);
+    __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    Uart.Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
-        PShell->Ack(OK);
+        PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("Version")) {
-        PShell->Printf("%S %S\r\n", APP_NAME, BUILD_TIME);
-    }
-
-    else if(PCmd->NameIs("GetInfo")) {
-        rPkt_t Pkt;
-        Pkt.Cmd = 0;    // GetInfo
-        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
-        if(Rslt == OK) {
-            rPkt_t *p = &Radio.LastPktRx;
-            PShell->Printf("Info %d %d %d %d %d %d %d %d\r\n",
-                        p->t[0], p->t[1], p->t[2], p->t[3], p->t[4], p->t[5], p->t[6], p->t[7]);
-        }
-        else PShell->Ack(Rslt);
-    }
-
-    else if(PCmd->NameIs("SetParam")) {
-        rPkt_t Pkt;
-        Pkt.Cmd = 1;    // SetParam
-        if(PCmd->GetNextByte(&Pkt.ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        if(PCmd->GetNextInt32(&Pkt.Value) != OK) { PShell->Ack(CMD_ERROR); return; }
-//        Uart.Printf("%S %d %d\r", PCmd->Name, Pkt.Data1, Pkt.Data2);
-        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
-        PShell->Ack(Rslt);
-    }
-
-    else if(PCmd->NameIs("GetParam")) {
-        rPkt_t Pkt;
-        Pkt.Cmd = 2;    // GetParam
-        if(PCmd->GetNextByte(&Pkt.ParamID) != OK) { PShell->Ack(CMD_ERROR); return; }
-        uint8_t Rslt = Radio.TxAndGetAnswer(&Pkt);
-        if(Rslt == OK) {
-            PShell->Printf("Param %d\r\n", Radio.LastPktRx.Value);
-        }
-        else PShell->Ack(Rslt);
-    }
-
-    else PShell->Ack(CMD_UNKNOWN);
+    else PShell->Ack(retvCmdUnknown);
 }
 #endif

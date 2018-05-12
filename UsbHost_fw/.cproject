@@ -46,11 +46,10 @@
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor.1155921692" name="Use preprocessor" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.usepreprocessor" value="true" valueType="boolean"/>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths.1126423570" name="Include paths (-I)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.assembler.include.paths" valueType="includePath">
 									<listOptionValue builtIn="false" value="../os"/>
-									<listOptionValue builtIn="false" value="../os/ports"/>
 									<listOptionValue builtIn="false" value="../os/stm32f072"/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
-									<listOptionValue builtIn="false" value="../os/hal/cmsis"/>
+									<listOptionValue builtIn="false" value="../os/include"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input.1169135162" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.assembler.input"/>
 							</tool>
@@ -62,7 +61,6 @@
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../kl_lib"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
-									<listOptionValue builtIn="false" value="../os/hal/cmsis"/>
 								</option>
 								<inputType id="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input.1565357491" superClass="ilg.gnuarmeclipse.managedbuild.cross.tool.c.compiler.input"/>
 							</tool>
@@ -75,7 +73,6 @@
 									<listOptionValue builtIn="false" value="../kl_lib"/>
 									<listOptionValue builtIn="false" value="../usb"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
-									<listOptionValue builtIn="false" value="../os/hal/cmsis"/>
 									<listOptionValue builtIn="false" value="../Radio"/>
 								</option>
 								<option id="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions.2122278963" name="Do not use exceptions (-fno-exceptions)" superClass="ilg.gnuarmeclipse.managedbuild.cross.option.cpp.compiler.noexceptions" useByScannerDiscovery="true" value="true" valueType="boolean"/>
