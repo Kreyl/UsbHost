@@ -34,6 +34,8 @@ rLevel1_t Radio;
 //uint8_t OnRadioRx();
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQRadio;
 
+extern LedRGB_t Led;
+
 #if 1 // ================================ Task =================================
 static THD_WORKING_AREA(warLvl1Thread, 2048);
 __noreturn
@@ -41,8 +43,6 @@ static void rLvl1Thread(void *arg) {
     chRegSetThreadName("rLvl1");
     Radio.ITask();
 }
-
-//systime_t St;
 
 __noreturn
 void rLevel1_t::ITask() {
@@ -64,9 +64,6 @@ void rLevel1_t::ITask() {
         uint8_t RxRslt = CC.ReceiveLong(180, &PktRxAcg, &Len, &Rssi);
         if(RxRslt == retvOk) {
 //            Printf("Rssi=%d\r", Rssi);
-//            systime_t Ela = chVTTimeElapsedSinceX(St);
-//            St = chVTGetSystemTimeX();
-//            Printf("Ela: %u\r", Ela);
             if(UsbCDC.IsActive()) {
                 UsbCDC.Printf("%d %d %d; %d %d %d;  %d %d %d; %d %d %d;  %d %d %d; %d %d %d;  %d %d %d; %d %d %d;  %d %d %d; %d %d %d;  %d %d %d; %d %d %d\r\n",
                 PktRxAcg.Acg[0].a[0], PktRxAcg.Acg[0].a[1], PktRxAcg.Acg[0].a[2], PktRxAcg.Acg[0].g[0], PktRxAcg.Acg[0].g[1], PktRxAcg.Acg[0].g[2],
@@ -76,7 +73,7 @@ void rLevel1_t::ITask() {
                 PktRxAcg.Acg[4].a[0], PktRxAcg.Acg[4].a[1], PktRxAcg.Acg[4].a[2], PktRxAcg.Acg[4].g[0], PktRxAcg.Acg[4].g[1], PktRxAcg.Acg[4].g[2],
                 PktRxAcg.Acg[5].a[0], PktRxAcg.Acg[5].a[1], PktRxAcg.Acg[5].a[2], PktRxAcg.Acg[5].g[0], PktRxAcg.Acg[5].g[1], PktRxAcg.Acg[5].g[2]);
             }
-
+            Led.StartOrRestart(lsqRx);
 
 //            PktRxAcg.Print();
 //            // Transmit reply

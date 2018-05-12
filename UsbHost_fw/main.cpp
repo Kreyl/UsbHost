@@ -82,6 +82,7 @@ void ITask() {
                 break;
             case evtIdUsbReady:
                 Printf("USB ready\r");
+                Led.StartOrRestart(lsqUsbReady);
                 break;
 #endif
 
