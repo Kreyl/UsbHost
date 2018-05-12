@@ -39,12 +39,14 @@ int main(void) {
 
     // LEDs
     Led.Init();
-    Led.StartOrRestart(lsqStart);
 
-//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
-//    else Led.StartOrRestart(lsqFailure);
+    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
+    else Led.StartOrRestart(lsqFailure);
 
-//    UsbCDC.Init();
+    UsbCDC.Init();
+    Clk.EnableCRS();
+    Clk.SelectUSBClock_HSI48();
+    UsbCDC.Connect();
 
     // Main cycle
     ITask();
@@ -75,7 +77,7 @@ void ITask() {
                 break;
             case evtIdUsbDisconnect:
                 Printf("USB disconnect\r");
-//                UsbCDC.Disconnect();
+                UsbCDC.Disconnect();
                 Clk.DisableCRS();
                 break;
             case evtIdUsbReady:

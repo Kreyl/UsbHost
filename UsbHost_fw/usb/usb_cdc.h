@@ -18,6 +18,7 @@ public:
     void Init();
     void Connect();
     void Disconnect();
+    bool IsActive();
     void Printf(const char *format, ...) {
         va_list args;
         va_start(args, format);

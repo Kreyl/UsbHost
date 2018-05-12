@@ -13,17 +13,6 @@
 
 UsbCDC_t UsbCDC;
 SerialUSBDriver SDU1;
-
-#define USBDrv          USBD1   // USB driver to use
-
-#define EVT_USB_READY           EVENT_MASK(10)
-#define EVT_USB_RESET           EVENT_MASK(11)
-#define EVT_USB_SUSPEND         EVENT_MASK(12)
-#define EVT_USB_CONNECTED       EVENT_MASK(13)
-#define EVT_USB_DISCONNECTED    EVENT_MASK(14)
-#define EVT_USB_IN_DONE         EVENT_MASK(15)
-#define EVT_USB_OUT_DONE        EVENT_MASK(16)
-
 static thread_t *PCdcThd;
 
 #if 1 // ========================== Endpoints ==================================
@@ -116,13 +105,13 @@ const SerialUSBConfig SerUsbCfg = {
 #endif
 
 #if 1 // ========================== RX Thread ==================================
-static inline bool IsCdcActive() { return (SDU1.config->usbp->state == USB_ACTIVE); }
+bool UsbCDC_t::IsActive() { return (SDU1.config->usbp->state == USB_ACTIVE); }
 
 static THD_WORKING_AREA(waThdCDCRX, 128);
 static THD_FUNCTION(ThdCDCRX, arg) {
     chRegSetThreadName("CDCRX");
     while(true) {
-        if(IsCdcActive()) {
+        if(UsbCDC.IsActive()) {
             msg_t m = SDU1.vmt->get(&SDU1);
             if(m > 0) {
 //                SDU1.vmt->put(&SDU1, (uint8_t)m);   // repeat what was sent
@@ -150,8 +139,13 @@ void UsbCDC_t::SignalCmdProcessed() {
 #endif
 
 void UsbCDC_t::Init() {
-    PinSetupAnalog(GPIOA, 11);
-    PinSetupAnalog(GPIOA, 12);
+#ifdef STM32L4XX
+    PinSetupAlterFunc(USB_GPIO, USB_DM, omPushPull, pudNone, USB_AF, psVeryHigh);
+    PinSetupAlterFunc(USB_GPIO, USB_DP, omPushPull, pudNone, USB_AF, psVeryHigh);
+#else
+    PinSetupAnalog(USB_DM);
+    PinSetupAnalog(USB_DP);
+#endif
     // Objects
     usbInit();
     sduObjectInit(&SDU1);
@@ -165,4 +159,8 @@ void UsbCDC_t::Connect() {
     chThdSleepMilliseconds(504);
     usbStart(SerUsbCfg.usbp, &UsbCfg);
     usbConnectBus(SerUsbCfg.usbp);
+}
+void UsbCDC_t::Disconnect() {
+    usbStop(SerUsbCfg.usbp);
+    usbDisconnectBus(SerUsbCfg.usbp);
 }

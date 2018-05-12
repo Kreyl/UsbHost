@@ -59,8 +59,6 @@
 #endif
 
 #if 1 // ========================== USB ========================================
-#define USBDrv          USBD1   // USB driver to use
-
 // CRS
 #define CRS_PRESCALER   RCC_CRS_SYNC_DIV1
 #define CRS_SOURCE      RCC_CRS_SYNC_SOURCE_USB
