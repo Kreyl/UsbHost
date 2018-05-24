@@ -55,50 +55,30 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 
 #endif
 
-#define CC_TX_PWR   CC_PwrPlus5dBm
+#define CC_TX_PWR   CC_Pwr0dBm
 
 #if 1 // =========================== Pkt_t =====================================
-union AccSpd_t {
-    uint32_t DWord[3];
+union rPkt_t {
+    uint32_t DWord[4];
     struct {
-        int16_t g[3];
-        int16_t a[3];
+        uint8_t ID;
+        uint8_t Cmd;
+        union {
+            uint32_t Param;
+            uint8_t b[14];
+        };
     } __packed;
-    void Print() { Printf("%d %d %d; %d %d %d;   ", a[0],a[1],a[2], g[0],g[1],g[2]); }
-    AccSpd_t& operator = (const AccSpd_t &Right) {
+    void Print() { Printf("%u %u %u\r\n", ID, Cmd, Param); }
+    rPkt_t& operator = (const rPkt_t &Right) {
         DWord[0] = Right.DWord[0];
         DWord[1] = Right.DWord[1];
         DWord[2] = Right.DWord[2];
+        DWord[3] = Right.DWord[3];
         return *this;
     }
 } __packed;
 
-struct rPktAcg_t  {
-    uint8_t Length;
-    AccSpd_t Acg[6];
-    rPktAcg_t& operator = (const rPktAcg_t &Right) {
-        Length = Right.Length;
-        Acg[0] = Right.Acg[0];
-        Acg[1] = Right.Acg[1];
-        Acg[2] = Right.Acg[2];
-        Acg[3] = Right.Acg[3];
-        Acg[4] = Right.Acg[4];
-        Acg[5] = Right.Acg[5];
-        return *this;
-    }
-    void Print() {
-        for(int i=0; i<6; i++) Acg[i].Print();
-        PrintfEOL();
-    }
-} __packed;
-
-#define RPKTACG_LEN    sizeof(rPktAcg_t)
-struct rPktReply_t {
-    uint8_t Length;
-    uint8_t Reply;
-} __packed;
-
-#define REPLY_PKT_LEN   1
+#define RPKT_SZ    sizeof(rPkt_t)
 
 #endif
 
@@ -128,9 +108,7 @@ private:
 
 public:
     int8_t Rssi;
-    rPktAcg_t PktTx;
-    rPktAcg_t PktRxAcg;
-//    rPktReply_t PktReply;
+    rPkt_t PktTx, PktRx;
     uint8_t Init();
     void SetChannel(uint8_t NewChannel);
     // Inner use
@@ -138,4 +116,9 @@ public:
 };
 
 extern rLevel1_t Radio;
+
+
+#define RMSG_SETCHNL    1
+#define RMSG_SEND_PARAM 2
+
 extern EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQRadio;

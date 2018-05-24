@@ -96,7 +96,7 @@ void ITask() {
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
-//    Uart.Printf("%S\r", PCmd->Name);
+    Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
@@ -106,7 +106,7 @@ void OnCmd(Shell_t *PShell) {
         uint32_t Chnl;
         if(PCmd->GetNext<uint32_t>(&Chnl) == retvOk) {
             if(Chnl <= 99) {
-                PShell->Ack(retvOk);
+                PShell->Ack(EvtQRadio.SendNowOrExit(EvtMsg_t(RMSG_SETCHNL, Chnl)));
             }
             else PShell->Ack(retvBadValue);
         }
@@ -114,6 +114,22 @@ void OnCmd(Shell_t *PShell) {
     }
 
     else if(PCmd->NameIs("Send")) {
+        uint8_t ID, Cmd, Param;
+        if(PCmd->GetNext<uint8_t>(&ID) == retvOk) {
+            if(PCmd->GetNext<uint8_t>(&Cmd) == retvOk) {
+                if(PCmd->GetNext<uint8_t>(&Param) == retvOk) {
+                    EvtMsg_t Msg;
+                    Msg.ID = RMSG_SEND_PARAM;
+                    Msg.b[0] = ID;
+                    Msg.b[1] = Cmd;
+                    Msg.b[2] = Param;
+                    PShell->Ack(EvtQRadio.SendNowOrExit(Msg));
+                }
+                else PShell->Ack(retvBadValue);
+            }
+            else PShell->Ack(retvBadValue);
+        }
+        else PShell->Ack(retvBadValue);
     }
 
     else PShell->Ack(retvCmdUnknown);
