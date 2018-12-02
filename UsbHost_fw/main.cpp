@@ -59,6 +59,7 @@ void ITask() {
         switch(Msg.ID) {
             case evtIdUsbNewCmd:
             case evtIdShellCmd:
+                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
                 OnCmd((Shell_t*)Msg.Ptr);
                 ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
                 break;
