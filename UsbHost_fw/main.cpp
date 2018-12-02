@@ -104,15 +104,14 @@ void OnCmd(Shell_t *PShell) {
 
     else if(PCmd->NameIs("Set")) {
         uint8_t Rslt = retvCmdError;
-        rPkt_t Pkt;
         // Read cmd
-        if(PCmd->GetNext<uint8_t>(&Pkt.ID) != retvOk) goto SetEnd; // Get ID
-        if(PCmd->GetArray(Pkt.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.ID) != retvOk) goto SetEnd; // Get ID
+        if(PCmd->GetArray(Radio.PktTx.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
         // Get IR params
-        if(PCmd->GetNext<uint8_t>(&Pkt.State.IRPwr) != retvOk) goto SetEnd;
-        if(PCmd->GetNext<uint8_t>(&Pkt.State.IRData) != retvOk) goto SetEnd;
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRPwr) != retvOk) goto SetEnd;
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRData) != retvOk) goto SetEnd;
         // Transmit data and wait answer
-        Rslt = Radio.TxRxSync(&Pkt);
+        Rslt = Radio.TxRxSync();
         SetEnd:
         PShell->Ack(Rslt);
     } // Set

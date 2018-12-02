@@ -83,7 +83,6 @@ struct rPkt_t {
 #define RX_T_MS                 11
 #define RX_SLEEP_T_MS           810
 #define MIN_SLEEP_DURATION_MS   18
-#define RETRY_CNT               2
 
 #endif
 
@@ -102,7 +101,7 @@ public:
     int8_t Rssi;
     rPkt_t PktTx, PktRx;
     uint8_t Init();
-    uint8_t TxRxSync(rPkt_t *PPkt);
+    uint8_t TxRxSync();
     // Inner use
     void ITask();
 };
