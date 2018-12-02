@@ -5,8 +5,7 @@
  * Created on 7 Март 2010 г., 12:42
  */
 
-#ifndef _CC_RF_SETTINGS_H
-#define	_CC_RF_SETTINGS_H
+#pragma once
 
 // All this is for 27.0 MHz crystal, and for 868 MHz carrier
 
@@ -41,13 +40,13 @@
 
 // =================================== Common ==================================
 // ==== MDMCFG1 ==== 7 FEC_EN, 6:4 NUM_PREAMBLE, 3:2 not used, 1:0 CHANSPC_E
-//#define CC_FEC_EN           0x80    // Fec enabled
-#define CC_FEC_EN           0x00    // Fec disabled
+#define CC_FEC_EN           0x80    // Fec enabled
+//#define CC_FEC_EN           0x00    // Fec disabled
 #define CC_NUM_PREAMBLE     0x20    // 010 => 4 bytes of preamble
 #define CC_MDMCFG1_VALUE    (CC_FEC_EN | CC_NUM_PREAMBLE | CC_CHANSPC_E)
 
-#define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
-//#define CC_MCSM0_VALUE      0x08        // Never calibrate
+//#define CC_MCSM0_VALUE      0x18        // Calibrate at IDLE->RX,TX
+#define CC_MCSM0_VALUE      0x08        // Never calibrate
 
 // ==== MCSM1 ==== bits 7:6 not used, 5:4 ClearChannel mode, 3:2 RxOff mode, 1:0 TxOff mode
 #define CC_CCA_MODE         0b00000000  // Always clear
@@ -219,7 +218,3 @@
 #define CC_SYNC0_VALUE      0x91
 
 #define CC_CHANNR_VALUE     0x00        // Channel number.
-
-
-#endif	/* _CC_RF_SETTINGS_H */
-

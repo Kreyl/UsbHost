@@ -5,26 +5,27 @@
  *      Author: Kreyl
  */
 
-#ifndef USB_USB_CDC_H_
-#define USB_USB_CDC_H_
+#pragma once
 
 #include "hal.h"
-#include "serial_usb.h"
-#include "stdarg.h"
 #include "shell.h"
 
-class UsbCDC_t : public Shell_t {
+class UsbCDC_t : public PrintfHelper_t, public Shell_t {
 private:
+    void IStartTransmissionIfNotYet() {} // Dummy
+    uint8_t IPutChar(char c);
 public:
     void Init();
     void Connect();
     void Disconnect();
-    bool IsActive() { return (SDU1.config->usbp->state == USB_ACTIVE); }
-    void Printf(const char *S, ...);
-    // Inner use
-    SerialUSBDriver SDU1;
+    bool IsActive();
+    void Printf(const char *format, ...) {
+        va_list args;
+        va_start(args, format);
+        IVsPrintf(format, args);
+        va_end(args);
+    }
+    void SignalCmdProcessed();
 };
 
 extern UsbCDC_t UsbCDC;
-
-#endif /* USB_USB_CDC_H_ */
