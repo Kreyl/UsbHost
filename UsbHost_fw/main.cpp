@@ -96,41 +96,26 @@ void ITask() {
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
-    Printf("%S\r", PCmd->Name);
+//    Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("SetChannel")) {
-        uint32_t Chnl;
-        if(PCmd->GetNext<uint32_t>(&Chnl) == retvOk) {
-            if(Chnl <= 99) {
-                PShell->Ack(EvtQRadio.SendNowOrExit(EvtMsg_t(RMSG_SETCHNL, Chnl)));
-            }
-            else PShell->Ack(retvBadValue);
-        }
-        else PShell->Ack(retvBadValue);
-    }
-
-    else if(PCmd->NameIs("Send")) {
-        uint8_t ID, Cmd, Param;
-        if(PCmd->GetNext<uint8_t>(&ID) == retvOk) {
-            if(PCmd->GetNext<uint8_t>(&Cmd) == retvOk) {
-                if(PCmd->GetNext<uint8_t>(&Param) == retvOk) {
-                    EvtMsg_t Msg;
-                    Msg.ID = RMSG_SEND_PARAM;
-                    Msg.b[0] = ID;
-                    Msg.b[1] = Cmd;
-                    Msg.b[2] = Param;
-                    PShell->Ack(EvtQRadio.SendNowOrExit(Msg));
-                }
-                else PShell->Ack(retvBadValue);
-            }
-            else PShell->Ack(retvBadValue);
-        }
-        else PShell->Ack(retvBadValue);
-    }
+    else if(PCmd->NameIs("Set")) {
+        uint8_t Rslt = retvCmdError;
+        rPkt_t Pkt;
+        // Read cmd
+        if(PCmd->GetNext<uint8_t>(&Pkt.ID) != retvOk) goto SetEnd; // Get ID
+        if(PCmd->GetArray(Pkt.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
+        // Get IR params
+        if(PCmd->GetNext<uint8_t>(&Pkt.State.IRPwr) != retvOk) goto SetEnd;
+        if(PCmd->GetNext<uint8_t>(&Pkt.State.IRData) != retvOk) goto SetEnd;
+        // Transmit data and wait answer
+        Rslt = Radio.TxRxSync(&Pkt);
+        SetEnd:
+        PShell->Ack(Rslt);
+    } // Set
 
     else PShell->Ack(retvCmdUnknown);
 }

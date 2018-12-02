@@ -14,7 +14,7 @@
 
 cc1101_t CC(CC_Setup0);
 
-#define DBG_PINS
+//#define DBG_PINS
 
 #ifdef DBG_PINS
 #define DBG_GPIO1   GPIOB
@@ -93,8 +93,8 @@ uint8_t rLevel1_t::Init() {
 
     if(CC.Init() == retvOk) {
         CC.SetTxPower(CC_TX_PWR);
-        CC.SetPktSize(RPKT_SZ); // Max sz
-        CC.SetChannel(RCHNL_SRV);
+        CC.SetPktSize(RPKT_LEN); // Max sz
+        CC.SetChannel(4);
         // Thread
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), NORMALPRIO, (tfunc_t)rLvl1Thread, NULL);
         return retvOk;
@@ -102,9 +102,12 @@ uint8_t rLevel1_t::Init() {
     else return retvFail;
 }
 
-void rLevel1_t::SetChannel(uint8_t NewChannel) {
-    chSysLock();
-    CC.SetChannel(NewChannel);
-    chSysUnlock();
+uint8_t rLevel1_t::TxRxSync(rPkt_t *PPkt) {
+//    Uart.Printf("Pkt: %u; %u %u %u %u %u; Pwr=%u, Data=%u\r", PPkt->ID, PPkt->Brightness[0], PPkt->Brightness[1], PPkt->Brightness[2], PPkt->Brightness[3], PPkt->Brightness[4], PPkt->IRPwr, PPkt->IRData);
+    PTxPkt = PPkt;  // copy pointer
+    chEvtSignal(PThd, EVT_RADIO_NEW_CMD);
+    eventmask_t EvtMsk = chEvtWaitAny(EVT_RADIO_OK | EVT_RADIO_TIMEOUT);
+    if(EvtMsk & EVT_RADIO_OK) return OK;
+    else return TIMEOUT;
 }
 #endif

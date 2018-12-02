@@ -58,29 +58,21 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #define CC_TX_PWR   CC_Pwr0dBm
 
 #if 1 // =========================== Pkt_t =====================================
-union rPkt_t {
-    uint32_t DWord[4];
-    struct {
-        uint8_t ID;
-        uint8_t Cmd;
-        union {
-            uint32_t Param;
-            uint8_t b[14];
-        };
-    } __packed;
-    void Print() { Printf("%u %u %u\r\n", ID, Cmd, Param); }
-    rPkt_t& operator = (const rPkt_t &Right) {
-        DWord[0] = Right.DWord[0];
-        DWord[1] = Right.DWord[1];
-        DWord[2] = Right.DWord[2];
-        DWord[3] = Right.DWord[3];
-        return *this;
-    }
+struct State_t {
+    uint8_t Brightness[5];
+    uint8_t IRPwr, IRData;
 } __packed;
 
-#define RPKT_SZ    sizeof(rPkt_t)
-
+struct rPkt_t {
+    uint8_t ID;
+    union {
+        State_t State;
+        uint8_t Status;
+    };
+} __packed;
+#define RPKT_LEN    sizeof(rPkt_t)
 #endif
+
 
 #if 1 // ======================= Channels & cycles =============================
 #define RCHNL_SRV       0
@@ -110,15 +102,9 @@ public:
     int8_t Rssi;
     rPkt_t PktTx, PktRx;
     uint8_t Init();
-    void SetChannel(uint8_t NewChannel);
+    uint8_t TxRxSync(rPkt_t *PPkt);
     // Inner use
     void ITask();
 };
 
 extern rLevel1_t Radio;
-
-
-#define RMSG_SETCHNL    1
-#define RMSG_SEND_PARAM 2
-
-extern EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQRadio;
