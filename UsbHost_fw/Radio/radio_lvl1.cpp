@@ -60,7 +60,7 @@ uint8_t rLevel1_t::TxRxSync() {
         DBG1_CLR();
 
         // Wait answer
-        uint8_t RxRslt = CC.Receive(180, &PktRx, RPKT_LEN, &Rssi);
+        uint8_t RxRslt = CC.Receive(54, &PktRx, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
             Printf("\rRssi=%d", Rssi);
             // Check if good answer received, repeat if not
