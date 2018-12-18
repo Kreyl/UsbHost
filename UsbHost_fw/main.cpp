@@ -23,9 +23,9 @@ LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
 int main(void) {
     // ==== Init Clock system ====
-    Clk.EnablePrefetch();
-    Clk.SetupFlashLatency(48000000);
-    Clk.SwitchTo(csHSI48);
+//    Clk.EnablePrefetch();
+//    Clk.SetupFlashLatency(48000000);
+//    Clk.SwitchTo(csHSI48);
     Clk.UpdateFreqValues();
 
     // === Init OS ===
@@ -35,19 +35,23 @@ int main(void) {
     // ==== Init hardware ====
     EvtQMain.Init();
     Uart.Init();
-    Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
-    Clk.PrintFreqs();
+    for(int i=0; i<7; i++) {
+        while(!(USART1->ISR & USART_ISR_TXE));
+        USART1->TDR = 'a';
+    }
+//    Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
+//    Clk.PrintFreqs();
 
     // LEDs
-    Led.Init();
+//    Led.Init();
 
-    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
-    else Led.StartOrRestart(lsqFailure);
-
-    UsbCDC.Init();
-    Clk.EnableCRS();
-    Clk.SelectUSBClock_HSI48();
-    UsbCDC.Connect();
+//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
+//    else Led.StartOrRestart(lsqFailure);
+//
+//    UsbCDC.Init();
+//    Clk.EnableCRS();
+//    Clk.SelectUSBClock_HSI48();
+//    UsbCDC.Connect();
 
     // Main cycle
     ITask();
