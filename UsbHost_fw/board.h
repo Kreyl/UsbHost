@@ -50,14 +50,6 @@
 
 #endif // GPIO
 
-#if 1 // ========================== USART ======================================
-#define PRINTF_FLOAT_EN FALSE
-#define CMD_UART        USART1
-#define UART_USE_INDEPENDENT_CLK    TRUE
-#define UART_TXBUF_SZ   1024
-
-#endif
-
 #if 1 // ========================== USB ========================================
 // CRS
 #define CRS_PRESCALER   RCC_CRS_SYNC_DIV1
@@ -95,6 +87,8 @@
 #if 1 // =========================== DMA =======================================
 #define STM32_DMA_REQUIRED  TRUE
 // ==== Uart ====
+#define UART_DMA_TX_MODE(Chnl) (STM32_DMA_CR_CHSEL(Chnl) | DMA_PRIORITY_LOW | STM32_DMA_CR_MSIZE_BYTE | STM32_DMA_CR_PSIZE_BYTE | STM32_DMA_CR_MINC | STM32_DMA_CR_DIR_M2P | STM32_DMA_CR_TCIE)
+#define UART_DMA_RX_MODE(Chnl) (STM32_DMA_CR_CHSEL(Chnl) | DMA_PRIORITY_MEDIUM | STM32_DMA_CR_MSIZE_BYTE | STM32_DMA_CR_PSIZE_BYTE | STM32_DMA_CR_MINC | STM32_DMA_CR_DIR_P2M | STM32_DMA_CR_CIRC)
 #define UART_DMA_TX     STM32_DMA1_STREAM2
 #define UART_DMA_RX     STM32_DMA1_STREAM3
 #define UART_DMA_CHNL   0   // Dummy
@@ -116,3 +110,17 @@
 #endif // ADC
 
 #endif // DMA
+
+#if 1 // ========================== USART ======================================
+#define PRINTF_FLOAT_EN FALSE
+#define UART_TXBUF_SZ   1024
+#define UART_RXBUF_SZ   99
+
+#define UARTS_CNT       1
+
+#define CMD_UART_PARAMS \
+    USART2, UART_GPIO, UART_TX_PIN, UART_GPIO, UART_RX_PIN, \
+    UART_DMA_TX, UART_DMA_RX, UART_DMA_TX_MODE(UART_DMA_CHNL), UART_DMA_RX_MODE(UART_DMA_CHNL), \
+    false // independent clock
+
+#endif
