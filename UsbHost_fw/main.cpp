@@ -23,9 +23,9 @@ LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
 int main(void) {
     // ==== Init Clock system ====
-//    Clk.EnablePrefetch();
-//    Clk.SetupFlashLatency(48000000);
-//    Clk.SwitchTo(csHSI48);
+    Clk.EnablePrefetch();
+    Clk.SetupFlashLatency(48000000);
+    Clk.SwitchTo(csHSI48);
     Clk.UpdateFreqValues();
 
     // === Init OS ===
@@ -35,20 +35,16 @@ int main(void) {
     // ==== Init hardware ====
     EvtQMain.Init();
     Uart.Init();
-    for(int i=0; i<7; i++) {
-        while(!(USART1->ISR & USART_ISR_TXE));
-        USART1->TDR = 'a';
-    }
-//    Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
-//    Clk.PrintFreqs();
+    Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
+    Clk.PrintFreqs();
 
     // LEDs
-//    Led.Init();
+    Led.Init();
 
-//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
-//    else Led.StartOrRestart(lsqFailure);
-//
-//    UsbCDC.Init();
+    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
+    else Led.StartOrRestart(lsqFailure);
+
+    UsbCDC.Init();
 //    Clk.EnableCRS();
 //    Clk.SelectUSBClock_HSI48();
 //    UsbCDC.Connect();
@@ -60,45 +56,46 @@ int main(void) {
 __noreturn
 void ITask() {
     while(true) {
-        EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
-        switch(Msg.ID) {
-            case evtIdUsbNewCmd:
-            case evtIdShellCmd:
-                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
-                OnCmd((Shell_t*)Msg.Ptr);
-                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
-                break;
-
-            case evtIdRadioRx: {
-//                Printf("Rx: %d\r", Msg.Value);
-
-            } break;
-
-#if 1 // ======= USB =======
-            case evtIdUsbConnect:
-                Printf("USB connect\r");
-                Clk.EnableCRS();
-                Clk.SelectUSBClock_HSI48();
-                UsbCDC.Connect();
-                break;
-            case evtIdUsbDisconnect:
-                Printf("USB disconnect\r");
-                UsbCDC.Disconnect();
-                Clk.DisableCRS();
-                break;
-            case evtIdUsbReady:
-                Printf("USB ready\r");
-                Led.StartOrRestart(lsqUsbReady);
-                break;
-#endif
-
-            default: break;
-        } // switch
+        chThdSleepMilliseconds(999);
+//        EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
+//        switch(Msg.ID) {
+//            case evtIdUsbNewCmd:
+//            case evtIdShellCmd:
+//                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
+//                OnCmd((Shell_t*)Msg.Ptr);
+//                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
+//                break;
+//
+//            case evtIdRadioRx: {
+////                Printf("Rx: %d\r", Msg.Value);
+//
+//            } break;
+//
+//#if 1 // ======= USB =======
+//            case evtIdUsbConnect:
+//                Printf("USB connect\r");
+//                Clk.EnableCRS();
+//                Clk.SelectUSBClock_HSI48();
+//                UsbCDC.Connect();
+//                break;
+//            case evtIdUsbDisconnect:
+//                Printf("USB disconnect\r");
+//                UsbCDC.Disconnect();
+//                Clk.DisableCRS();
+//                break;
+//            case evtIdUsbReady:
+//                Printf("USB ready\r");
+//                Led.StartOrRestart(lsqUsbReady);
+//                break;
+//#endif
+//
+//            default: break;
+//        } // switch
     } // while true
 } // ITask()
 
 
-#if 1 // ================= Command processing ====================
+#if 0 // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
