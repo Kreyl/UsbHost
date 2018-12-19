@@ -58,18 +58,19 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #define CC_TX_PWR   CC_Pwr0dBm
 
 #if 1 // =========================== Pkt_t =====================================
-struct State_t {
-    uint8_t Brightness[5];
-    uint8_t IRPwr, IRData;
-} __packed;
-
-struct rPkt_t {
-    uint8_t ID;
-    union {
-        State_t State;
-        uint8_t Status;
+union rPkt_t  {
+    struct {
+        uint16_t Time;
+        uint8_t Btn;
+        int16_t gyro[3], acc[3];
+    };
+    struct {
+        uint8_t R, G, B;
+        uint16_t BlinkOn, BlinkOff;
+        uint8_t VibroPwr;
     };
 } __packed;
+
 #define RPKT_LEN    sizeof(rPkt_t)
 #endif
 
@@ -98,8 +99,6 @@ private:
     }
 
 public:
-    int8_t Rssi;
-    rPkt_t PktTx, PktRx;
     uint8_t Init();
     uint8_t TxRxSync();
     // Inner use

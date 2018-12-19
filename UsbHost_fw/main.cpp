@@ -45,9 +45,9 @@ int main(void) {
     else Led.StartOrRestart(lsqFailure);
 
     UsbCDC.Init();
-//    Clk.EnableCRS();
-//    Clk.SelectUSBClock_HSI48();
-//    UsbCDC.Connect();
+    Clk.EnableCRS();
+    Clk.SelectUSBClock_HSI48();
+    UsbCDC.Connect();
 
     // Main cycle
     ITask();
@@ -56,46 +56,45 @@ int main(void) {
 __noreturn
 void ITask() {
     while(true) {
-        chThdSleepMilliseconds(999);
-//        EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
-//        switch(Msg.ID) {
-//            case evtIdUsbNewCmd:
-//            case evtIdShellCmd:
-//                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
-//                OnCmd((Shell_t*)Msg.Ptr);
-//                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
-//                break;
-//
+        EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
+        switch(Msg.ID) {
+            case evtIdUsbNewCmd:
+            case evtIdShellCmd:
+                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
+                OnCmd((Shell_t*)Msg.Ptr);
+                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
+                break;
+
 //            case evtIdRadioRx: {
 ////                Printf("Rx: %d\r", Msg.Value);
 //
 //            } break;
-//
-//#if 1 // ======= USB =======
-//            case evtIdUsbConnect:
-//                Printf("USB connect\r");
-//                Clk.EnableCRS();
-//                Clk.SelectUSBClock_HSI48();
-//                UsbCDC.Connect();
-//                break;
-//            case evtIdUsbDisconnect:
-//                Printf("USB disconnect\r");
-//                UsbCDC.Disconnect();
-//                Clk.DisableCRS();
-//                break;
-//            case evtIdUsbReady:
-//                Printf("USB ready\r");
-//                Led.StartOrRestart(lsqUsbReady);
-//                break;
-//#endif
-//
-//            default: break;
-//        } // switch
+
+#if 1 // ======= USB =======
+            case evtIdUsbConnect:
+                Printf("USB connect\r");
+                Clk.EnableCRS();
+                Clk.SelectUSBClock_HSI48();
+                UsbCDC.Connect();
+                break;
+            case evtIdUsbDisconnect:
+                Printf("USB disconnect\r");
+                UsbCDC.Disconnect();
+                Clk.DisableCRS();
+                break;
+            case evtIdUsbReady:
+                Printf("USB ready\r");
+                Led.StartOrRestart(lsqUsbReady);
+                break;
+#endif
+
+            default: break;
+        } // switch
     } // while true
 } // ITask()
 
 
-#if 0 // ================= Command processing ====================
+#if 1 // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
@@ -105,19 +104,19 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("Set")) {
-        uint8_t Rslt = retvCmdError;
-        // Read cmd
-        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.ID) != retvOk) goto SetEnd; // Get ID
-        if(PCmd->GetArray(Radio.PktTx.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
-        // Get IR params
-        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRPwr) != retvOk) goto SetEnd;
-        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRData) != retvOk) goto SetEnd;
-        // Transmit data and wait answer
-        Rslt = Radio.TxRxSync();
-        SetEnd:
-        PShell->Ack(Rslt);
-    } // Set
+//    else if(PCmd->NameIs("Set")) {
+//        uint8_t Rslt = retvCmdError;
+//        // Read cmd
+//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.ID) != retvOk) goto SetEnd; // Get ID
+//        if(PCmd->GetArray(Radio.PktTx.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
+//        // Get IR params
+//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRPwr) != retvOk) goto SetEnd;
+//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRData) != retvOk) goto SetEnd;
+//        // Transmit data and wait answer
+//        Rslt = Radio.TxRxSync();
+//        SetEnd:
+//        PShell->Ack(Rslt);
+//    } // Set
 
     else PShell->Ack(retvCmdUnknown);
 }
