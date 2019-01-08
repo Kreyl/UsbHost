@@ -14,7 +14,17 @@ const LedRGBChunk_t lsqStart[] = {
         {csSetup, 99, clGreen},
         {csSetup, 99, clBlue},
         {csSetup, 99, clBlack},
-        {csSetup, 0, {7,7,0}},
+        {csSetup, 0, {7,0,0}},
+        {csEnd},
+};
+
+const LedRGBChunk_t lsqPillIn[] = {
+        {csSetup, 0, clGreen},
+        {csEnd},
+};
+
+const LedRGBChunk_t lsqNoPill[] = {
+        {csSetup, 0, {7,0,0}},
         {csEnd},
 };
 

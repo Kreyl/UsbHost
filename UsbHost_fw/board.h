@@ -11,7 +11,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHost3"
-#define APP_NAME            "TrafficLight"
+#define APP_NAME            "PillSimulator"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
@@ -21,8 +21,8 @@
 
 #define SYS_TIM_CLK             (Clk.APBFreqHz)
 
-#define SIMPLESENSORS_ENABLED   FALSE
-#define BUTTONS_ENABLED         FALSE
+#define SIMPLESENSORS_ENABLED   TRUE
+#define BUTTONS_ENABLED         TRUE
 #define ADC_REQUIRED            FALSE
 #define I2C1_ENABLED            FALSE
 #define I2C_USE_SEMAPHORE       FALSE
@@ -44,6 +44,7 @@
 #define LED_G_PIN       { GPIOB, 4, TIM3, 1, invNotInverted, omPushPull, 255 }
 #define LED_B_PIN       { GPIOB, 1, TIM3, 4, invNotInverted, omPushPull, 255 }
 
+#define BTN1_PIN        GPIOF, 1, pudPullUp
 
 // Radio: SPI, PGpio, Sck, Miso, Mosi, Cs, Gdo0
 #define CC_Setup0       SPI1, GPIOA, 5,6,7, 4, 3

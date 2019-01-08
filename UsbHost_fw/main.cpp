@@ -8,6 +8,8 @@
 #include "Sequences.h"
 #include "radio_lvl1.h"
 #include "usb_cdc.h"
+#include "SimpleSensors.h"
+#include "buttons.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -19,6 +21,8 @@ void ITask();
 
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
+bool PillIn = false;
+uint8_t PillValue = 0;
 #endif
 
 int main(void) {
@@ -38,11 +42,12 @@ int main(void) {
     Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
     Clk.PrintFreqs();
 
-    // LEDs
     Led.Init();
+    Led.StartOrRestart(lsqStart);
+    SimpleSensors::Init();
 
-    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
-    else Led.StartOrRestart(lsqFailure);
+//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
+//    else Led.StartOrRestart(lsqFailure);
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -70,6 +75,20 @@ void ITask() {
 //
 //            } break;
 
+            case evtIdButtons:
+//                Printf("Btn %u\r", Msg.BtnEvtInfo.Type);
+                if(PillIn) {
+                    PillIn = false;
+                    Led.StartOrRestart(lsqNoPill);
+                }
+                else {
+                    PillIn = true;
+                    Led.StartOrRestart(lsqPillIn);
+                    PillValue = Random::Generate(0, 4);
+                }
+                break;
+
+
 #if 1 // ======= USB =======
             case evtIdUsbConnect:
                 Printf("USB connect\r");
@@ -84,7 +103,7 @@ void ITask() {
                 break;
             case evtIdUsbReady:
                 Printf("USB ready\r");
-                Led.StartOrRestart(lsqUsbReady);
+//                Led.StartOrRestart(lsqUsbReady);
                 break;
 #endif
 
@@ -102,6 +121,21 @@ void OnCmd(Shell_t *PShell) {
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("ReadPill")) {
+        if(PillIn) {
+            PShell->Print("Read %d\r\n", PillValue);
+        }
+        else PShell->Ack(retvFail);
+    }
+
+    else if(PCmd->NameIs("WritePill")) {
+        if(PillIn) {
+            if(PCmd->GetNext<uint8_t>(&PillValue) == retvOk) PShell->Ack(retvOk);
+            else PShell->Ack(retvBadValue);
+        }
+        else PShell->Ack(retvFail);
     }
 
 //    else if(PCmd->NameIs("Set")) {
