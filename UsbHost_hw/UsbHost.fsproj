@@ -3,18 +3,18 @@
 <!--   File    : UsbHost.fsproj              -->
 <!--   Format  : TopoR Project file          -->
 <!--   Version : 2                           -->
-<!--   Program : TopoR Lite 6.3.17658 Beta   -->
-<!--   Date    : Saturday, September 9, 2017 -->
-<!--   Time    : 17:48                       -->
+<!--   Program : TopoR Lite 7.0.18578        -->
+<!--   Date    : Thursday, December 20, 2018 -->
+<!--   Time    : 01:11                       -->
 <!--*****************************************-->
 
 <Project>
    <Version current="2"/>
-   <GUID>{715A9CCA-2EB8-4203-944D-3D27942DE37A}</GUID>
+   <GUID>{CCA771D9-9E05-4890-B7D8-1AD7FD2D93FC}</GUID>
    <Documents>
-      <Section name="PCB">
-         <File path=".\UsbHost.fsx" isopened="0" dateChange="2017-09-04 14:55:02"/>
+      <Section name="PCB" isExpanded="false">
+         <File path=".\UsbHost.fsx" isopened="1" dateChange="2018-12-20 00:11:49"/>
       </Section>
-      <Section name="AutoRouting"/>
+      <Section name="AutoRouting" isExpanded="false"/>
    </Documents>
 </Project>

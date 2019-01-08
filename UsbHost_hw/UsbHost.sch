@@ -848,9 +848,6 @@ Wire Wire Line
 	3200 3500 3100 3500
 NoConn ~ 6450 1400
 NoConn ~ 3200 1500
-NoConn ~ 3200 2300
-NoConn ~ 3200 2400
-NoConn ~ 3200 2500
 NoConn ~ 3200 2600
 NoConn ~ 3200 2700
 NoConn ~ 3200 2800
@@ -982,7 +979,7 @@ U 1 1 56D47D45
 P 1650 9300
 F 0 "XL3" H 1450 9750 60  0000 C CNN
 F 1 "USB_MINI_B" H 1550 9650 60  0000 C CNN
-F 2 "Connectors:USBmicro_MOLEX_WM17142" H 1650 9300 60  0001 C CNN
+F 2 "Connectors:USBmicro_MOLEX_1050170001" H 1650 9300 60  0001 C CNN
 F 3 "" H 1650 9300 60  0000 C CNN
 	1    1650 9300
 	1    0    0    -1  
@@ -1331,7 +1328,7 @@ U 1 1 59AD86FA
 P 14400 9400
 F 0 "Logo1" H 14678 9453 60  0000 L CNN
 F 1 "Logo" H 14678 9347 60  0000 L CNN
-F 2 "Pictures:KvantduinoLogoText_26d6" H 14400 9400 60  0001 C CNN
+F 2 "Pictures:Ostranna_12d7_10d1" H 14400 9400 60  0001 C CNN
 F 3 "" H 14400 9400 60  0000 C CNN
 	1    14400 9400
 	1    0    0    -1  
@@ -1414,15 +1411,132 @@ Wire Wire Line
 Wire Wire Line
 	7650 9900 7500 9900
 Connection ~ 7500 9900
+Text Notes 8750 6300 0    60   ~ 0
+Peripheral\nI2C Pull-Ups
+Text Label 9800 6700 0    60   ~ 0
+PWR_PILL_PROT
+Text Notes 8800 6600 0    60   ~ 0
+Pill \nConnector
 $Comp
-L pcb_details:Logo Logo3
-U 1 1 5BF0F0C5
-P 15300 9400
-F 0 "Logo3" H 15578 9453 60  0000 L CNN
-F 1 "Logo" H 15578 9347 60  0000 L CNN
-F 2 "Pictures:MadeInRussia_22d8" H 15300 9400 60  0001 C CNN
-F 3 "" H 15300 9400 60  0000 C CNN
-	1    15300 9400
+L power:GND #PWR011
+U 1 1 5C1D0A3E
+P 9350 6900
+F 0 "#PWR011" H 9440 6880 30  0001 C CNN
+F 1 "GND" H 9350 6820 30  0001 C CNN
+F 2 "" H 9350 6900 60  0001 C CNN
+F 3 "" H 9350 6900 60  0001 C CNN
+	1    9350 6900
+	0    -1   -1   0   
+$EndComp
+Text Notes 9100 5800 0    60   Italic 12
+Pill
+Text Label 9800 6800 0    60   ~ 0
+SCL_PILL
+Text Label 9800 7000 0    60   ~ 0
+SDA_PILL
+Text Label 10550 6000 0    60   ~ 0
+PWR_PILL
+Wire Wire Line
+	10400 6700 10400 6550
+Wire Wire Line
+	9500 6000 9700 6000
+Connection ~ 9500 6800
+Wire Wire Line
+	9800 6800 9500 6800
+Wire Wire Line
+	9500 6800 9500 6550
+Connection ~ 9700 6000
+Wire Wire Line
+	9700 6050 9700 6000
+Wire Wire Line
+	9350 6900 9200 6900
+Wire Wire Line
+	9500 6050 9500 6000
+Wire Wire Line
+	9200 6700 10400 6700
+Wire Wire Line
+	9700 7000 9700 6550
+Wire Wire Line
+	9800 7000 9700 7000
+Connection ~ 9700 7000
+Wire Wire Line
+	10400 6050 10400 6000
+Connection ~ 10400 6000
+$Comp
+L Tittar_kl:R R6
+U 1 1 5C1D0A59
+P 9500 6300
+F 0 "R6" V 9580 6150 50  0000 C CNN
+F 1 "10k" V 9500 6300 50  0000 C CNN
+F 2 "Resistors:RES_0603" V 9580 6400 28  0001 C CNN
+F 3 "" V 9580 6150 60  0000 C CNN
+F 4 "0.5" V 9680 6250 60  0001 C CNN "Price"
+F 5 "2" V 9780 6350 60  0001 C CNN "SolderPoints"
+	1    9500 6300
 	1    0    0    -1  
 $EndComp
+$Comp
+L Tittar_kl:R R7
+U 1 1 5C1D0A61
+P 9700 6300
+F 0 "R7" V 9780 6150 50  0000 C CNN
+F 1 "10k" V 9700 6300 50  0000 C CNN
+F 2 "Resistors:RES_0603" V 9780 6400 28  0001 C CNN
+F 3 "" V 9780 6150 60  0000 C CNN
+F 4 "0.5" V 9880 6250 60  0001 C CNN "Price"
+F 5 "2" V 9980 6350 60  0001 C CNN "SolderPoints"
+	1    9700 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Tittar_kl:R R8
+U 1 1 5C1D0A69
+P 10400 6300
+F 0 "R8" V 10480 6150 50  0000 C CNN
+F 1 "150R" V 10400 6300 50  0000 C CNN
+F 2 "Resistors:RES_0603" V 10480 6400 28  0001 C CNN
+F 3 "" V 10480 6150 60  0000 C CNN
+F 4 "0.5" V 10580 6250 60  0001 C CNN "Price"
+F 5 "2" V 10680 6350 60  0001 C CNN "SolderPoints"
+	1    10400 6300
+	1    0    0    -1  
+$EndComp
+$Comp
+L Connectors_kl:CONN_4 XL2
+U 1 1 5C1D0A74
+P 9000 6850
+F 0 "XL2" V 8950 6850 40  0000 C CNN
+F 1 "CONN_4" V 9050 6850 40  0000 C CNN
+F 2 "Connectors:PBS-4R" V 8850 6750 60  0001 C CNN
+F 3 "" V 8950 6850 60  0001 C CNN
+F 4 "4" V 9050 6950 60  0001 C CNN "Price"
+F 5 "http://www.berelcom.ru/shop/show_good.php?idtov=1200014096&grid=" V 9150 7050 60  0001 C CNN "URL"
+F 6 "PBS-4R" V 9250 7150 60  0001 C CNN "PN"
+F 7 "0" V 9350 7250 60  0001 C CNN "SolderPoints"
+F 8 "4" V 9450 7350 60  0001 C CNN "SolderPointsDIP"
+	1    9000 6850
+	1    0    0    -1  
+$EndComp
+Wire Wire Line
+	9500 6800 9200 6800
+Wire Wire Line
+	9700 6000 10400 6000
+Wire Wire Line
+	9700 7000 9200 7000
+Wire Wire Line
+	10400 6000 10550 6000
+Text Label 2700 2500 0    60   ~ 0
+PWR_PILL
+Text Label 2700 2300 0    60   ~ 0
+SCL_PILL
+Text Label 2700 2400 0    60   ~ 0
+SDA_PILL
+Text Notes 800  1250 0    50   ~ 0
+DMA\n\nUART TX: Stream2\nUART RX: Stream3\n\ni2c2 TX: Stream4\ni2c2 RX: Stream5
+Wire Wire Line
+	2700 2300 3200 2300
+Wire Wire Line
+	3200 2400 2700 2400
+Wire Wire Line
+	2700 2500 3200 2500
 $EndSCHEMATC

@@ -1,4 +1,4 @@
-update=16.11.2018 21:35:55
+update=20.12.2018 0:55:47
 version=1
 last_client=kicad
 [cvpcb]
@@ -62,8 +62,8 @@ SolderPasteRatio=-0
 Name=Wide
 Clearance=0.2
 TrackWidth=0.5
-ViaDiameter=0.9
-ViaDrill=0.4
+ViaDiameter=0.7
+ViaDrill=0.3
 uViaDiameter=0.508
 uViaDrill=0.127
 dPairWidth=0.2
