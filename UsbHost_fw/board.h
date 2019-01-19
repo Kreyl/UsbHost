@@ -21,10 +21,12 @@
 
 #define SYS_TIM_CLK             (Clk.APBFreqHz)
 
-#define SIMPLESENSORS_ENABLED   TRUE
-#define BUTTONS_ENABLED         TRUE
+#define PILL_ENABLED            TRUE
+#define BUTTONS_ENABLED         FALSE
+#define SIMPLESENSORS_ENABLED   BUTTONS_ENABLED
 #define ADC_REQUIRED            FALSE
 #define I2C1_ENABLED            FALSE
+#define I2C2_ENABLED            PILL_ENABLED
 #define I2C_USE_SEMAPHORE       FALSE
 
 #if 1 // ========================== GPIO =======================================
@@ -44,7 +46,14 @@
 #define LED_G_PIN       { GPIOB, 4, TIM3, 1, invNotInverted, omPushPull, 255 }
 #define LED_B_PIN       { GPIOB, 1, TIM3, 4, invNotInverted, omPushPull, 255 }
 
-#define BTN1_PIN        GPIOF, 1, pudPullUp
+// I2C and Pill
+#define I2C_PILL        i2c2
+#define I2C_BAUDRATE_HZ 400000
+#define I2C2_GPIO       GPIOB
+#define I2C2_SCL        10
+#define I2C2_SDA        11
+#define I2C_AF          AF1
+#define PILL_PWR_PIN    { GPIOB, 12, omPushPull }
 
 // Radio: SPI, PGpio, Sck, Miso, Mosi, Cs, Gdo0
 #define CC_Setup0       SPI1, GPIOA, 5,6,7, 4, 3
@@ -98,6 +107,10 @@
 #define I2C1_DMA_TX     STM32_DMA1_STREAM2
 #define I2C1_DMA_RX     STM32_DMA1_STREAM3
 #define I2C1_DMA_CHNL   0 // Dummy
+
+#define I2C2_DMA_TX     STM32_DMA1_STREAM4
+#define I2C2_DMA_RX     STM32_DMA1_STREAM5
+#define I2C2_DMA_CHNL   0 // Dummy
 
 #if ADC_REQUIRED
 #define ADC_DMA         STM32_DMA1_STREAM1
