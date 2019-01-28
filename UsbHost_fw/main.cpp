@@ -8,8 +8,7 @@
 #include "Sequences.h"
 #include "radio_lvl1.h"
 #include "usb_cdc.h"
-#include "pill.h"
-#include "pill_mgr.h"
+#include "kl_i2c.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -19,6 +18,9 @@ CmdUart_t Uart{&CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
 
+#define RW_LEN_MAX  54
+
+const PinOutput_t PillPwr {PILL_PWR_PIN};
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 #endif
 
@@ -42,11 +44,7 @@ int main(void) {
     Led.Init();
     Led.StartOrRestart(lsqStart);
 
-//    if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
-//    else Led.StartOrRestart(lsqFailure);
-
     i2c2.Init();
-    PillMgr.Init();
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -67,21 +65,6 @@ void ITask() {
                 Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
                 OnCmd((Shell_t*)Msg.Ptr);
                 ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
-                break;
-
-//            case evtIdRadioRx: {
-////                Printf("Rx: %d\r", Msg.Value);
-//
-//            } break;
-
-            case evtIdPillConnected:
-                Printf("Pill: %u\r", PillMgr.Pill.DWord32);
-                Led.StartOrRestart(lsqPillIn);
-                break;
-
-            case evtIdPillDisconnected:
-                Printf("Pill disconn\r");
-                Led.StartOrRestart(lsqNoPill);
                 break;
 
 #if 1 // ======= USB =======
@@ -107,6 +90,19 @@ void ITask() {
     } // while true
 } // ITask()
 
+void Standby() {
+    i2c2.Standby();
+    PillPwr.SetLo();
+    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to fade
+    PillPwr.Deinit();
+}
+
+void Resume() {
+    PillPwr.Init();
+    PillPwr.SetHi();
+    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to rise
+    i2c2.Resume();
+}
 
 #if 1 // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
@@ -118,37 +114,48 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("ReadPill")) {
-        int32_t DWord32;
-        uint8_t Rslt = PillMgr.Read(0, &DWord32, 4);
-        if(Rslt == retvOk) {
-            PShell->Print("Read %d\r\n", DWord32);
-        }
-        else PShell->Ack(retvFail);
-    }
-
-    else if(PCmd->NameIs("WritePill")) {
-        int32_t DWord32;
-        if(PCmd->GetNext<int32_t>(&DWord32) == retvOk) {
-            uint8_t Rslt = PillMgr.Write(0, &DWord32, 4);
-            PShell->Ack(Rslt);
+    else if(PCmd->NameIs("W")) {
+        uint8_t Addr, Len, Data[RW_LEN_MAX];
+        if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
+            if(PCmd->GetNext<uint8_t>(&Len) == retvOk) {
+                if(Len > RW_LEN_MAX) Len = RW_LEN_MAX;
+                if(PCmd->GetArray<uint8_t>(Data, Len) == retvOk) {
+                    Resume();
+                    uint8_t Rslt = i2c2.Write(Addr, Data, Len);
+                    Standby();
+                    PShell->Ack(Rslt);
+                }
+                else PShell->Ack(retvCmdError);
+            }
+            else PShell->Ack(retvCmdError);
         }
         else PShell->Ack(retvCmdError);
     }
 
-//    else if(PCmd->NameIs("Set")) {
-//        uint8_t Rslt = retvCmdError;
-//        // Read cmd
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.ID) != retvOk) goto SetEnd; // Get ID
-//        if(PCmd->GetArray(Radio.PktTx.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
-//        // Get IR params
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRPwr) != retvOk) goto SetEnd;
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRData) != retvOk) goto SetEnd;
-//        // Transmit data and wait answer
-//        Rslt = Radio.TxRxSync();
-//        SetEnd:
-//        PShell->Ack(Rslt);
-//    } // Set
+    else if(PCmd->NameIs("WR")) {
+        uint8_t Addr, LenW, LenR, Data[RW_LEN_MAX];
+        if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
+            if(PCmd->GetNext<uint8_t>(&LenW) == retvOk) {
+                if(LenW > RW_LEN_MAX) LenW = RW_LEN_MAX;
+                if(PCmd->GetNext<uint8_t>(&LenR) == retvOk) {
+                    if(LenR > RW_LEN_MAX) LenR = RW_LEN_MAX;
+                    if(PCmd->GetArray<uint8_t>(Data, LenW) == retvOk) {
+                        Resume();
+                        uint8_t Rslt = i2c2.WriteRead(Addr, Data, LenW, Data, LenR);
+                        Standby();
+                        if(Rslt == retvOk) {
+                            PShell->Print("%A\r\n", Data, LenR, ' ');
+                        }
+                        else PShell->Ack(Rslt);
+                    }
+                    else PShell->Ack(retvCmdError);
+                }
+                else PShell->Ack(retvCmdError);
+            }
+            else PShell->Ack(retvCmdError);
+        }
+        else PShell->Ack(retvCmdError);
+    }
 
     else PShell->Ack(retvCmdUnknown);
 }

@@ -13,15 +13,6 @@ enum EvtMsgId_t {
     // Pretending to eternity
     evtIdShellCmd,
     evtIdEverySecond,
-    evtIdAdcRslt,
-
-    evtIdButtons,
-
-    evtIdMenuTimeout,
-    evtIdRadioRx,
-
-    evtIdPillConnected,
-    evtIdPillDisconnected,
 
     // Usb
     evtIdUsbConnect,

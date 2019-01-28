@@ -11,7 +11,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHost3"
-#define APP_NAME            "PillSimulator"
+#define APP_NAME            "i2c Host"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
@@ -53,7 +53,7 @@
 #define I2C2_SCL        10
 #define I2C2_SDA        11
 #define I2C_AF          AF1
-#define PILL_PWR_PIN    { GPIOB, 12, omPushPull }
+#define PILL_PWR_PIN    GPIOB, 12, omPushPull
 
 // Radio: SPI, PGpio, Sck, Miso, Mosi, Cs, Gdo0
 #define CC_Setup0       SPI1, GPIOA, 5,6,7, 4, 3
