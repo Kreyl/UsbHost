@@ -33,7 +33,7 @@ extern UsbCDC_t UsbCDC;
 
 rLevel1_t Radio;
 
-rPkt_t PktRx;
+rPkt_t Pkt;
 int8_t Rssi;
 
 static THD_WORKING_AREA(warLvl1Thread, 1024);
@@ -41,15 +41,19 @@ __noreturn
 static void rLvl1Thread(void *arg) {
     chRegSetThreadName("rLvl1");
     while(true) {
+        for(uint8_t i=0; i<12; i++) Pkt.b[i] = i;
         CC.Recalibrate();
-        uint8_t RxRslt = CC.Receive(54, &PktRx, RPKT_LEN, &Rssi);
-        if(RxRslt == retvOk) {
+        CC.Transmit(&Pkt, 12);
+        chThdSleepMilliseconds(18);
+
+//        CC.Recalibrate();
+//        uint8_t RxRslt = CC.Receive(360, &Pkt, RPKT_LEN, &Rssi);
+//        if(RxRslt == retvOk) {
 //            Printf("\rRssi=%d", Rssi);
-            //Printf("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
-            }
-        }
+//            //Printf("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
+////            if(UsbCDC.IsActive()) {
+////                UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
+//        }
     }
 }
 
@@ -60,7 +64,7 @@ uint8_t rLevel1_t::Init() {
 #endif    // Init radioIC
 
     if(CC.Init() == retvOk) {
-        CC.SetTxPower(CC_TX_PWR);
+        CC.SetTxPower(CC_PwrPlus10dBm);
         CC.SetPktSize(RPKT_LEN); // Max sz
         CC.SetChannel(0);
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), NORMALPRIO, (tfunc_t)rLvl1Thread, NULL);
