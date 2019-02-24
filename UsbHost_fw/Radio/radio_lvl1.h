@@ -65,7 +65,7 @@ union rPkt_t  {
         int16_t gyro[3], acc[3];
     };
     struct {
-        uint8_t R, G, B;
+        uint8_t R, G, B, W;
         uint8_t VibroPwr;
     };
 } __packed;

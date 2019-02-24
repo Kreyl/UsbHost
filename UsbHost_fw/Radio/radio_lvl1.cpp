@@ -46,20 +46,28 @@ static void rLvl1Thread(void *arg) {
             // ==== TX ====
             CC.SetChannel(i);
             StickSetup[i].Clr.ToRGB(&Pkt.R, &Pkt.G, &Pkt.B);
+            Pkt.W = StickSetup[i].Clr.W;
             Pkt.VibroPwr = StickSetup[i].Vibro;
+
             CC.Recalibrate();
             CC.Transmit(&Pkt, RPKT_LEN);
 
             // ==== RX ====
             while(true) {   // Receive data until it remains
-                if(CC.Receive(7, &Pkt, RPKT_LEN, &Rssi) == retvOk) {
-                    Printf("%d: %d\r", i, Rssi);
-                    if(UsbCDC.IsActive()) {
-                        UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n",
-                                i, Pkt.Time, Pkt.Btn,
-                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
-                                Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
-                    }
+                CC.Recalibrate();
+                uint8_t RxRslt = CC.Receive(7, &Pkt, RPKT_LEN, &Rssi);
+                if(RxRslt == retvOk) {
+//                    Printf("%d: %d\r", i, Rssi);
+                    Printf("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n",
+                                                    i, Pkt.Time, Pkt.Btn,
+                                                    Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+                                                    Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
+//                    if(UsbCDC.IsActive()) {
+//                        UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n",
+//                                i, Pkt.Time, Pkt.Btn,
+//                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+//                                Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
+//                    }
                 } // RxResult ok
                 else break;
             } // while true
