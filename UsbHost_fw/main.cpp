@@ -8,6 +8,7 @@
 #include "Sequences.h"
 #include "radio_lvl1.h"
 #include "usb_cdc.h"
+#include "main.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -19,6 +20,7 @@ void ITask();
 
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
+StickSetup_t StickSetup[2];
 #endif
 
 int main(void) {
@@ -104,19 +106,22 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-//    else if(PCmd->NameIs("Set")) {
-//        uint8_t Rslt = retvCmdError;
-//        // Read cmd
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.ID) != retvOk) goto SetEnd; // Get ID
-//        if(PCmd->GetArray(Radio.PktTx.State.Brightness, 5) != retvOk) goto SetEnd; // Get brightnesses
-//        // Get IR params
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRPwr) != retvOk) goto SetEnd;
-//        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.State.IRData) != retvOk) goto SetEnd;
-//        // Transmit data and wait answer
-//        Rslt = Radio.TxRxSync();
-//        SetEnd:
-//        PShell->Ack(Rslt);
-//    } // Set
+    else if(PCmd->NameIs("Set")) {
+        uint8_t r = retvFail;;
+        uint32_t ID = 0;
+        StickSetup_t FSetup;
+        if(PCmd->GetNext<uint32_t>(&ID) == retvOk and ID <= 1) {
+            if(PCmd->GetNext<uint8_t>(&FSetup.Vibro) == retvOk) {   // Vibro
+                if(PCmd->GetArray((uint8_t*)&FSetup.Clr, 4) == retvOk) {
+                    chSysLock();
+                    StickSetup[ID] = FSetup;
+                    chSysUnlock();
+                    r = retvOk;
+                }
+            }
+        }
+        if(r != retvOk) PShell->Ack(retvCmdError);
+    }
 
     else PShell->Ack(retvCmdUnknown);
 }

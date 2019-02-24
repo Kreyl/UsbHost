@@ -11,6 +11,7 @@
 #include "led.h"
 #include "Sequences.h"
 #include "usb_cdc.h"
+#include "main.h"
 
 cc1101_t CC(CC_Setup0, CCIrqHandler);
 extern UsbCDC_t UsbCDC;
@@ -33,7 +34,7 @@ extern UsbCDC_t UsbCDC;
 
 rLevel1_t Radio;
 
-rPkt_t PktRx;
+rPkt_t Pkt;
 int8_t Rssi;
 
 static THD_WORKING_AREA(warLvl1Thread, 1024);
@@ -41,16 +42,29 @@ __noreturn
 static void rLvl1Thread(void *arg) {
     chRegSetThreadName("rLvl1");
     while(true) {
-        CC.Recalibrate();
-        uint8_t RxRslt = CC.Receive(54, &PktRx, RPKT_LEN, &Rssi);
-        if(RxRslt == retvOk) {
-//            Printf("\rRssi=%d", Rssi);
-            //Printf("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d\r\n", PktRx.Time, PktRx.Btn, PktRx.gyro[0], PktRx.gyro[1], PktRx.gyro[2], PktRx.acc[0], PktRx.acc[1], PktRx.acc[2]);
-            }
-        }
-    }
+        for(uint32_t i=0; i<2; i++) {
+            // ==== TX ====
+            CC.SetChannel(i);
+            StickSetup[i].Clr.ToRGB(&Pkt.R, &Pkt.G, &Pkt.B);
+            Pkt.VibroPwr = StickSetup[i].Vibro;
+            CC.Recalibrate();
+            CC.Transmit(&Pkt, RPKT_LEN);
+
+            // ==== RX ====
+            while(true) {   // Receive data until it remains
+                if(CC.Receive(7, &Pkt, RPKT_LEN, &Rssi) == retvOk) {
+                    Printf("%d: %d\r", i, Rssi);
+                    if(UsbCDC.IsActive()) {
+                        UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n",
+                                i, Pkt.Time, Pkt.Btn,
+                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
+                                Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
+                    }
+                } // RxResult ok
+                else break;
+            } // while true
+        } // for
+    } // while true
 }
 
 uint8_t rLevel1_t::Init() {

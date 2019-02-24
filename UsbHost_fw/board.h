@@ -11,7 +11,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHost3"
-#define APP_NAME            "MagicStickSingle"
+#define APP_NAME            "MagicStickPair"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
