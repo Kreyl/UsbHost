@@ -13,6 +13,7 @@
 #include "kl_buf.h"
 #include "shell.h"
 #include "MsgQ.h"
+#include "color.h"
 
 #if 0 // ========================= Signal levels ===============================
 // Python translation for db
@@ -55,40 +56,36 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 
 #endif
 
-#define CC_TX_PWR   CC_Pwr0dBm
-
 #if 1 // =========================== Pkt_t =====================================
-union rPkt_t  {
-    struct {
-        uint16_t Time;
-        uint8_t Btn;
-        int16_t gyro[3], acc[3];
-    };
-    struct {
-        uint8_t R, G, B, W;
-        uint8_t VibroPwr;
-    };
-} __packed;
-
-#define RPKT_LEN    sizeof(rPkt_t)
+struct rPkt_t {
+    union {
+        uint32_t TimePress;
+        Color_t Clr;
+    } __attribute__ ((__packed__));
+    uint8_t Cmd;
+    uint8_t ID;
+//    bool operator == (const rPkt_t &APkt) { return (DWord32 == APkt.DWord32); }
+//    rPkt_t& operator = (const rPkt_t &Right) { DWord32 = Right.DWord32; return *this; }
+    rPkt_t() : TimePress(0), Cmd(0) {}
+} __attribute__ ((__packed__));
 #endif
 
+#if 1 // ============================== Defines ================================
+#define RCHNL                   0
+#define BTNS_CNT_MAX            16
+#define RPKT_LEN                sizeof(rPkt_t)
+#define CC_TX_PWR               CC_Pwr0dBm
 
-#if 1 // ======================= Channels & cycles =============================
-#define RCHNL_SRV       0
-#define ID2RCHNL(ID)    (RCHNL_MIN + ID)
-#endif
+#define CMD_GET                 18
+#define CMD_SET                 27
+#define CMD_OK                  0
 
-#if 1 // =========================== Timings ===================================
 #define RX_T_MS                 11
 #define RX_SLEEP_T_MS           810
-#define MIN_SLEEP_DURATION_MS   18
+#define RETRY_CNT               4
 
 #endif
 
-#define RMSG_Q_LEN      18
-#define RMSGID_PKT      1
-#define RMSGID_CHNL     2
 
 class rLevel1_t {
 private:
@@ -96,8 +93,13 @@ private:
 //        if(SleepDuration >= MIN_SLEEP_DURATION_MS) CC.EnterPwrDown();
         chThdSleepMilliseconds(SleepDuration); // XXX
     }
-
+    uint8_t BtnSet(uint8_t ID, Color_t Clr);
+    uint8_t BtnGet(uint8_t ID, int32_t *PTimeAfterPress);
 public:
+    bool MustRescan = false;
+    uint32_t BtnsEnabled = 1;
+    int32_t TimeAfterPressTable[BTNS_CNT_MAX];
+    Color_t ColorsTable[BTNS_CNT_MAX];
     uint8_t Init();
     uint8_t TxRxSync();
     // Inner use

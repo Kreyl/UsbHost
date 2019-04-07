@@ -13,7 +13,7 @@
 #if 1 // ======================== Variables and defines ========================
 // Forever
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
-static const UartParams_t CmdUartParams(256000, CMD_UART_PARAMS);
+static const UartParams_t CmdUartParams(115200, CMD_UART_PARAMS);
 CmdUart_t Uart{&CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
@@ -106,22 +106,22 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("Set")) {
-        uint8_t r = retvFail;;
-        uint32_t ID = 0;
-        StickSetup_t FSetup;
-        if(PCmd->GetNext<uint32_t>(&ID) == retvOk and ID <= 1) {
-            if(PCmd->GetNext<uint8_t>(&FSetup.Vibro) == retvOk) {   // Vibro
-                if(PCmd->GetArray((uint8_t*)&FSetup.Clr, 4) == retvOk) {
-                    chSysLock();
-                    StickSetup[ID] = FSetup;
-                    chSysUnlock();
-                    r = retvOk;
-                }
-            }
-        }
-        if(r != retvOk) PShell->Ack(retvCmdError);
-    }
+//    else if(PCmd->NameIs("Set")) {
+//        uint8_t r = retvFail;;
+//        uint32_t ID = 0;
+//        StickSetup_t FSetup;
+//        if(PCmd->GetNext<uint32_t>(&ID) == retvOk and ID <= 1) {
+//            if(PCmd->GetNext<uint8_t>(&FSetup.Vibro) == retvOk) {   // Vibro
+//                if(PCmd->GetArray((uint8_t*)&FSetup.Clr, 4) == retvOk) {
+//                    chSysLock();
+//                    StickSetup[ID] = FSetup;
+//                    chSysUnlock();
+//                    r = retvOk;
+//                }
+//            }
+//        }
+//        if(r != retvOk) PShell->Ack(retvCmdError);
+//    }
 
     else PShell->Ack(retvCmdUnknown);
 }

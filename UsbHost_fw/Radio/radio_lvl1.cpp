@@ -41,34 +41,67 @@ static THD_WORKING_AREA(warLvl1Thread, 1024);
 __noreturn
 static void rLvl1Thread(void *arg) {
     chRegSetThreadName("rLvl1");
+    Radio.ITask();
+}
+
+__noreturn
+void rLevel1_t::ITask() {
     while(true) {
-        for(uint32_t i=0; i<2; i++) {
-            // ==== TX ====
-            CC.SetChannel(i);
-            StickSetup[i].Clr.ToRGB(&Pkt.R, &Pkt.G, &Pkt.B);
-            Pkt.W = StickSetup[i].Clr.W;
-            Pkt.VibroPwr = StickSetup[i].Vibro;
-
-            CC.Recalibrate();
-            CC.Transmit(&Pkt, RPKT_LEN);
-
-            // ==== RX ====
-            while(true) {   // Receive data until it remains
-                uint8_t RxRslt = CC.Receive(7, &Pkt, RPKT_LEN, &Rssi);
-                if(RxRslt == retvOk) {
-//                    Printf("%d: %d\r", i, Rssi);
-//                    Printf("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n", i, Pkt.Time, Pkt.Btn, Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2], Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
-                    if(UsbCDC.IsActive()) {
-                        UsbCDC.Print("%d;%d;%d;%d;%d;%d;%d;%d;%d\r\n",
-                                i, Pkt.Time, Pkt.Btn,
-                                Pkt.gyro[0], Pkt.gyro[1], Pkt.gyro[2],
-                                Pkt.acc[0], Pkt.acc[1], Pkt.acc[2]);
+        if(MustRescan) {
+            BtnsEnabled = 0;
+            for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
+                if(BtnSet(i+1, clCyan) == retvOk) BtnsEnabled |= 1<<i;
+            }
+        }
+        else {
+            if(BtnsEnabled == 0) chThdSleepMilliseconds(180);
+            else {
+                for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
+                    if(!(BtnsEnabled & (1<<i))) continue;
+                    if(BtnGet(i+1, &TimeAfterPressTable[i]) == retvOk) {
+                        BtnSet(i+1, ColorsTable[i]);
                     }
-                } // RxResult ok
-                else break;
-            } // while true
-        } // for
+                }
+            }
+        } // not rescan
     } // while true
+}
+
+uint8_t rLevel1_t::BtnSet(uint8_t ID, Color_t Clr) {
+    Pkt.ID = ID;
+    Pkt.Cmd = CMD_SET;
+    Pkt.Clr = Clr;
+    for(uint32_t i=0; i<RETRY_CNT; i++) {
+        CC.Recalibrate();
+        CC.Transmit(&Pkt, RPKT_LEN);
+        Printf("S");
+        uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
+        if(RxRslt == retvOk) {
+            if(UsbCDC.IsActive()) {
+                UsbCDC.Print("%u: %d\r", ID, Rssi);
+            }
+            return retvOk;
+        }
+    }
+    return retvFail;
+}
+
+uint8_t rLevel1_t::BtnGet(uint8_t ID, int32_t *PTimeAfterPress) {
+    Pkt.ID = ID;
+    Pkt.Cmd = CMD_GET;
+    for(uint32_t i=0; i<RETRY_CNT; i++) {
+        CC.Recalibrate();
+        CC.Transmit(&Pkt, RPKT_LEN);
+        Printf("G");
+        uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
+        if(RxRslt == retvOk) {
+            if(UsbCDC.IsActive()) {
+                UsbCDC.Print("%u: %d\r", ID, Rssi);
+            }
+            return retvOk;
+        }
+    }
+    return retvFail;
 }
 
 uint8_t rLevel1_t::Init() {
@@ -80,7 +113,7 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == retvOk) {
         CC.SetTxPower(CC_TX_PWR);
         CC.SetPktSize(RPKT_LEN); // Max sz
-        CC.SetChannel(0);
+        CC.SetChannel(RCHNL);
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), NORMALPRIO, (tfunc_t)rLvl1Thread, NULL);
         return retvOk;
     }
