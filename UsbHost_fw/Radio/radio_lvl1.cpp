@@ -52,13 +52,20 @@ void rLevel1_t::ITask() {
             for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
                 if(BtnSet(i+1, clCyan) == retvOk) BtnsEnabled |= 1<<i;
             }
+            MustRescan = false;
         }
         else {
             if(BtnsEnabled == 0) chThdSleepMilliseconds(180);
             else {
                 for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
                     if(!(BtnsEnabled & (1<<i))) continue;
-                    if(BtnGet(i+1, &TimeAfterPressTable[i]) == retvOk) {
+                    int32_t TimeAfter = 0;
+                    if(BtnGet(i+1, &TimeAfter) == retvOk) {
+                        if(TimeAfter != -1 and TimeAfterPressTable[i] == -1) {
+                            int32_t Now = chVTGetSystemTimeX();
+                            TimeAfterPressTable[i] = Now - Timer - TimeAfter;
+//                            Printf("%d: %d\r", i, TimeAfterPressTable[i]);
+                        }
                         BtnSet(i+1, ColorsTable[i]);
                     }
                 }
@@ -74,12 +81,12 @@ uint8_t rLevel1_t::BtnSet(uint8_t ID, Color_t Clr) {
     for(uint32_t i=0; i<RETRY_CNT; i++) {
         CC.Recalibrate();
         CC.Transmit(&Pkt, RPKT_LEN);
-        Printf("S");
+//        Printf("S");
         uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Print("%u: %d\r", ID, Rssi);
-            }
+//            if(UsbCDC.IsActive()) {
+//                UsbCDC.Print("%u: %d\r", ID, Rssi);
+//            }
             return retvOk;
         }
     }
@@ -92,12 +99,13 @@ uint8_t rLevel1_t::BtnGet(uint8_t ID, int32_t *PTimeAfterPress) {
     for(uint32_t i=0; i<RETRY_CNT; i++) {
         CC.Recalibrate();
         CC.Transmit(&Pkt, RPKT_LEN);
-        Printf("G");
+//        Printf("G");
         uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Print("%u: %d\r", ID, Rssi);
-            }
+            *PTimeAfterPress = Pkt.TimeAfterPress;
+//            if(UsbCDC.IsActive()) {
+//                UsbCDC.Print("%u: %d\r", ID, Rssi);
+//            }
             return retvOk;
         }
     }
@@ -119,3 +127,5 @@ uint8_t rLevel1_t::Init() {
     }
     else return retvFail;
 }
+
+

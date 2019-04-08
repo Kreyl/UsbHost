@@ -19,8 +19,8 @@ void OnCmd(Shell_t *PShell);
 void ITask();
 
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
+static TmrKL_t TmrEverySecond {MS2ST(1000), evtIdEverySecond, tktPeriodic};
 
-StickSetup_t StickSetup[2];
 #endif
 
 int main(void) {
@@ -40,11 +40,13 @@ int main(void) {
     Printf("\r%S %S\r", APP_NAME, XSTRINGIFY(BUILD_TIME));
     Clk.PrintFreqs();
 
-    // LEDs
     Led.Init();
+    TmrEverySecond.StartOrRestart();
 
     if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
     else Led.StartOrRestart(lsqFailure);
+
+    for(int i=0; i<BTNS_CNT_MAX; i++) Radio.ColorsTable[i] = clYellow;
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -60,6 +62,11 @@ void ITask() {
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
         switch(Msg.ID) {
+            case evtIdEverySecond:
+//                Printf("S %u\r", chVTGetSystemTimeX());
+//                Radio.Timer += 10000;
+                break;
+
             case evtIdUsbNewCmd:
             case evtIdShellCmd:
                 Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
@@ -104,6 +111,49 @@ void OnCmd(Shell_t *PShell) {
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("RstTmr")) {
+        chSysLock();
+        for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
+            Radio.TimeAfterPressTable[i] = -1;
+        }
+        Radio.Timer = chVTGetSystemTimeX();
+        chSysUnlock();
+        PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("GetBtns")) {
+        PShell->Print("Btns: ");
+        for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
+            if(!(Radio.BtnsEnabled & (1<<i))) continue;
+            PShell->Print("%d %d ", i+1, Radio.TimeAfterPressTable[i]);
+        }
+        PShell->Print("\r\n");
+    }
+
+    else if(PCmd->NameIs("SetClr")) {
+        uint8_t ID = 0;
+        Color_t Clr;
+        if(PCmd->GetNext<uint8_t>(&ID) == retvOk and ID >= 1 and ID <= BTNS_CNT_MAX) {
+            if(PCmd->GetArray((uint8_t*)&Clr, 3) == retvOk) {
+                Radio.ColorsTable[ID-1] = Clr;
+                PShell->Ack(retvOk);
+            }
+            else PShell->Ack(retvCmdError);
+        }
+        else PShell->Ack(retvCmdError);
+    }
+
+    else if(PCmd->NameIs("SetClrAll")) {
+        Color_t Clr;
+        if(PCmd->GetArray((uint8_t*)&Clr, 3) == retvOk) {
+            for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
+                Radio.ColorsTable[i] = Clr;
+            }
+            PShell->Ack(retvOk);
+        }
+        else PShell->Ack(retvCmdError);
     }
 
 //    else if(PCmd->NameIs("Set")) {

@@ -59,14 +59,14 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #if 1 // =========================== Pkt_t =====================================
 struct rPkt_t {
     union {
-        uint32_t TimePress;
+        int32_t TimeAfterPress;
         Color_t Clr;
     } __attribute__ ((__packed__));
     uint8_t Cmd;
     uint8_t ID;
 //    bool operator == (const rPkt_t &APkt) { return (DWord32 == APkt.DWord32); }
 //    rPkt_t& operator = (const rPkt_t &Right) { DWord32 = Right.DWord32; return *this; }
-    rPkt_t() : TimePress(0), Cmd(0) {}
+    rPkt_t() : TimeAfterPress(0), Cmd(0) {}
 } __attribute__ ((__packed__));
 #endif
 
@@ -80,7 +80,7 @@ struct rPkt_t {
 #define CMD_SET                 27
 #define CMD_OK                  0
 
-#define RX_T_MS                 11
+#define RX_T_MS                 4
 #define RX_SLEEP_T_MS           810
 #define RETRY_CNT               4
 
@@ -96,12 +96,12 @@ private:
     uint8_t BtnSet(uint8_t ID, Color_t Clr);
     uint8_t BtnGet(uint8_t ID, int32_t *PTimeAfterPress);
 public:
+    int32_t Timer = 0;
     bool MustRescan = false;
     uint32_t BtnsEnabled = 1;
     int32_t TimeAfterPressTable[BTNS_CNT_MAX];
     Color_t ColorsTable[BTNS_CNT_MAX];
     uint8_t Init();
-    uint8_t TxRxSync();
     // Inner use
     void ITask();
 };
