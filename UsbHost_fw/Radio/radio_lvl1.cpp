@@ -47,59 +47,14 @@ static void rLvl1Thread(void *arg) {
 __noreturn
 void rLevel1_t::ITask() {
     while(true) {
-        int32_t TimeAfter = 0;
-        if(MustRescan) {
-            BtnsEnabled = 0;
-            for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-                if(BtnGet(i+1, &TimeAfter) == retvOk) BtnsEnabled |= 1<<i;
-            }
-            MustRescan = false;
-        }
-        else {
-            if(BtnsEnabled == 0) chThdSleepMilliseconds(180);
-            else {
-                for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-                    if(!(BtnsEnabled & (1<<i))) continue;
-                    if(BtnGet(i+1, &TimeAfter) == retvOk) {
-                        if(TimeAfter != -1 and TimeAfterPressTable[i] == -1) {
-                            int32_t Now = chVTGetSystemTimeX();
-                            TimeAfterPressTable[i] = Now - Timer - TimeAfter;
-//                            Printf("%d: %d\r", i, TimeAfterPressTable[i]);
-                        }
-                        // Send cmd if not empty
-                        if(CmdTable[i].Cmd != CMD_OK) {
-                            for(uint32_t j=0; j<RETRY_CNT; j++) {
-                                CC.Recalibrate();
-                                CC.Transmit(&CmdTable[i], RPKT_LEN);
-                                uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
-                                if(RxRslt == retvOk) break;
-                            }
-                            CmdTable[i].Cmd = CMD_OK;
-                        }
-                    } // if get
-                } // for
-            }
-        } // not rescan
-    } // while true
-}
-
-uint8_t rLevel1_t::BtnGet(uint8_t ID, int32_t *PTimeAfterPress) {
-    Pkt.ID = ID;
-    Pkt.Cmd = CMD_GET;
-    for(uint32_t i=0; i<RETRY_CNT; i++) {
         CC.Recalibrate();
-        CC.Transmit(&Pkt, RPKT_LEN);
-//        Printf("G");
-        uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
+        uint8_t RxRslt = CC.Receive(360, &Pkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
-            *PTimeAfterPress = Pkt.TimeAfterPress;
-//            if(UsbCDC.IsActive()) {
-//                UsbCDC.Print("%u: %d\r", ID, Rssi);
-//            }
-            return retvOk;
+            if(UsbCDC.IsActive()) {
+                UsbCDC.Print("%u: %d\r", Pkt.ID, Rssi);
+            }
         }
-    }
-    return retvFail;
+    } // while true
 }
 
 uint8_t rLevel1_t::Init() {
@@ -111,7 +66,7 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == retvOk) {
         CC.SetTxPower(CC_TX_PWR);
         CC.SetPktSize(RPKT_LEN); // Max sz
-        CC.SetChannel(RCHNL);
+        CC.SetChannel(4);
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), NORMALPRIO, (tfunc_t)rLvl1Thread, NULL);
         return retvOk;
     }

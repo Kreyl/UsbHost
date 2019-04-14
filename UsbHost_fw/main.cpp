@@ -131,56 +131,6 @@ void OnCmd(Shell_t *PShell) {
         PShell->Print("\r\n");
     }
 
-    else if(PCmd->NameIs("SetClr")) {
-        rPkt_t Pkt;
-        if(PCmd->GetNext<uint8_t>(&Pkt.ID) == retvOk and Pkt.ID >= 1 and Pkt.ID <= BTNS_CNT_MAX) {
-            if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk) {
-                Pkt.Cmd = CMD_SET;
-                Radio.CmdTable[Pkt.ID-1] = Pkt;
-                PShell->Ack(retvOk);
-            }
-            else PShell->Ack(retvCmdError);
-        }
-        else PShell->Ack(retvCmdError);
-    }
-
-    else if(PCmd->NameIs("Flash")) {
-        rPkt_t Pkt;
-        if(PCmd->GetNext<uint8_t>(&Pkt.ID) == retvOk and Pkt.ID >= 1 and Pkt.ID <= BTNS_CNT_MAX) {
-            if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk and
-               PCmd->GetNext<uint16_t>(&Pkt.Wait_ms) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.R2) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.G2) == retvOk and
-               PCmd->GetNext<uint8_t>(&Pkt.B2) == retvOk
-            ) {
-                Pkt.Cmd = CMD_FLASH;
-                Radio.CmdTable[Pkt.ID-1] = Pkt;
-                PShell->Ack(retvOk);
-            }
-            else PShell->Ack(retvCmdError);
-        }
-        else PShell->Ack(retvCmdError);
-    }
-
-    else if(PCmd->NameIs("SetClrAll")) {
-        rPkt_t Pkt;
-        if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
-           PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
-           PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk) {
-            Pkt.Cmd = CMD_SET;
-            for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-                Pkt.ID = i+1;
-                Radio.CmdTable[i] = Pkt;
-            }
-            PShell->Ack(retvOk);
-        }
-        else PShell->Ack(retvCmdError);
-    }
-
     else PShell->Ack(retvCmdUnknown);
 }
 #endif
