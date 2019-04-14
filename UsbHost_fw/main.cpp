@@ -45,8 +45,7 @@ int main(void) {
 
     if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
     else Led.StartOrRestart(lsqFailure);
-
-    for(int i=0; i<BTNS_CNT_MAX; i++) Radio.ColorsTable[i] = clYellow;
+    chThdSleepMilliseconds(1008);
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -133,11 +132,33 @@ void OnCmd(Shell_t *PShell) {
     }
 
     else if(PCmd->NameIs("SetClr")) {
-        uint8_t ID = 0;
-        Color_t Clr;
-        if(PCmd->GetNext<uint8_t>(&ID) == retvOk and ID >= 1 and ID <= BTNS_CNT_MAX) {
-            if(PCmd->GetArray((uint8_t*)&Clr, 3) == retvOk) {
-                Radio.ColorsTable[ID-1] = Clr;
+        rPkt_t Pkt;
+        if(PCmd->GetNext<uint8_t>(&Pkt.ID) == retvOk and Pkt.ID >= 1 and Pkt.ID <= BTNS_CNT_MAX) {
+            if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk) {
+                Pkt.Cmd = CMD_SET;
+                Radio.CmdTable[Pkt.ID-1] = Pkt;
+                PShell->Ack(retvOk);
+            }
+            else PShell->Ack(retvCmdError);
+        }
+        else PShell->Ack(retvCmdError);
+    }
+
+    else if(PCmd->NameIs("Flash")) {
+        rPkt_t Pkt;
+        if(PCmd->GetNext<uint8_t>(&Pkt.ID) == retvOk and Pkt.ID >= 1 and Pkt.ID <= BTNS_CNT_MAX) {
+            if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk and
+               PCmd->GetNext<uint16_t>(&Pkt.Wait_ms) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.R2) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.G2) == retvOk and
+               PCmd->GetNext<uint8_t>(&Pkt.B2) == retvOk
+            ) {
+                Pkt.Cmd = CMD_FLASH;
+                Radio.CmdTable[Pkt.ID-1] = Pkt;
                 PShell->Ack(retvOk);
             }
             else PShell->Ack(retvCmdError);
@@ -146,32 +167,19 @@ void OnCmd(Shell_t *PShell) {
     }
 
     else if(PCmd->NameIs("SetClrAll")) {
-        Color_t Clr;
-        if(PCmd->GetArray((uint8_t*)&Clr, 3) == retvOk) {
+        rPkt_t Pkt;
+        if(PCmd->GetNext<uint8_t>(&Pkt.R1) == retvOk and
+           PCmd->GetNext<uint8_t>(&Pkt.G1) == retvOk and
+           PCmd->GetNext<uint8_t>(&Pkt.B1) == retvOk) {
+            Pkt.Cmd = CMD_SET;
             for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-                Radio.ColorsTable[i] = Clr;
+                Pkt.ID = i+1;
+                Radio.CmdTable[i] = Pkt;
             }
             PShell->Ack(retvOk);
         }
         else PShell->Ack(retvCmdError);
     }
-
-//    else if(PCmd->NameIs("Set")) {
-//        uint8_t r = retvFail;;
-//        uint32_t ID = 0;
-//        StickSetup_t FSetup;
-//        if(PCmd->GetNext<uint32_t>(&ID) == retvOk and ID <= 1) {
-//            if(PCmd->GetNext<uint8_t>(&FSetup.Vibro) == retvOk) {   // Vibro
-//                if(PCmd->GetArray((uint8_t*)&FSetup.Clr, 4) == retvOk) {
-//                    chSysLock();
-//                    StickSetup[ID] = FSetup;
-//                    chSysUnlock();
-//                    r = retvOk;
-//                }
-//            }
-//        }
-//        if(r != retvOk) PShell->Ack(retvCmdError);
-//    }
 
     else PShell->Ack(retvCmdUnknown);
 }

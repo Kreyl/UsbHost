@@ -34,7 +34,7 @@ extern UsbCDC_t UsbCDC;
 
 rLevel1_t Radio;
 
-rPkt_t Pkt;
+static rPkt_t Pkt;
 int8_t Rssi;
 
 static THD_WORKING_AREA(warLvl1Thread, 1024);
@@ -47,10 +47,11 @@ static void rLvl1Thread(void *arg) {
 __noreturn
 void rLevel1_t::ITask() {
     while(true) {
+        int32_t TimeAfter = 0;
         if(MustRescan) {
             BtnsEnabled = 0;
             for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-                if(BtnSet(i+1, clCyan) == retvOk) BtnsEnabled |= 1<<i;
+                if(BtnGet(i+1, &TimeAfter) == retvOk) BtnsEnabled |= 1<<i;
             }
             MustRescan = false;
         }
@@ -59,38 +60,27 @@ void rLevel1_t::ITask() {
             else {
                 for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
                     if(!(BtnsEnabled & (1<<i))) continue;
-                    int32_t TimeAfter = 0;
                     if(BtnGet(i+1, &TimeAfter) == retvOk) {
                         if(TimeAfter != -1 and TimeAfterPressTable[i] == -1) {
                             int32_t Now = chVTGetSystemTimeX();
                             TimeAfterPressTable[i] = Now - Timer - TimeAfter;
 //                            Printf("%d: %d\r", i, TimeAfterPressTable[i]);
                         }
-                        BtnSet(i+1, ColorsTable[i]);
-                    }
-                }
+                        // Send cmd if not empty
+                        if(CmdTable[i].Cmd != CMD_OK) {
+                            for(uint32_t j=0; j<RETRY_CNT; j++) {
+                                CC.Recalibrate();
+                                CC.Transmit(&CmdTable[i], RPKT_LEN);
+                                uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
+                                if(RxRslt == retvOk) break;
+                            }
+                            CmdTable[i].Cmd = CMD_OK;
+                        }
+                    } // if get
+                } // for
             }
         } // not rescan
     } // while true
-}
-
-uint8_t rLevel1_t::BtnSet(uint8_t ID, Color_t Clr) {
-    Pkt.ID = ID;
-    Pkt.Cmd = CMD_SET;
-    Pkt.Clr = Clr;
-    for(uint32_t i=0; i<RETRY_CNT; i++) {
-        CC.Recalibrate();
-        CC.Transmit(&Pkt, RPKT_LEN);
-//        Printf("S");
-        uint8_t RxRslt = CC.Receive(RX_T_MS, &Pkt, RPKT_LEN, &Rssi);
-        if(RxRslt == retvOk) {
-//            if(UsbCDC.IsActive()) {
-//                UsbCDC.Print("%u: %d\r", ID, Rssi);
-//            }
-            return retvOk;
-        }
-    }
-    return retvFail;
 }
 
 uint8_t rLevel1_t::BtnGet(uint8_t ID, int32_t *PTimeAfterPress) {
