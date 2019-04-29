@@ -44,6 +44,9 @@ int main(void) {
     Led.Init();
     Led.StartOrRestart(lsqStart);
 
+    PillPwr.Init();
+    PillPwr.SetHi();
+
     i2c2.Init();
 
     UsbCDC.Init();
@@ -92,15 +95,15 @@ void ITask() {
 
 void Standby() {
     i2c2.Standby();
-    PillPwr.SetLo();
-    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to fade
-    PillPwr.Deinit();
+//    PillPwr.SetLo();
+//    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to fade
+//    PillPwr.Deinit();
 }
 
 void Resume() {
-    PillPwr.Init();
-    PillPwr.SetHi();
-    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to rise
+//    PillPwr.Init();
+//    PillPwr.SetHi();
+//    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to rise
     i2c2.Resume();
 }
 
@@ -114,6 +117,11 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
+    else if(PCmd->NameIs("Scan")) {
+        i2c2.ScanBus(PShell);
+    }
+
+    // W <Addr> <Len <= 54 > (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("W")) {
         uint8_t Addr, Len, Data[RW_LEN_MAX];
         if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
@@ -132,6 +140,7 @@ void OnCmd(Shell_t *PShell) {
         else PShell->Ack(retvCmdError);
     }
 
+    // WriteRead: WR <Addr> <LenW> <LenR> (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("WR")) {
         uint8_t Addr, LenW, LenR, Data[RW_LEN_MAX];
         if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {

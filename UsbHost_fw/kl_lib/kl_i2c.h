@@ -1,6 +1,7 @@
 #pragma once
 
 #include "kl_lib.h"
+#include "shell.h"
 
 #if defined STM32L1XX || defined STM32F2XX
 struct i2cParams_t {
@@ -108,7 +109,7 @@ private:
 public:
     i2c_t(const i2cParams_t *APParams) : PParams(APParams), PThd(nullptr), IState(istIdle), IPtr(nullptr), ILen(0) {}
     void Init();
-    void ScanBus();
+    void ScanBus(Shell_t *PShell);
     void Standby();
     void PutBusLow();
     void Resume();

@@ -553,32 +553,32 @@ void i2c_t::Init() {
     nvicEnableVector(PParams->IrqErrorNumber, IRQ_PRIO_MEDIUM);
 }
 
-void i2c_t::ScanBus() {
+void i2c_t::ScanBus(Shell_t *PShell) {
 #if I2C_USE_SEMAPHORE
     if(chBSemWait(&BSemaphore) != MSG_OK) return;
 #endif
-    Printf("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
+    PShell->Print("     0  1  2  3  4  5  6  7  8  9  a  b  c  d  e  f");
     uint32_t AddrHi, Addr;
     I2C_TypeDef *pi2c = PParams->pi2c;  // To make things shorter
     for(AddrHi = 0; AddrHi < 0x80; AddrHi += 0x10) {
-        Printf("\r%02X: ", AddrHi);
+        PShell->Print("\r%02X: ", AddrHi);
         for(uint32_t n=0; n < 0x10; n++) {
             Addr = AddrHi + n;
-            if(Addr <= 0x01 or Addr > 0x77) Printf("   ");
+            if(Addr <= 0x01 or Addr > 0x77) PShell->Print("   ");
             else {
                 IReset(); // Reset I2C
                 // Set addr and autoend; NBYTES = 0
                 pi2c->CR2 = (Addr << 1) | I2C_CR2_AUTOEND;
                 pi2c->CR2 |= I2C_CR2_START;     // Start
                 while(!(pi2c->ISR & I2C_ISR_STOPF));
-                if(pi2c->ISR & I2C_ISR_NACKF) Printf("__ ");
-                else Printf("%02X ", Addr);
+                if(pi2c->ISR & I2C_ISR_NACKF) PShell->Print("__ ");
+                else PShell->Print("%02X ", Addr);
             }
         } // for lo
     } // for hi
     // Disable I2C
     pi2c->CR1 &= ~I2C_CR1_PE;
-    Printf("\r");
+    PShell->Print("\r");
 #if I2C_USE_SEMAPHORE
     chBSemSignal(&BSemaphore);
 #endif
