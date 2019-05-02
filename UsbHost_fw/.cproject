@@ -33,6 +33,7 @@
 									<listOptionValue builtIn="false" value="../os/stm32f072"/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<inputType id="com.atollic.truestudio.as.input.1736426130" name="Input" superClass="com.atollic.truestudio.as.input"/>
 							</tool>
@@ -46,6 +47,7 @@
 									<listOptionValue builtIn="false" value="../usb"/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<option id="com.atollic.truestudio.common_options.target.endianess.964749707" name="Endianess" superClass="com.atollic.truestudio.common_options.target.endianess" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.common_options.target.mcpu.1059019833" name="Microcontroller" superClass="com.atollic.truestudio.common_options.target.mcpu" useByScannerDiscovery="false" value="STM32F072C8" valueType="enumerated"/>
@@ -76,6 +78,7 @@
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../Radio"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<option id="com.atollic.truestudio.common_options.target.endianess.1211546471" name="Endianess" superClass="com.atollic.truestudio.common_options.target.endianess" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.common_options.target.mcpu.493528901" name="Microcontroller" superClass="com.atollic.truestudio.common_options.target.mcpu" useByScannerDiscovery="false" value="STM32F072C8" valueType="enumerated"/>
@@ -151,38 +154,28 @@
 								<option id="com.atollic.truestudio.common_options.target.fpu.1560044254" name="Floating point" superClass="com.atollic.truestudio.common_options.target.fpu" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.as.symbols.defined.700329092" name="Defined symbols" superClass="com.atollic.truestudio.as.symbols.defined" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.as.general.incpath.126653315" name="Include path" superClass="com.atollic.truestudio.as.general.incpath" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="../src"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F0xx/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/STM32F0xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../kl_lib"/>
 									<listOptionValue builtIn="false" value="../os"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
 									<listOptionValue builtIn="false" value="../os/stm32f072"/>
 									<listOptionValue builtIn="false" value="../usb"/>
-									<listOptionValue builtIn="false" value="../../"/>
-									<listOptionValue builtIn="false" value="../.."/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<inputType id="com.atollic.truestudio.as.input.1339946528" name="Input" superClass="com.atollic.truestudio.as.input"/>
 							</tool>
 							<tool id="com.atollic.truestudio.exe.release.toolchain.gcc.379603421" name="C Compiler" superClass="com.atollic.truestudio.exe.release.toolchain.gcc">
 								<option id="com.atollic.truestudio.gcc.symbols.defined.1394258782" name="Defined symbols" superClass="com.atollic.truestudio.gcc.symbols.defined" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.gcc.directories.select.276533080" name="Include path" superClass="com.atollic.truestudio.gcc.directories.select" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="../src"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F0xx/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/STM32F0xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../kl_lib"/>
 									<listOptionValue builtIn="false" value="../os"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
 									<listOptionValue builtIn="false" value="../os/stm32f072"/>
 									<listOptionValue builtIn="false" value="../usb"/>
-									<listOptionValue builtIn="false" value="../../"/>
-									<listOptionValue builtIn="false" value="../.."/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<option id="com.atollic.truestudio.common_options.target.endianess.1382991159" name="Endianess" superClass="com.atollic.truestudio.common_options.target.endianess" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.common_options.target.mcpu.1498222018" name="Microcontroller" superClass="com.atollic.truestudio.common_options.target.mcpu" useByScannerDiscovery="false" value="STM32F072C8" valueType="enumerated"/>
@@ -205,20 +198,15 @@
 							<tool id="com.atollic.truestudio.exe.release.toolchain.gpp.33585564" name="C++ Compiler" superClass="com.atollic.truestudio.exe.release.toolchain.gpp">
 								<option id="com.atollic.truestudio.gpp.symbols.defined.123544246" name="Defined symbols" superClass="com.atollic.truestudio.gpp.symbols.defined" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.gpp.directories.select.141514626" name="Include path" superClass="com.atollic.truestudio.gpp.directories.select" useByScannerDiscovery="false" valueType="includePath">
-									<listOptionValue builtIn="false" value="../src"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/CMSIS/Device/ST/STM32F0xx/Include"/>
-									<listOptionValue builtIn="false" value="../Drivers/STM32F0xx_HAL_Driver/Inc"/>
 									<listOptionValue builtIn="false" value="../kl_lib"/>
 									<listOptionValue builtIn="false" value="../os"/>
 									<listOptionValue builtIn="false" value="../os/hal"/>
 									<listOptionValue builtIn="false" value="../os/stm32f072"/>
 									<listOptionValue builtIn="false" value="../usb"/>
-									<listOptionValue builtIn="false" value="../../"/>
-									<listOptionValue builtIn="false" value="../.."/>
 									<listOptionValue builtIn="false" value=".././"/>
 									<listOptionValue builtIn="false" value="../Radio"/>
 									<listOptionValue builtIn="false" value="../os/include"/>
+									<listOptionValue builtIn="false" value="../Pill"/>
 								</option>
 								<option id="com.atollic.truestudio.common_options.target.endianess.89633274" name="Endianess" superClass="com.atollic.truestudio.common_options.target.endianess" useByScannerDiscovery="false"/>
 								<option id="com.atollic.truestudio.common_options.target.mcpu.167810074" name="Microcontroller" superClass="com.atollic.truestudio.common_options.target.mcpu" useByScannerDiscovery="false" value="STM32F072C8" valueType="enumerated"/>
@@ -247,7 +235,7 @@
 							</tool>
 							<tool id="com.atollic.truestudio.ar.base.1899739054" name="Archiver" superClass="com.atollic.truestudio.ar.base"/>
 							<tool id="com.atollic.truestudio.exe.release.toolchain.secoutput.898437315" name="Other" superClass="com.atollic.truestudio.exe.release.toolchain.secoutput">
-								<option id="com.atollic.truestudio.secoutput.general.convert.1217705866" superClass="com.atollic.truestudio.secoutput.general.convert" useByScannerDiscovery="false" value="true" valueType="boolean"/>
+								<option id="com.atollic.truestudio.secoutput.general.convert.1217705866" name="Convert build output" superClass="com.atollic.truestudio.secoutput.general.convert" useByScannerDiscovery="false" value="true" valueType="boolean"/>
 							</tool>
 						</toolChain>
 					</folderInfo>

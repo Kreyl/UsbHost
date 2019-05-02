@@ -9,6 +9,7 @@
 #include "radio_lvl1.h"
 #include "usb_cdc.h"
 #include "main.h"
+#include "pill_mgr.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
