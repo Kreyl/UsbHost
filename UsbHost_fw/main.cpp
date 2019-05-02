@@ -20,7 +20,7 @@ void ITask();
 
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 static TmrKL_t TmrEverySecond {MS2ST(1000), evtIdEverySecond, tktPeriodic};
-
+extern rPkt_t TxPkt;
 #endif
 
 int main(void) {
@@ -105,31 +105,63 @@ void ITask() {
 #if 1 // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
 	Cmd_t *PCmd = &PShell->Cmd;
-    __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("RstTmr")) {
+    else if(PCmd->NameIs("ShowRx")) {
+        Radio.ShowRx = true;
+        PShell->Ack(retvOk);
+    }
+    else if(PCmd->NameIs("HideRx")) {
+        Radio.ShowRx = false;
+        PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("set")) {
+        uint16_t To;
+        int8_t RssiThr;
+        uint8_t PwrId;
+        if(PCmd->GetNext<uint16_t>(&To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<int8_t>(&RssiThr) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint8_t>(&PwrId) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PwrId > 11) PwrId = 11;
         chSysLock();
-        for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-            Radio.TimeAfterPressTable[i] = -1;
-        }
-        Radio.Timer = chVTGetSystemTimeX();
+        Radio.TxPkt.From = 1;
+        Radio.TxPkt.To = To;
+        Radio.TxPkt.RssiThr = RssiThr;
+        Radio.TxPkt.PowerLvlId = PwrId;
+        Radio.MustTx = true;
         chSysUnlock();
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("GetBtns")) {
-        PShell->Print("Btns: ");
-        for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
-            if(!(Radio.BtnsEnabled & (1<<i))) continue;
-            PShell->Print("%d %d ", i+1, Radio.TimeAfterPressTable[i]);
-        }
-        PShell->Print("\r\n");
+    else if(PCmd->NameIs("stop")) {
+        Radio.MustTx = false;
+        PShell->Ack(retvOk);
     }
+
+#if 1 // === Pill ===
+    else if(PCmd->NameIs("ReadPill")) {
+        int32_t DWord32;
+        uint8_t Rslt = PillMgr.Read(0, &DWord32, 4);
+        if(Rslt == retvOk) {
+            PShell->Print("Read %d\r\n", DWord32);
+        }
+        else PShell->Ack(retvFail);
+    }
+
+    else if(PCmd->NameIs("WritePill")) {
+        int32_t DWord32;
+        if(PCmd->GetNext<int32_t>(&DWord32) == retvOk) {
+            uint8_t Rslt = PillMgr.Write(0, &DWord32, 4);
+            PShell->Ack(Rslt);
+        }
+        else PShell->Ack(retvCmdError);
+    }
+#endif
 
     else PShell->Ack(retvCmdUnknown);
 }

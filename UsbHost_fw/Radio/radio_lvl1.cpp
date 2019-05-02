@@ -34,7 +34,7 @@ extern UsbCDC_t UsbCDC;
 
 rLevel1_t Radio;
 
-static rPkt_t Pkt;
+static rPkt_t RxPkt;
 int8_t Rssi;
 
 static THD_WORKING_AREA(warLvl1Thread, 1024);
@@ -48,10 +48,17 @@ __noreturn
 void rLevel1_t::ITask() {
     while(true) {
         CC.Recalibrate();
-        uint8_t RxRslt = CC.Receive(360, &Pkt, RPKT_LEN, &Rssi);
+        uint8_t RxRslt = CC.Receive(360, &RxPkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
-            if(UsbCDC.IsActive()) {
-                UsbCDC.Print("%u: %d\r", Pkt.ID, Rssi);
+            Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+            if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+            if(MustTx and TxPkt.To == RxPkt.From) {
+                // Check if stop TX
+                if(TxPkt.PowerLvlId == RxPkt.PowerLvlId and TxPkt.RssiThr == RxPkt.RssiThr) MustTx = false;
+                else {
+                    CC.Transmit(&TxPkt, RPKT_LEN);
+                    if(UsbCDC.IsActive()) UsbCDC.Print("TX\r");
+                }
             }
         }
     } // while true
@@ -66,7 +73,7 @@ uint8_t rLevel1_t::Init() {
     if(CC.Init() == retvOk) {
         CC.SetTxPower(CC_TX_PWR);
         CC.SetPktSize(RPKT_LEN); // Max sz
-        CC.SetChannel(4);
+        CC.SetChannel(1);
         chThdCreateStatic(warLvl1Thread, sizeof(warLvl1Thread), NORMALPRIO, (tfunc_t)rLvl1Thread, NULL);
         return retvOk;
     }
