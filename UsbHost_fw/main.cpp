@@ -122,6 +122,20 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
+    else if(PCmd->NameIs("SetBtnList")) {
+        uint32_t IBtnsEnabled = 0;
+        uint8_t IID = 0;
+        while(PCmd->GetNext<uint8_t>(&IID) == retvOk) {
+            if(IID < 1 or IID > BTNS_CNT_MAX) {
+                PShell->Ack(retvBadValue);
+                return;
+            }
+            IBtnsEnabled |= 1<<(IID-1);
+        }
+        Radio.BtnsEnabled = IBtnsEnabled;
+        PShell->Ack(retvOk);
+    }
+
     else if(PCmd->NameIs("GetBtns")) {
         PShell->Print("Btns: ");
         for(uint32_t i=0; i<BTNS_CNT_MAX; i++) {
