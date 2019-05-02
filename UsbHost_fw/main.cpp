@@ -43,6 +43,8 @@ int main(void) {
 
     Led.Init();
     TmrEverySecond.StartOrRestart();
+    i2c2.Init();
+    PillMgr.Init();
 
     if(Radio.Init() == retvOk) Led.StartOrRestart(lsqStart);
     else Led.StartOrRestart(lsqFailure);
@@ -78,6 +80,16 @@ void ITask() {
 ////                Printf("Rx: %d\r", Msg.Value);
 //
 //            } break;
+
+            case evtIdPillConnected:
+                Printf("Pill: %u\r", PillMgr.Pill.DWord32);
+//                Led.StartOrRestart(lsqPillIn);
+                break;
+
+            case evtIdPillDisconnected:
+                Printf("Pill disconn\r");
+//                Led.StartOrRestart(lsqNoPill);
+                break;
 
 #if 1 // ======= USB =======
             case evtIdUsbConnect:

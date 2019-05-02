@@ -50,8 +50,10 @@ void rLevel1_t::ITask() {
         CC.Recalibrate();
         uint8_t RxRslt = CC.Receive(360, &RxPkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
-            Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
-            if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+            if(ShowRx) {
+                Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+                if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+            }
             if(MustTx and TxPkt.To == RxPkt.From) {
                 // Check if stop TX
                 if(TxPkt.PowerLvlId == RxPkt.PowerLvlId and TxPkt.RssiThr == RxPkt.RssiThr) MustTx = false;
