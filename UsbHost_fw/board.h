@@ -24,7 +24,7 @@
 #define SIMPLESENSORS_ENABLED   FALSE
 #define BUTTONS_ENABLED         FALSE
 #define ADC_REQUIRED            FALSE
-#define I2C1_ENABLED            FALSE
+#define I2C1_ENABLED            TRUE
 #define I2C_USE_SEMAPHORE       FALSE
 
 #if 1 // ========================== GPIO =======================================
