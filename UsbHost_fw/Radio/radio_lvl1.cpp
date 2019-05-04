@@ -47,16 +47,26 @@ static void rLvl1Thread(void *arg) {
 __noreturn
 void rLevel1_t::ITask() {
     while(true) {
-        CC.Recalibrate();
+        // Transmit cmd to lockets
+//        if(MustTx and TxPkt.To == 0) {
+//            systime_t start = chVTGetSystemTimeX();
+//            do {
+//                CC.Recalibrate();
+//                CC.Transmit(&TxPkt, RPKT_LEN);
+//            }
+//            while(chVTTimeElapsedSinceX(start) < 2007 and MustTx);
+//        }
+
+        // Receive
         uint8_t RxRslt = CC.Receive(360, &RxPkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
             if(ShowRx) {
-                Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
-                if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.PowerLvlId, Rssi);
+                Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
+                if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
             }
             if(MustTx and TxPkt.To == RxPkt.From) {
                 // Check if stop TX
-                if(TxPkt.PowerLvlId == RxPkt.PowerLvlId and TxPkt.RssiThr == RxPkt.RssiThr) MustTx = false;
+                if(TxPkt.Value == RxPkt.Value and TxPkt.RssiThr == RxPkt.RssiThr) MustTx = false;
                 else {
                     CC.Transmit(&TxPkt, RPKT_LEN);
                     if(UsbCDC.IsActive()) UsbCDC.Print("TX\r");

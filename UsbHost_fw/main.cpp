@@ -133,7 +133,7 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("set")) {
+    else if(PCmd->NameIs("setL")) {
         uint16_t To;
         int8_t RssiThr;
         uint8_t PwrId;
@@ -145,7 +145,20 @@ void OnCmd(Shell_t *PShell) {
         Radio.TxPkt.From = 1;
         Radio.TxPkt.To = To;
         Radio.TxPkt.RssiThr = RssiThr;
-        Radio.TxPkt.PowerLvlId = PwrId;
+        Radio.TxPkt.Value = PwrId;
+        Radio.MustTx = true;
+        chSysUnlock();
+        PShell->Ack(retvOk);
+    }
+
+    else if(PCmd->NameIs("setDHP")) {
+        uint8_t NewDefHP;
+        if(PCmd->GetNext<uint8_t>(&NewDefHP) != retvOk) { PShell->Ack(retvCmdError); return; }
+        chSysLock();
+        Radio.TxPkt.From = 1;
+        Radio.TxPkt.To = 0;
+        Radio.TxPkt.RssiThr = 0;
+        Radio.TxPkt.Value = NewDefHP;
         Radio.MustTx = true;
         chSysUnlock();
         PShell->Ack(retvOk);
