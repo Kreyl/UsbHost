@@ -48,16 +48,17 @@ __noreturn
 void rLevel1_t::ITask() {
     while(true) {
         // Transmit cmd to lockets
-//        if(MustTx and TxPkt.To == 0) {
-//            systime_t start = chVTGetSystemTimeX();
-//            do {
-//                CC.Recalibrate();
-//                CC.Transmit(&TxPkt, RPKT_LEN);
-//            }
-//            while(chVTTimeElapsedSinceX(start) < 2007 and MustTx);
-//        }
+        if(MustTx and TxPkt.To == 0) {
+            systime_t start = chVTGetSystemTimeX();
+            do {
+                CC.Recalibrate();
+                CC.Transmit(&TxPkt, RPKT_LEN);
+            }
+            while(chVTTimeElapsedSinceX(start) < 2007 and MustTx);
+        }
 
         // Receive
+        CC.Recalibrate();
         uint8_t RxRslt = CC.Receive(360, &RxPkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
             if(ShowRx) {
