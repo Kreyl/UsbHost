@@ -33,7 +33,7 @@ def get_device_port() -> Optional[str]:
     for comport in devices:
         try:
             # find comport with our device
-            ser = serial.Serial(comport, timeout=0.2)
+            ser = open_port(comport)
             command: bytes = bytes("ping\r\n", encoding='utf-8')
             ser.write(command)
             answer: str = ser.readall().decode('utf-8')
