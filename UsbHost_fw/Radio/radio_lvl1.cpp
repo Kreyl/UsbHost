@@ -62,8 +62,8 @@ void rLevel1_t::ITask() {
         uint8_t RxRslt = CC.Receive(360, &RxPkt, RPKT_LEN, &Rssi);
         if(RxRslt == retvOk) {
             if(ShowRx) {
-                Printf("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
-                if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Pwr: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
+                Printf("%u: Thr: %d; Dmg: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
+                if(UsbCDC.IsActive()) UsbCDC.Print("%u: Thr: %d; Dmg: %u; Rssi: %d\r", RxPkt.From, RxPkt.RssiThr, RxPkt.Value, Rssi);
             }
             if(MustTx and TxPkt.To == RxPkt.From) {
                 // Check if stop TX

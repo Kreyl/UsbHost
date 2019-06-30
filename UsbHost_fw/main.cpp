@@ -136,16 +136,15 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("setL")) {
         uint16_t To;
         int8_t RssiThr;
-        uint8_t PwrId;
+        uint16_t Damage;
         if(PCmd->GetNext<uint16_t>(&To) != retvOk) { PShell->Ack(retvCmdError); return; }
         if(PCmd->GetNext<int8_t>(&RssiThr) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PCmd->GetNext<uint8_t>(&PwrId) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PwrId > 11) PwrId = 11;
+        if(PCmd->GetNext<uint16_t>(&Damage) != retvOk) { PShell->Ack(retvCmdError); return; }
         chSysLock();
         Radio.TxPkt.From = 1;
         Radio.TxPkt.To = To;
         Radio.TxPkt.RssiThr = RssiThr;
-        Radio.TxPkt.Value = PwrId;
+        Radio.TxPkt.Value = Damage;
         Radio.MustTx = true;
         chSysUnlock();
         PShell->Ack(retvOk);
