@@ -21,7 +21,6 @@ void ITask();
 
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 static TmrKL_t TmrEverySecond {MS2ST(1000), evtIdEverySecond, tktPeriodic};
-extern rPkt_t TxPkt;
 #endif
 
 int main(void) {
@@ -133,41 +132,50 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("setL")) {
-        uint16_t To;
-        int8_t RssiThr;
-        uint8_t PwrId;
-        if(PCmd->GetNext<uint16_t>(&To) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PCmd->GetNext<int8_t>(&RssiThr) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PCmd->GetNext<uint8_t>(&PwrId) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PwrId > 11) PwrId = 11;
-        chSysLock();
-        Radio.TxPkt.From = 1;
-        Radio.TxPkt.To = To;
-        Radio.TxPkt.RssiThr = RssiThr;
-        Radio.TxPkt.Value = PwrId;
-        Radio.MustTx = true;
-        chSysUnlock();
-        PShell->Ack(retvOk);
+    else if(PCmd->NameIs("RPing")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdPing, PShell);
     }
 
-    else if(PCmd->NameIs("setDHP")) {
-        uint8_t NewDefHP;
-        if(PCmd->GetNext<uint8_t>(&NewDefHP) != retvOk) { PShell->Ack(retvCmdError); return; }
-        chSysLock();
-        Radio.TxPkt.From = 1;
-        Radio.TxPkt.To = 0;
-        Radio.TxPkt.RssiThr = 0;
-        Radio.TxPkt.Value = NewDefHP;
-        Radio.MustTx = true;
-        chSysUnlock();
-        PShell->Ack(retvOk);
+    else if(PCmd->NameIs("Scream")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdScream, PShell);
     }
 
-    else if(PCmd->NameIs("stop")) {
-        Radio.MustTx = false;
-        PShell->Ack(retvOk);
+    else if(PCmd->NameIs("SetLusPars")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.LustraParams.Power) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<int8_t> (&Radio.PktTx.LustraParams.RssiThr) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.LustraParams.Damage) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(Radio.PktTx.LustraParams.Power > 11) Radio.PktTx.LustraParams.Power = 11;
+        Radio.PrepareAndTransmitRpkt(rcmdLustraParams, PShell);
     }
+
+    else if(PCmd->NameIs("SetLckPar")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.LocketParam.ParamID) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint16_t> (&Radio.PktTx.LocketParam.Value) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdLocketSetParam, PShell);
+    }
+
+    else if(PCmd->NameIs("GetLckPar")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        if(PCmd->GetNext<uint8_t>(&Radio.PktTx.LocketParam.ParamID) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdLocketGetParam, PShell);
+    }
+
+    else if(PCmd->NameIs("Explode")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdLocketExplode, PShell);
+    }
+
+    else if(PCmd->NameIs("DieAll")) Radio.PrepareAndTransmitRpkt(rcmdLocketDieAll, PShell);
+
+    else if(PCmd->NameIs("Die")) {
+        if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PrepareAndTransmitRpkt(rcmdLocketDieChoosen, PShell);
+    }
+
 
 #if 1 // === Pill ===
     else if(PCmd->NameIs("ReadPill")) {

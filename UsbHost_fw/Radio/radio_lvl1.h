@@ -57,19 +57,76 @@ static inline void Lvl250ToLvl1000(uint16_t *PLvl) {
 #endif
 
 #if 1 // =========================== Pkt_t =====================================
+
+enum RCmd_t : uint8_t {
+    rcmdNone = 0,
+    rcmdPing = 1,
+    rcmdPong = 2,
+    rcmdBeacon = 3,
+    rcmdScream = 4,
+    rcmdLustraParams = 5,
+    rcmdLocketSetParam = 6,
+    rcmdLocketGetParam = 7,
+    rcmdLocketExplode = 8,
+    rcmdLocketDieAll = 9,
+    rcmdLocketDieChoosen = 10,
+};
+
 struct rPkt_t {
-    uint16_t From;
-    uint16_t To;
-    int8_t RssiThr;
-    uint8_t Value;
+    uint16_t From;  // 2
+    uint16_t To;    // 2
+    uint16_t TransmitterID; // 2
+    RCmd_t Cmd; // 1
+    uint8_t PktID; // 1
+    union {
+        struct {
+            uint16_t MaxLvlID;
+            uint8_t Reply;
+        } __attribute__ ((__packed__)) Pong; // 3
+
+        struct {
+            int8_t RssiThr;
+            uint8_t Damage;
+        } __attribute__ ((__packed__)) Beacon; // 2
+
+        struct {
+            uint8_t Power;
+            int8_t RssiThr;
+            uint8_t Damage;
+        } __attribute__ ((__packed__)) LustraParams; // 3
+
+        struct {
+            uint8_t ParamID;
+            uint16_t Value;
+        } __attribute__ ((__packed__)) LocketParam; // 3
+
+        struct {
+            int8_t RssiThr;
+        } __attribute__ ((__packed__)) Die; // 1
+    } __attribute__ ((__packed__)); // union
+    rPkt_t& operator = (const rPkt_t &Right) {
+        From = Right.From;
+        To = Right.To;
+        TransmitterID = Right.TransmitterID;
+        Cmd = Right.Cmd;
+        PktID = Right.PktID;
+        // Payload
+        Pong.MaxLvlID = Right.Pong.MaxLvlID;
+        Pong.Reply = Right.Pong.Reply;
+        return *this;
+    }
 } __attribute__ ((__packed__));
+
+#define PKTID_DO_NOT_RETRANSMIT 0
+#define PKTID_TOP_VALUE         254
 #endif
+
 
 #if 1 // ============================== Defines ================================
 #define RCHNL                   0
 #define BTNS_CNT_MAX            16
 #define RPKT_LEN                sizeof(rPkt_t)
-#define CC_TX_PWR               CC_Pwr0dBm
+#define CC_TX_PWR               CC_PwrPlus5dBm
 
 #define CMD_GET                 18
 #define CMD_SET                 27
@@ -79,6 +136,8 @@ struct rPkt_t {
 #define RX_T_MS                 4
 #define RX_SLEEP_T_MS           810
 #define RETRY_CNT               4
+
+#define SELF_ID                 1
 
 #endif
 
@@ -90,10 +149,16 @@ private:
         chThdSleepMilliseconds(SleepDuration); // XXX
     }
     uint8_t BtnGet(uint8_t ID, int32_t *PTimeAfterPress);
+    void ProcessReplyAndStop();
+    void SayTimeoutAndStop();
+    void DoShowRx();
+    rPkt_t IPktTx, IPktRx;
 public:
     uint8_t Init();
-    rPkt_t TxPkt;
-    bool MustTx, ShowRx = true;
+    rPkt_t PktTx;
+    bool ShowRx = true;
+    uint32_t PktID = 1;
+    void PrepareAndTransmitRpkt(RCmd_t ACmd, Shell_t *PShell);
     // Inner use
     void ITask();
 };
