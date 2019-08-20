@@ -142,8 +142,8 @@ void rLevel1_t::DoShowRx() {
                 if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Pong; Reply: %u; MaxLvlID: %u\r\n", IPktRx.Pong.Reply, IPktRx.Pong.MaxLvlID);
                 break;
             case rcmdBeacon:
-                Printf("Cmd: Beacon; RssiThr: %d; Damage: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage);
-                if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Beacon; RssiThr: %d; Damage: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage);
+                Printf("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power);
+                if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power);
                 break;
             case rcmdScream:
                 Printf("Cmd: Scream\r\n");
