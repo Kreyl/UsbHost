@@ -98,7 +98,10 @@ struct rPkt_t {
 
         struct {
             uint8_t ParamID;
-            uint16_t Value;
+            union {
+                uint16_t Value;
+                uint8_t vArr[2];
+            } __attribute__ ((__packed__));
         } __attribute__ ((__packed__)) LocketParam; // 3
 
         struct {

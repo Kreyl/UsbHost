@@ -154,7 +154,11 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("SetLckPar")) {
         if(PCmd->GetNext<uint16_t>(&Radio.PktTx.To) != retvOk) { PShell->Ack(retvCmdError); return; }
         if(PCmd->GetNext<uint8_t>(&Radio.PktTx.LocketParam.ParamID) != retvOk) { PShell->Ack(retvCmdError); return; }
-        if(PCmd->GetNext<uint16_t> (&Radio.PktTx.LocketParam.Value) != retvOk) { PShell->Ack(retvCmdError); return; }
+        // Get Value avoiding unaligned memory write
+        uint16_t Value = 0;
+        if(PCmd->GetNext<uint16_t> (&Value) != retvOk) { PShell->Ack(retvCmdError); return; }
+        Radio.PktTx.LocketParam.vArr[0] = (uint8_t)(0x00FF & (Value >> 0));
+        Radio.PktTx.LocketParam.vArr[1] = (uint8_t)(0x00FF & (Value >> 8));
         Radio.PrepareAndTransmitRpkt(rcmdLocketSetParam, PShell);
     }
 

@@ -128,8 +128,8 @@ void rLevel1_t::DoShowRx() {
     CC.Recalibrate();
     uint8_t RxRslt = CC.Receive(360, &IPktRx, RPKT_LEN, &Rssi);
     if(RxRslt == retvOk) {
-        Printf("From: %u; To: %u; TrrID: %u; PktID: %u;, Rssi: %d", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
-        if(UsbCDC.IsActive()) UsbCDC.Print("From: %u; To: %u; TrrID: %u; PktID: %u; Rssi: %d", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
+        Printf("From: %u; To: %u; TrrID: %u; PktID: %u;, Rssi: %d; ", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
+        if(UsbCDC.IsActive()) UsbCDC.Print("From: %u; To: %u; TrrID: %u; PktID: %u; Rssi: %d; ", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
 
         // Show payload
         switch(IPktRx.Cmd) {
