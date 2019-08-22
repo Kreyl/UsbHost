@@ -120,7 +120,7 @@ void rLevel1_t::PrepareAndTransmitRpkt(RCmd_t ACmd, Shell_t *PShell) {
     else PktTx.PktID = PKTID_DO_NOT_RETRANSMIT;
     // Transmit
     chSysLock();
-    IPktTx = PktTx;
+    memcpy(&IPktTx, &PktTx, RPKT_LEN);
     chSysUnlock();
 }
 

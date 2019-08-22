@@ -105,17 +105,6 @@ struct rPkt_t {
             int8_t RssiThr;
         } __attribute__ ((__packed__)) Die; // 1
     } __attribute__ ((__packed__)); // union
-    rPkt_t& operator = (const rPkt_t &Right) {
-        From = Right.From;
-        To = Right.To;
-        TransmitterID = Right.TransmitterID;
-        Cmd = Right.Cmd;
-        PktID = Right.PktID;
-        // Payload
-        Pong.MaxLvlID = Right.Pong.MaxLvlID;
-        Pong.Reply = Right.Pong.Reply;
-        return *this;
-    }
 } __attribute__ ((__packed__));
 
 #define PKTID_DO_NOT_RETRANSMIT 0
