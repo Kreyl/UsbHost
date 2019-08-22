@@ -128,8 +128,8 @@ void rLevel1_t::DoShowRx() {
     CC.Recalibrate();
     uint8_t RxRslt = CC.Receive(360, &IPktRx, RPKT_LEN, &Rssi);
     if(RxRslt == retvOk) {
-        Printf("From: %u; To: %u; TrrID: %u; PktID: %u;", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID);
-        if(UsbCDC.IsActive()) UsbCDC.Print("From: %u; To: %u; TrrID: %u; PktID: %u;", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID);
+        Printf("From: %u; To: %u; TrrID: %u; PktID: %u;, Rssi: %d", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
+        if(UsbCDC.IsActive()) UsbCDC.Print("From: %u; To: %u; TrrID: %u; PktID: %u; Rssi: %d", IPktRx.From, IPktRx.To, IPktRx.TransmitterID, IPktRx.PktID, Rssi);
 
         // Show payload
         switch(IPktRx.Cmd) {
@@ -142,8 +142,8 @@ void rLevel1_t::DoShowRx() {
                 if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Pong; Reply: %u; MaxLvlID: %u\r\n", IPktRx.Pong.Reply, IPktRx.Pong.MaxLvlID);
                 break;
             case rcmdBeacon:
-                Printf("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power);
-                if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power);
+                Printf("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u, Rssi: %d\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power, Rssi);
+                if(UsbCDC.IsActive()) UsbCDC.Print("Cmd: Beacon; RssiThr: %d; Damage: %u; Pwr: %u, Rssi: %d\r\n", IPktRx.Beacon.RssiThr, IPktRx.Beacon.Damage, IPktRx.Beacon.Power, Rssi);
                 break;
             case rcmdScream:
                 Printf("Cmd: Scream\r\n");
