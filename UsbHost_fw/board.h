@@ -11,7 +11,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHost3"
-#define APP_NAME            "i2c Host"
+#define APP_NAME            "SPI Host"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
@@ -128,7 +128,7 @@
 #if 1 // ========================== USART ======================================
 #define PRINTF_FLOAT_EN FALSE
 #define UART_TXBUF_SZ   2048
-#define UART_RXBUF_SZ   2048
+#define UART_RXBUF_SZ   4096
 
 #define UARTS_CNT       1
 

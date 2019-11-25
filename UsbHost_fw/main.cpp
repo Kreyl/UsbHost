@@ -6,7 +6,6 @@
 #include "kl_lib.h"
 #include "led.h"
 #include "Sequences.h"
-#include "radio_lvl1.h"
 #include "usb_cdc.h"
 #include "kl_i2c.h"
 
@@ -18,10 +17,14 @@ CmdUart_t Uart{&CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
 
-#define RW_LEN_MAX  54
-
 const PinOutput_t PillPwr {PILL_PWR_PIN};
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
+
+Spi_t ISpi{SPI1};
+#define RW_LEN_MAX          1024
+uint8_t Data[RW_LEN_MAX];
+void CsHi() { PinSetHi(GPIOA, 4); }
+void CsLo() { PinSetLo(GPIOA, 4); }
 #endif
 
 int main(void) {
@@ -44,10 +47,17 @@ int main(void) {
     Led.Init();
     Led.StartOrRestart(lsqStart);
 
-    PillPwr.Init();
-    PillPwr.SetHi();
+//    PillPwr.Init();
+//    PillPwr.SetHi();
+//    i2c2.Init();
 
-    i2c2.Init();
+    PinSetupOut      (GPIOA, 4, omPushPull);
+    PinSetupAlterFunc(GPIOA, 5, omPushPull, pudNone, AF0);
+    PinSetupAlterFunc(GPIOA, 6, omPushPull, pudNone, AF0);
+    PinSetupAlterFunc(GPIOA, 7, omPushPull, pudNone, AF0);
+    CsHi();
+    ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, sclkDiv64);
+    ISpi.Enable();
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -94,7 +104,7 @@ void ITask() {
 } // ITask()
 
 void Standby() {
-    i2c2.Standby();
+//    i2c2.Standby();
 //    PillPwr.SetLo();
 //    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to fade
 //    PillPwr.Deinit();
@@ -104,7 +114,7 @@ void Resume() {
 //    PillPwr.Init();
 //    PillPwr.SetHi();
 //    __NOP(); __NOP(); __NOP(); __NOP(); // Allow power to rise
-    i2c2.Resume();
+//    i2c2.Resume();
 }
 
 #if 1 // ================= Command processing ====================
@@ -117,49 +127,17 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    else if(PCmd->NameIs("Scan")) {
-        i2c2.ScanBus(PShell);
-    }
-
     // W <Addr> <Len <= 54 > (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("W")) {
-        uint8_t Addr, Len, Data[RW_LEN_MAX];
-        if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
-            if(PCmd->GetNext<uint8_t>(&Len) == retvOk) {
-                if(Len > RW_LEN_MAX) Len = RW_LEN_MAX;
-                if(PCmd->GetArray<uint8_t>(Data, Len) == retvOk) {
-                    Resume();
-                    uint8_t Rslt = i2c2.Write(Addr, Data, Len);
-                    Standby();
-                    PShell->Ack(Rslt);
-                }
-                else PShell->Ack(retvCmdError);
-            }
-            else PShell->Ack(retvCmdError);
-        }
-        else PShell->Ack(retvCmdError);
-    }
-
-    // WriteRead: WR <Addr> <LenW> <LenR> (Data1, Data2, ..., DataLen)
-    else if(PCmd->NameIs("WR")) {
-        uint8_t Addr, LenW, LenR, Data[RW_LEN_MAX];
-        if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
-            if(PCmd->GetNext<uint8_t>(&LenW) == retvOk) {
-                if(LenW > RW_LEN_MAX) LenW = RW_LEN_MAX;
-                if(PCmd->GetNext<uint8_t>(&LenR) == retvOk) {
-                    if(LenR > RW_LEN_MAX) LenR = RW_LEN_MAX;
-                    if(PCmd->GetArray<uint8_t>(Data, LenW) == retvOk) {
-                        Resume();
-                        uint8_t Rslt = i2c2.WriteRead(Addr, Data, LenW, Data, LenR);
-                        Standby();
-                        if(Rslt == retvOk) {
-                            PShell->Print("%A\r\n", Data, LenR, ' ');
-                        }
-                        else PShell->Ack(Rslt);
-                    }
-                    else PShell->Ack(retvCmdError);
-                }
-                else PShell->Ack(retvCmdError);
+        uint32_t Len;
+        if(PCmd->GetNext<uint32_t>(&Len) == retvOk) {
+        if(Len > RW_LEN_MAX) Len = RW_LEN_MAX;
+            if(PCmd->GetArray<uint8_t>(Data, Len) == retvOk) {
+                CsLo();
+                uint8_t *p = Data;
+                while(Len--) ISpi.ReadWriteByte(*p++);
+                PShell->Ack(retvOk);
+                CsHi();
             }
             else PShell->Ack(retvCmdError);
         }
