@@ -6,7 +6,7 @@ This project is for manupulating Ostranna devices from PC using radio.
 This branch is for manipulating USB-host for HeartOfStorm Larp
 
 Protocol descrideb here (in Russian) https://docs.google.com/document/d/1Enq7OxXN71MnZqI4T44DpILLiYlTNmURxSFmcvyZTgg/
-List of commands in Russian https://docs.google.com/document/d/1xTNT9nXQbrqk0kijIyspimRIQRoJOtMbkZyYuiGS3eA/
+List of commands in Russian https://docs.google.com/document/d/1xTNT9nXQbrqk0kijIyspimRIQRoJOtMbkZyYuiGS3eA/edit#heading=h.whnugadjicnn
 
 USB2Radio devices displays itself as virtual COM-port, you may user Terminal app to send commands or send commands from your code to serial port object. 
 
