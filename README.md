@@ -10,7 +10,7 @@ Protocol descrideb here (in Russian) https://docs.google.com/document/d/1Enq7OxX
 List of commands in Russian (see BigButton part for this project) 
 https://docs.google.com/document/d/1xTNT9nXQbrqk0kijIyspimRIQRoJOtMbkZyYuiGS3eA/
 
-USB2Radio devices displays itself as virtual COM-port, you may user Terminal app to send commands or send commands from your code to serial port object. 
+USB2Radio devices displays itself as virtual COM-port, you may use Terminal app to send commands or send commands from your code to serial port object. 
 
 Archived branches are available here https://github.com/Kreyl/UsbHost/tags
 
