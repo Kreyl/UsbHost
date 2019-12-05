@@ -9,4 +9,4 @@ USB2Radio devices displays itself as virtual COM-port, you may user Terminal app
 
 We also have python module to work with USB2Radio  (in python folder).
 
-this branch is for operating with spi bus
+This is supporting branch for operating with spi bus
