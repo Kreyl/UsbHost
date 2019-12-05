@@ -9,7 +9,10 @@ USB2Radio devices displays itself as virtual COM-port, you may user Terminal app
 
 Archived branches are available here https://github.com/Kreyl/UsbHost/tags
 
-We also have python module to work with USB2Radio  (in python folder). Commands list: 
+We also have python module to work with USB2Radio  (in python folder). 
+
+<details>
+  <summary>Commands list:</summary> 
 
 *get_port_list() function returns list of available comports as ['COM3', 'COM5', 'COM20' ...];
 
@@ -26,3 +29,4 @@ We also have python module to work with USB2Radio  (in python folder). Commands 
 *send query(ser, command, parameters) send query with parameters to ser port and returns answer;
 
 *close_port(ser) gets result of open_port(port_id) as parameter and closes it .
+</details>
