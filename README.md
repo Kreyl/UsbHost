@@ -2,8 +2,8 @@
 PCB with MCU &amp; CC1101, with USB connector
 
 This project is for manupulating Ostranna devices from PC using radio
-This branch is for Magic Stick project. There are two devices in system, host and wand https://github.com/Kreyl/MagicStick
-Wand sends raw data from IMU to host and host may send commands to wand
+This branch is for Magic Stick project. There are two devices in system, host and wand https://github.com/Kreyl/MagicStick.
+Wand sends raw data from IMU to host and host may send commands to wand.
 
 Protocol descrideb here (in Russian) https://docs.google.com/document/d/1Enq7OxXN71MnZqI4T44DpILLiYlTNmURxSFmcvyZTgg/edit
 List of commands in Russianhttps://docs.google.com/document/d/1xTNT9nXQbrqk0kijIyspimRIQRoJOtMbkZyYuiGS3eA/edit#heading=h.siqy2t4hsq6f
