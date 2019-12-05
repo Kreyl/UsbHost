@@ -7,6 +7,8 @@ List of commands in Russian https://docs.google.com/document/d/1xTNT9nXQbrqk0kij
 
 USB2Radio devices displays itself as virtual COM-port, you may user Terminal app to send commands or send commands from your code to serial port object. 
 
+Archived branches are available here https://github.com/Kreyl/UsbHost/tags
+
 We also have python module to work with USB2Radio  (in python folder). Commands list: 
 
 *get_port_list() function returns list of available comports as ['COM3', 'COM5', 'COM20' ...];
