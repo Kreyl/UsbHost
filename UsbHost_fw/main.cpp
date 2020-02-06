@@ -127,7 +127,7 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
-    // W <Addr> <Len <= 54 > (Data1, Data2, ..., DataLen)
+    // W <Len <= 54 > (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("W")) {
         uint32_t Len;
         if(PCmd->GetNext<uint32_t>(&Len) == retvOk) {
