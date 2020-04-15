@@ -1,0 +1,45 @@
+Project: UsbHost
+Converter: Atollic TrueSTUDIO project converter
+Date: 20200415
+
+Warning: MCU STM32F072C8 matched multiple possible MCUs: [STM32F072C8Tx, STM32F072C8Ux]
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.debug.toolchain.as
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.debug.toolchain.as
+Unknown value type "" for id com.atollic.truestudio.as.symbols.defined on tool com.atollic.truestudio.exe.debug.toolchain.as
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.gcc.symbols.defined on tool com.atollic.truestudio.exe.debug.toolchain.gcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.debug.toolchain.gcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.debug.toolchain.gcc
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.debug.toolchain.ld
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.debug.toolchain.ld
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.gpp.symbols.defined on tool com.atollic.truestudio.exe.debug.toolchain.gpp
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.debug.toolchain.gpp
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.debug.toolchain.gpp
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.debug.toolchain.ldcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.debug.toolchain.ldcc
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+No map found for id: com.atollic.truestudio.ldcc.optimization.malloc_page_size
+Option com.atollic.truestudio.secoutput.general.convert is no longer supported
+Warning: MCU STM32F072C8 matched multiple possible MCUs: [STM32F072C8Tx, STM32F072C8Ux]
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.release.toolchain.as
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.release.toolchain.as
+Unknown value type "" for id com.atollic.truestudio.as.symbols.defined on tool com.atollic.truestudio.exe.release.toolchain.as
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.gcc.symbols.defined on tool com.atollic.truestudio.exe.release.toolchain.gcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.release.toolchain.gcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.release.toolchain.gcc
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.release.toolchain.ld
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.release.toolchain.ld
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.gpp.symbols.defined on tool com.atollic.truestudio.exe.release.toolchain.gpp
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.release.toolchain.gpp
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.release.toolchain.gpp
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Unknown value type "" for id com.atollic.truestudio.common_options.target.endianess on tool com.atollic.truestudio.exe.release.toolchain.ldcc
+Unknown value type "" for id com.atollic.truestudio.common_options.target.fpu on tool com.atollic.truestudio.exe.release.toolchain.ldcc
+Option com.atollic.truestudio.common_options.target.instr_set is no longer supported
+Option com.atollic.truestudio.secoutput.general.convert is no longer supported

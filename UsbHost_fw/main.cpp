@@ -23,8 +23,8 @@ LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 Spi_t ISpi{SPI1};
 #define RW_LEN_MAX          1024
 uint8_t Data[RW_LEN_MAX];
-void CsHi() { PinSetHi(GPIOA, 4); }
-void CsLo() { PinSetLo(GPIOA, 4); }
+void CsHi() { PinSetHi(GPIOA, 3); }
+void CsLo() { PinSetLo(GPIOA, 3); }
 #endif
 
 int main(void) {
@@ -51,12 +51,12 @@ int main(void) {
 //    PillPwr.SetHi();
 //    i2c2.Init();
 
-    PinSetupOut      (GPIOA, 4, omPushPull);
+    PinSetupOut      (GPIOA, 3, omPushPull);
     PinSetupAlterFunc(GPIOA, 5, omPushPull, pudNone, AF0);
     PinSetupAlterFunc(GPIOA, 6, omPushPull, pudNone, AF0);
     PinSetupAlterFunc(GPIOA, 7, omPushPull, pudNone, AF0);
     CsHi();
-    ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, sclkDiv64);
+    ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, 1000000);
     ISpi.Enable();
 
     UsbCDC.Init();
@@ -127,15 +127,29 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
+    else if(PCmd->NameIs("SpiF")) {
+        uint32_t F;
+        if(PCmd->GetNext<uint32_t>(&F) == retvOk) {
+            ISpi.Disable();
+            ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, F);
+            ISpi.Enable();
+            PShell->Ack(retvOk);
+        }
+    }
+
     // W <Len <= 54 > (Data1, Data2, ..., DataLen)
-    else if(PCmd->NameIs("W")) {
+    else if(PCmd->NameIs("SpiW")) {
         uint32_t Len;
         if(PCmd->GetNext<uint32_t>(&Len) == retvOk) {
         if(Len > RW_LEN_MAX) Len = RW_LEN_MAX;
             if(PCmd->GetArray<uint8_t>(Data, Len) == retvOk) {
                 CsLo();
                 uint8_t *p = Data;
-                while(Len--) ISpi.ReadWriteByte(*p++);
+                while(Len--) {
+                    uint8_t b = ISpi.ReadWriteByte(*p++);
+                    PShell->Print("0x%02X ", b);
+                }
+                PShell->Print("\r\n");
                 PShell->Ack(retvOk);
                 CsHi();
             }
