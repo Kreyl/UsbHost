@@ -18,7 +18,7 @@ CmdUart_t Uart{&CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
 
-#define RW_LEN_MAX  54
+#define RW_LEN_MAX  108
 
 const PinOutput_t PillPwr {PILL_PWR_PIN};
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
@@ -117,11 +117,22 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ack(retvOk);
     }
 
+    else if(PCmd->NameIs("help")) {
+        PShell->Print("\r\n%S %S\r\n"
+                "Commands:\r\n"
+                "Ping   - returns Ack 0\r\n"
+                "Scan   - scans all addresses on i2c bus\r\n"
+                "W <Addr> <LenW> <Byte1> [Byte2] ... [Byte_LenW]   - Write bytes. Example: W 0x50 2 45 4 - write to addr 0x50 two bytes: 45 and 4\r\n"
+                "WR <Addr> <LenW> <LenR> <Byte1> [Byte2] ... [Byte_LenW]   - Write LenW bytes, then read LenR bytes. Example: WR 0x50 1 4 0 - write one byte 0, then read four bytes.\r\n"
+                "W and WR return Ack 1 in case of communication error.\r\n",
+                APP_NAME, XSTRINGIFY(BUILD_TIME));
+    }
+
     else if(PCmd->NameIs("Scan")) {
         i2c2.ScanBus(PShell);
     }
 
-    // W <Addr> <Len <= 54 > (Data1, Data2, ..., DataLen)
+    // W <Addr> <Len <= 108 > (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("W")) {
         uint8_t Addr, Len, Data[RW_LEN_MAX];
         if(PCmd->GetNext<uint8_t>(&Addr) == retvOk) {
