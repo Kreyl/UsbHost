@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -376,7 +376,7 @@ void chMtxUnlock(mutex_t *mp) {
       mp->next = tp->mtxlist;
       tp->mtxlist = mp;
 
-      /* Note, not using chSchWakeupS() becuase that function expects the
+      /* Note, not using chSchWakeupS() because that function expects the
          current thread to have the higher or equal priority than the ones
          in the ready list. This is not necessarily true here because we
          just changed priority.*/

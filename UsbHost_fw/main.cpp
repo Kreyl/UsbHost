@@ -1,7 +1,7 @@
 #include "hal.h"
 #include "board.h"
 #include "MsgQ.h"
-#include "uart.h"
+#include "uart2.h"
 #include "shell.h"
 #include "kl_lib.h"
 #include "led.h"
@@ -13,7 +13,7 @@
 // Forever
 EvtMsgQ_t<EvtMsg_t, MAIN_EVT_Q_LEN> EvtQMain;
 static const UartParams_t CmdUartParams(115200, CMD_UART_PARAMS);
-CmdUart_t Uart{&CmdUartParams};
+CmdUart_t Uart{CmdUartParams};
 void OnCmd(Shell_t *PShell);
 void ITask();
 
@@ -73,11 +73,13 @@ void ITask() {
     while(true) {
         EvtMsg_t Msg = EvtQMain.Fetch(TIME_INFINITE);
         switch(Msg.ID) {
-            case evtIdUsbNewCmd:
-            case evtIdShellCmd:
-                Led.StartOrRestart(lsqUSBCmd); // After that, falling throug is intentional
-                OnCmd((Shell_t*)Msg.Ptr);
-                ((Shell_t*)Msg.Ptr)->SignalCmdProcessed();
+            case evtIdUartCmdRcvd:
+                if(((CmdUart_t*)Msg.Ptr)->TryParseRxBuff() == retvOk) OnCmd((Shell_t*)((CmdUart_t*)Msg.Ptr));
+                break;
+
+            case evtIdUsbCmdRcvd:
+                OnCmd((Shell_t*)&UsbCDC);
+                UsbCDC.SignalCmdProcessed();
                 break;
 
 #if 1 // ======= USB =======
@@ -119,12 +121,13 @@ void Resume() {
 
 #if 1 // ================= Command processing ====================
 void OnCmd(Shell_t *PShell) {
+    Led.StartOrRestart(lsqUSBCmd);
 	Cmd_t *PCmd = &PShell->Cmd;
     __attribute__((unused)) int32_t dw32 = 0;  // May be unused in some configurations
 //    Printf("%S\r", PCmd->Name);
     // Handle command
     if(PCmd->NameIs("Ping")) {
-        PShell->Ack(retvOk);
+        PShell->Ok();
     }
 
     else if(PCmd->NameIs("SpiF")) {
@@ -133,7 +136,7 @@ void OnCmd(Shell_t *PShell) {
             ISpi.Disable();
             ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, F);
             ISpi.Enable();
-            PShell->Ack(retvOk);
+            PShell->Ok();
         }
     }
 
@@ -150,14 +153,14 @@ void OnCmd(Shell_t *PShell) {
                     PShell->Print("0x%02X ", b);
                 }
                 PShell->Print("\r\n");
-                PShell->Ack(retvOk);
+                PShell->Ok();
                 CsHi();
             }
-            else PShell->Ack(retvCmdError);
+            else PShell->CmdError();
         }
-        else PShell->Ack(retvCmdError);
+        else PShell->CmdError();
     }
 
-    else PShell->Ack(retvCmdUnknown);
+    else PShell->CmdUnknown();
 }
 #endif

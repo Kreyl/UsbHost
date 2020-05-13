@@ -1,9 +1,8 @@
 #pragma once
 
 #include "kl_lib.h"
-#include "shell.h"
 
-#if defined STM32L1XX || defined STM32F2XX
+#if defined STM32L1XX || defined STM32F2XX || defined STM32F4XX
 struct i2cParams_t {
     I2C_TypeDef *pi2c;
     GPIO_TypeDef *PGpio;
@@ -11,14 +10,14 @@ struct i2cParams_t {
     uint16_t SdaPin;
     uint32_t BitrateHz;
     // DMA
-    const stm32_dma_stream_t *PDmaTx;
-    const stm32_dma_stream_t *PDmaRx;
+    uint32_t DmaTxID, DmaRxID;
     uint32_t DmaModeTx, DmaModeRx;
 };
 
 class i2c_t {
 private:
     const i2cParams_t *PParams;
+    const stm32_dma_stream_t *PDmaTx, *PDmaRx;
     void IReset();
     void SendStart()     { PParams->pi2c->CR1 |= I2C_CR1_START; }
     void SendStop()      { PParams->pi2c->CR1 |= I2C_CR1_STOP; }
@@ -72,7 +71,7 @@ extern i2c_t i2c2;
 
 #endif // MCU type
 
-#if defined STM32L4XX || defined STM32F030 || defined STM32F0
+#if defined STM32L4XX || defined STM32F030
 struct i2cParams_t {
     I2C_TypeDef *pi2c;
     GPIO_TypeDef *PGpio;
@@ -80,8 +79,7 @@ struct i2cParams_t {
     uint16_t SdaPin;
     AlterFunc_t PinAF;
     // DMA
-    const stm32_dma_stream_t *PDmaTx;
-    const stm32_dma_stream_t *PDmaRx;
+    uint32_t DmaTxID, DmaRxID;
     uint32_t DmaModeTx, DmaModeRx;
     // IRQ
     uint32_t IrqEvtNumber, IrqErrorNumber;
@@ -96,6 +94,7 @@ enum i2cState_t {istIdle, istWriteRead, istWriteWrite, istRead, istWrite, istFai
 class i2c_t {
 private:
     const i2cParams_t *PParams;
+    const stm32_dma_stream_t *PDmaTx, *PDmaRx;
     uint8_t IBusyWait();
     void IReset();
     thread_reference_t PThd;
@@ -109,7 +108,7 @@ private:
 public:
     i2c_t(const i2cParams_t *APParams) : PParams(APParams), PThd(nullptr), IState(istIdle), IPtr(nullptr), ILen(0) {}
     void Init();
-    void ScanBus(Shell_t *PShell);
+    void ScanBus();
     void Standby();
     void PutBusLow();
     void Resume();

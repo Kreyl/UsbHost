@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -54,6 +54,9 @@
 #define CH_DBG_TRACE_MASK_ISR               2U
 #define CH_DBG_TRACE_MASK_HALT              4U
 #define CH_DBG_TRACE_MASK_USER              8U
+#define CH_DBG_TRACE_MASK_SLOW              (CH_DBG_TRACE_MASK_SWITCH |     \
+                                             CH_DBG_TRACE_MASK_HALT |       \
+                                             CH_DBG_TRACE_MASK_USER)
 #define CH_DBG_TRACE_MASK_ALL               (CH_DBG_TRACE_MASK_SWITCH |     \
                                              CH_DBG_TRACE_MASK_ISR |        \
                                              CH_DBG_TRACE_MASK_HALT |       \
@@ -88,10 +91,6 @@
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
-
-#if !defined(CH_CFG_TRACE_HOOK)
-#error "CH_CFG_TRACE_HOOK not defined in chconf.h"
-#endif
 
 /*===========================================================================*/
 /* Module data structures and types.                                         */

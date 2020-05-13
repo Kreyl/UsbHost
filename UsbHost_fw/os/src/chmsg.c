@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -111,8 +111,10 @@ msg_t chMsgSend(thread_t *tp, msg_t msg) {
  * @note    If the message is a pointer then you can assume that the data
  *          pointed by the message is stable until you invoke @p chMsgRelease()
  *          because the sending thread is suspended until then.
+ * @note    The reference counter of the sender thread is not increased, the
+ *          returned pointer is a temporary reference.
  *
- * @return              A reference to the thread carrying the message.
+ * @return              A pointer to the thread carrying the message.
  *
  * @api
  */

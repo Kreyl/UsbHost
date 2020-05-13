@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -21,7 +21,9 @@
  * @file    chlicense.h
  * @brief   License Module macros and structures.
  *
- * @addtogroup license
+ * @addtogroup chibios_license
+ * @details This module contains all the definitions required for defining
+ *          a licensing scheme for customers or public releases.
  * @{
  */
 

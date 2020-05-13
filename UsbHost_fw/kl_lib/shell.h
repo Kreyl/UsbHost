@@ -1,7 +1,7 @@
 /*
  * shell.h
  *
- *  Created on: 25 окт. 2015 г.
+ *  Created on: 25 пїЅпїЅпїЅ. 2015 пїЅ.
  *      Author: Kreyl
  */
 
@@ -11,30 +11,63 @@
 #include <stdarg.h>
 #include "kl_lib.h"
 
-#define CMD_BUF_SZ		99
-#define DELIMITERS      " ,"
+#define CMD_BUF_SZ		        1024
+#define DELIMITERS              " ,"
+#define PREV_CHAR_TIMEOUT_ms    99UL
 
 enum ProcessDataResult_t {pdrProceed, pdrNewCmd};
 
 class Cmd_t {
 private:
-    uint32_t Cnt;
     char IString[CMD_BUF_SZ];
+    uint32_t Cnt;
     bool Completed;
+    systime_t LastCharTimestamp = 0;
+    // Inner strtok
+    char* last = nullptr;
+    char* IStrTok(register char* s, register const char* delim) {
+        if(s == nullptr and (s = last) == nullptr) return nullptr;
+        register char* spanp;
+        // Skip leading delimiters
+        cont:
+        register char c = *s++, sc;
+        for(spanp = (char*)delim; (sc = *spanp++) != 0;) {
+            if(c == sc) goto cont;
+        }
+
+        if(c == 0) {    // no non-delimiter characters left, but string ended
+            last = nullptr;
+            return nullptr;
+        }
+        char* tok = s - 1;
+        while(true) {
+            c = *s++;
+            spanp = (char*)delim;
+            do {
+                if((sc = *spanp++) == c) {
+                    if(c == 0) s = nullptr;
+                    else *(s-1) = 0;
+                    last = s;
+                    return tok;
+                }
+            } while (sc != 0);
+        }
+    }
 public:
-    char *Name, *Token;
+    char *Name;
     ProcessDataResult_t PutChar(char c) {
-        // Reset cmd if it was completed, and after that new char arrived
-        if(Completed) {
+        // Reset cmd: (1) if it was completed and after that new char arrived (2) if new char has come after long pause
+        if(Completed or chVTTimeElapsedSinceX(LastCharTimestamp) > TIME_MS2I(PREV_CHAR_TIMEOUT_ms)) {
             Completed = false;
             Cnt = 0;
         }
+        LastCharTimestamp = chVTGetSystemTimeX();
         // Process char
         if(c == '\b') { if(Cnt > 0) Cnt--; }    // do backspace
         else if((c == '\r') or (c == '\n')) {   // end of line, check if cmd completed
             if(Cnt != 0) {  // if cmd is not empty
                 IString[Cnt] = 0; // End of string
-                Name = strtok(IString, DELIMITERS);
+                Name = IStrTok(IString, DELIMITERS);
                 Completed = true;
                 return pdrNewCmd;
             }
@@ -42,31 +75,24 @@ public:
         else if(Cnt < (CMD_BUF_SZ-1)) IString[Cnt++] = c;  // Add char if buffer not full
         return pdrProceed;
     }
-    void Reset() { Completed = true; }
 
-    uint8_t GetNextString(char **PStr = nullptr) {
-        Token = strtok(NULL, DELIMITERS);
-        if(PStr != nullptr) *PStr = Token;
-        return (*Token == '\0')? retvEmpty : retvOk;
-    }
+    char* GetNextString() { return IStrTok(nullptr, DELIMITERS); }
+
+    char* GetRemainder() { return last; }
 
     template <typename T>
     uint8_t GetNext(T *POutput) {
-        uint8_t r = GetNextString();
-        if(r == retvOk) {
+        char* S = GetNextString();
+        if(S) {
             char *p;
-            if(*Token == '-') { // signed
-                int32_t dw32 = strtol(Token, &p, 0);
-                if(*p == '\0') *POutput = (T)dw32;
-                else r = retvNotANumber;
+            int32_t dw32 = strtol(S, &p, 0);
+            if(*p == '\0') {
+                *POutput = (T)dw32;
+                return retvOk;
             }
-            else {
-                uint32_t dw32 = strtoul(Token, &p, 0);
-                if(*p == '\0') *POutput = (T)dw32;
-                else r = retvNotANumber;
-            }
+            else return retvNotANumber;
         }
-        return r;
+        return retvFail;
     }
 
     template <typename T>
@@ -97,22 +123,31 @@ public:
         return Rslt;
     }
 
-    bool NameIs(const char *SCmd) { return (strcasecmp(Name, SCmd) == 0); }
+    bool NameIs(const char *SCmd) { return (kl_strcasecmp(Name, SCmd) == 0); }
     Cmd_t() {
         Cnt = 0;
         Completed = false;
         Name = nullptr;
-        Token = nullptr;
     }
 };
 
 class Shell_t {
 public:
 	Cmd_t Cmd;
-	virtual void SignalCmdProcessed() = 0;
 	virtual void Print(const char *format, ...) = 0;
-	void Reply(const char* CmdCode, int32_t Data) { Print("%S,%d\r\n", CmdCode, Data); }
-	void Ack(int32_t Result) { Print("Ack %d\r\n", Result); }
+//	void Reply(const char* CmdCode, int32_t Data) { Print("%S,%d\r\n", CmdCode, Data); }
+//	void Ack(int32_t Result) { Print("Ack %d\r\n", Result); }
+	void Ok()  { Print("Ok\r\n"); }
+	void BadParam() { Print("BadParam\r\n"); }
+	void CRCError() { Print("CRCError\r\n"); }
+	void CmdError() { Print("CmdError\r\n"); }
+	void CmdUnknown() { Print("CmdUnknown\r\n"); }
+	void Failure() { Print("Failure\r\n"); }
+	void Timeout() { Print("Timeout\r\n"); }
+	void NoAnswer() { Print("NoAnswer\r\n"); }
+	void EOL() { Print("\r\n"); }
+	virtual uint8_t ReceiveBinaryToBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) = 0;
+	virtual uint8_t TransmitBinaryFromBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) = 0;
 };
 
 
@@ -128,7 +163,7 @@ public:
     void PrintEOL();
 };
 
-#if 0 // ========================= Byte protocol ===============================
+#if 1 // ========================= Byte protocol ===============================
 #define BYTECMD_DATA_SZ     99
 class ByteCmd_t {
 private:

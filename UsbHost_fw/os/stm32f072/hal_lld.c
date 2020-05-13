@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -24,15 +24,10 @@
 
 #include "hal.h"
 
-/*===========================================================================*/
-/* Driver local definitions.                                                 */
-/*===========================================================================*/
 
-#define STM32_PLLXTPRE_OFFSET   17          /**< PLLXTPRE offset             */
-#define STM32_PLLXTPRE_MASK     0x01        /**< PLLXTPRE mask               */
 
 /*===========================================================================*/
-/* Driver exported variables.                                                */
+/* Driver interrupt handlers.                                                */
 /*===========================================================================*/
 
 #if defined(STM32_DMA_REQUIRED) || defined(__DOXYGEN__)
@@ -165,15 +160,14 @@ OSAL_IRQ_HANDLER(STM32_DMA12_CH4567_CH345_HANDLER) {
  */
 void hal_lld_init(void) {
 
-  /* Reset of all peripherals.*/
   rccResetAHB(0xFFFFFFFF);
   rccResetAPB1(0xFFFFFFFF);
   rccResetAPB2(~RCC_APB2RSTR_DBGMCURST);
 
   /* PWR clock enabled.*/
-  rccEnablePWRInterface(FALSE);
+  rccEnablePWRInterface(true);
 
-
+  /* DMA subsystems initialization.*/
 #if defined(STM32_DMA_REQUIRED)
   dmaInit();
 #endif
@@ -183,4 +177,3 @@ void hal_lld_init(void) {
   PWR->CR |= PWR_CR_PVDE | (STM32_PLS & STM32_PLS_MASK);
 #endif /* STM32_PVD_ENABLE */
 }
-

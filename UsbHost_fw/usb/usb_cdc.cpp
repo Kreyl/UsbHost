@@ -1,10 +1,11 @@
 /*
  * usb_cdc.cpp
  *
- *  Created on: 03 сент. 2015 г.
+ *  Created on: 03 пїЅпїЅпїЅпїЅ. 2015 пїЅ.
  *      Author: Kreyl
  */
 
+#include "hal.h"
 #include "usb_cdc.h"
 #include "hal_usb.h"
 #include "descriptors_cdc.h"
@@ -114,10 +115,10 @@ static THD_FUNCTION(ThdCDCRX, arg) {
         if(UsbCDC.IsActive()) {
             msg_t m = SDU1.vmt->get(&SDU1);
             if(m > 0) {
-//                SDU1.vmt->put(&SDU1, (uint8_t)m);   // repeat what was sent
+                // SDU1.vmt->put(&SDU1, (uint8_t)m);   // repeat what was sent
                 if(UsbCDC.Cmd.PutChar((char)m) == pdrNewCmd) {
                     chSysLock();
-                    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdShellCmd, (Shell_t*)&UsbCDC));
+                    EvtQMain.SendNowOrExitI(EvtMsg_t(evtIdUsbCmdRcvd, (Shell_t*)&UsbCDC));
                     chSchGoSleepS(CH_STATE_SUSPENDED); // Wait until cmd processed
                     chSysUnlock();  // Will be here when application signals that cmd processed
                 }
@@ -128,7 +129,7 @@ static THD_FUNCTION(ThdCDCRX, arg) {
 }
 
 uint8_t UsbCDC_t::IPutChar(char c) {
-    return (SDU1.vmt->putt(&SDU1, (uint8_t)c, MS2ST(999)) == MSG_OK)? retvOk : retvFail;
+    return (SDU1.vmt->putt(&SDU1, (uint8_t)c, TIME_MS2I(999)) == MSG_OK)? retvOk : retvFail;
 }
 
 void UsbCDC_t::SignalCmdProcessed() {
@@ -136,12 +137,32 @@ void UsbCDC_t::SignalCmdProcessed() {
     if(PCdcThd->state == CH_STATE_SUSPENDED) chSchReadyI(PCdcThd);
     chSysUnlock();
 }
+
+uint8_t UsbCDC_t::ReceiveBinaryToBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) {
+    while(SDU1.vmt->gett(&SDU1, TIME_IMMEDIATE) > 0); // Flush RX buf
+    if(SDU1.vmt->putt(&SDU1, (uint8_t)'>', TIME_MS2I(999)) == MSG_OK) {
+        return (SDU1.vmt->readt(&SDU1, ptr, Len, TIME_MS2I(Timeout_ms)) == Len)? retvOk : retvFail;
+    }
+    else return retvFail;
+}
+
+uint8_t UsbCDC_t::TransmitBinaryFromBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) {
+    systime_t Start = chVTGetSystemTimeX();
+    // Wait '>'
+    msg_t m = 0;
+    while(m != '>') {
+        m = SDU1.vmt->gett(&SDU1, TIME_MS2I(333));
+        if(chVTTimeElapsedSinceX(Start) > TIME_MS2I(Timeout_ms)) return retvTimeout;
+    }
+    // Transmit
+    return (SDU1.vmt->writet(&SDU1, ptr, Len, TIME_MS2I(Timeout_ms)) == Len)? retvOk : retvFail;
+}
 #endif
 
 void UsbCDC_t::Init() {
-#ifdef STM32L4XX
-    PinSetupAlterFunc(USB_GPIO, USB_DM, omPushPull, pudNone, USB_AF, psVeryHigh);
-    PinSetupAlterFunc(USB_GPIO, USB_DP, omPushPull, pudNone, USB_AF, psVeryHigh);
+#if defined STM32L4XX || defined STM32F2XX
+    PinSetupAlterFunc(USB_DM, omPushPull, pudNone, USB_AF, psHigh);
+    PinSetupAlterFunc(USB_DP, omPushPull, pudNone, USB_AF, psHigh);
 #else
     PinSetupAnalog(USB_DM);
     PinSetupAnalog(USB_DP);
@@ -155,12 +176,33 @@ void UsbCDC_t::Init() {
 }
 
 void UsbCDC_t::Connect() {
+#if defined STM32F1XX
+    // Disconnect everything
+    PinSetupAnalog(USB_PULLUP);
+    PinSetupAnalog(USB_DM);
+    PinSetupAnalog(USB_DP);
+#else
     usbDisconnectBus(SerUsbCfg.usbp);
-    chThdSleepMilliseconds(504);
+#endif
+    chThdSleepMilliseconds(99);
     usbStart(SerUsbCfg.usbp, &UsbCfg);
+#if defined STM32F1XX
+    PinSetupAlterFunc(USB_DM, omPushPull, pudNone, USB_AF, psHigh);
+    PinSetupAlterFunc(USB_DP, omPushPull, pudNone, USB_AF, psHigh);
+    PinSetHi(USB_PULLUP);
+    PinSetupOut(USB_PULLUP, omPushPull);
+#else
     usbConnectBus(SerUsbCfg.usbp);
+#endif
 }
 void UsbCDC_t::Disconnect() {
     usbStop(SerUsbCfg.usbp);
+#if defined STM32F1XX
+    // Disconnect everything
+    PinSetupAnalog(USB_PULLUP);
+    PinSetupAnalog(USB_DM);
+    PinSetupAnalog(USB_DP);
+#else
     usbDisconnectBus(SerUsbCfg.usbp);
+#endif
 }
