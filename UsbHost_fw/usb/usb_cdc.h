@@ -26,6 +26,9 @@ public:
         va_end(args);
     }
     void SignalCmdProcessed();
+    uint8_t StartBinaryReception(uint32_t Timeout_ms);
+    uint8_t ContinueBinaryReception(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms);
+
     uint8_t ReceiveBinaryToBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms);
     uint8_t TransmitBinaryFromBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms);
 };

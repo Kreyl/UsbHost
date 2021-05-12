@@ -11,7 +11,7 @@
 #include <stdarg.h>
 #include "kl_lib.h"
 
-#define CMD_BUF_SZ		        1024
+#define CMD_BUF_SZ		        2048
 #define DELIMITERS              " ,"
 #define PREV_CHAR_TIMEOUT_ms    99UL
 

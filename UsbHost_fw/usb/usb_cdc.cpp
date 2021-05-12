@@ -138,9 +138,20 @@ void UsbCDC_t::SignalCmdProcessed() {
     chSysUnlock();
 }
 
+uint8_t UsbCDC_t::StartBinaryReception(uint32_t Timeout_ms) {
+    while(SDU1.vmt->gett(&SDU1, TIME_IMMEDIATE) > 0); // Flush RX buf
+    if(SDU1.vmt->putt(&SDU1, (uint8_t)'>', TIME_MS2I(Timeout_ms)) == MSG_OK) return retvOk;
+    else return retvTimeout;
+}
+
+uint8_t UsbCDC_t::ContinueBinaryReception(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) {
+    uint32_t RcvdCnt = SDU1.vmt->readt(&SDU1, ptr, Len, TIME_MS2I(Timeout_ms));
+    return (RcvdCnt == Len)? retvOk : retvFail;
+}
+
 uint8_t UsbCDC_t::ReceiveBinaryToBuf(uint8_t *ptr, uint32_t Len, uint32_t Timeout_ms) {
     while(SDU1.vmt->gett(&SDU1, TIME_IMMEDIATE) > 0); // Flush RX buf
-    if(SDU1.vmt->putt(&SDU1, (uint8_t)'>', TIME_MS2I(999)) == MSG_OK) {
+    if(SDU1.vmt->putt(&SDU1, (uint8_t)'>', TIME_MS2I(Timeout_ms)) == MSG_OK) {
         return (SDU1.vmt->readt(&SDU1, ptr, Len, TIME_MS2I(Timeout_ms)) == Len)? retvOk : retvFail;
     }
     else return retvFail;

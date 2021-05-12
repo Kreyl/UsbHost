@@ -8,6 +8,7 @@
 #include "Sequences.h"
 #include "usb_cdc.h"
 #include "kl_i2c.h"
+#include "kl_crc.h"
 
 #if 1 // ======================== Variables and defines ========================
 // Forever
@@ -21,8 +22,11 @@ const PinOutput_t PillPwr {PILL_PWR_PIN};
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
 Spi_t ISpi{SPI1};
-#define RW_LEN_MAX          1024
-uint8_t Data[RW_LEN_MAX];
+const uint8_t SpiParams = 0x05; // MSB, IdleLow, FirstEdge, divider=101 => 64
+#define BIG_BUF_SZ          2048
+uint8_t BigBuf[BIG_BUF_SZ];
+#define TIMEOUT_LONG_ms     9999UL
+
 void CsHi() { PinSetHi(GPIOA, 3); }
 void CsLo() { PinSetLo(GPIOA, 3); }
 #endif
@@ -57,7 +61,6 @@ int main(void) {
     PinSetupAlterFunc(GPIOA, 7, omPushPull, pudNone, AF0);
     CsHi();
     ISpi.Setup(boMSB, cpolIdleLow, cphaFirstEdge, 1000000);
-    ISpi.Enable();
 
     UsbCDC.Init();
     Clk.EnableCRS();
@@ -130,6 +133,10 @@ void OnCmd(Shell_t *PShell) {
         PShell->Ok();
     }
 
+    else if(PCmd->NameIs("send64")) {
+        PShell->Print("0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef");
+    }
+
     else if(PCmd->NameIs("SpiF")) {
         uint32_t F;
         if(PCmd->GetNext<uint32_t>(&F) == retvOk) {
@@ -140,25 +147,194 @@ void OnCmd(Shell_t *PShell) {
         }
     }
 
-    // W <Len <= 54 > (Data1, Data2, ..., DataLen)
     else if(PCmd->NameIs("SpiW")) {
-        uint32_t Len;
-        if(PCmd->GetNext<uint32_t>(&Len) == retvOk) {
-        if(Len > RW_LEN_MAX) Len = RW_LEN_MAX;
-            if(PCmd->GetArray<uint8_t>(Data, Len) == retvOk) {
-                CsLo();
-                uint8_t *p = Data;
-                while(Len--) {
-                    uint8_t b = ISpi.ReadWriteByte(*p++);
-                    PShell->Print("0x%02X ", b);
-                }
-                PShell->Print("\r\n");
-                PShell->Ok();
-                CsHi();
-            }
-            else PShell->CmdError();
+        uint8_t b;
+        CsLo();
+        ISpi.Enable();
+        while(PCmd->GetNext<uint8_t>(&b) == retvOk) {
+            b = ISpi.ReadWriteByte(b);
+            PShell->Print("0x%02X ", b);
         }
-        else PShell->CmdError();
+        ISpi.Disable();
+        CsHi();
+        PShell->EOL();
+        PShell->Ok();
+    }
+
+    else if(PCmd->NameIs("SpiWCRC")) {
+        uint8_t b;
+        Crc::ChunkStart();
+        CsLo();
+        ISpi.Enable();
+        while(PCmd->GetNext<uint8_t>(&b) == retvOk) {
+            Crc::ChunkPutNext(b);
+            b = ISpi.ReadWriteByte(b);
+            PShell->Print("0x%02X ", b);
+        }
+        // Put CRC
+        uint16_t crc = Crc::ChunkGetResult();
+        b = ISpi.ReadWriteByte(crc & 0x00FF);
+        PShell->Print("0x%02X ", b);
+        b = ISpi.ReadWriteByte((crc >> 8) & 0x00FF);
+        PShell->Print("0x%02X ", b);
+
+        ISpi.Disable();
+        CsHi();
+        PShell->EOL();
+        PShell->Ok();
+    }
+
+    else if(PCmd->NameIs("SpiBWCRC")) {
+        uint8_t b;
+        uint16_t w;
+        Crc::ChunkStart();
+        CsLo();
+        ISpi.Enable();
+        if(PCmd->GetNext<uint8_t>(&b) != retvOk)  { PShell->BadParam(); return; }
+        if(PCmd->GetNext<uint16_t>(&w) != retvOk)  { PShell->BadParam(); return; }
+        Crc::ChunkPutNext(b);
+        Crc::ChunkPutNext(0xFF & (w >> 0));
+        Crc::ChunkPutNext(0xFF & (w >> 8));
+
+        PShell->Print("0x%02X ", ISpi.ReadWriteByte(b));
+        PShell->Print("0x%02X ", ISpi.ReadWriteByte(0xFF & (w >> 0)));
+        PShell->Print("0x%02X ", ISpi.ReadWriteByte(0xFF & (w >> 8)));
+
+        // Put CRC
+        uint16_t crc = Crc::ChunkGetResult();
+        PShell->Print("0x%02X ", ISpi.ReadWriteByte(crc & 0x00FF));
+        PShell->Print("0x%02X ", ISpi.ReadWriteByte((crc >> 8) & 0x00FF));
+
+        ISpi.Disable();
+        CsHi();
+        PShell->EOL();
+        PShell->Ok();
+    }
+
+    else if(PCmd->NameIs("SpiFile")) {
+        uint32_t Len;
+        if(PCmd->GetNext<uint32_t>(&Len) != retvOk) { PShell->BadParam(); return; }
+        Printf("Len: %u\r", Len);
+        // Receive data
+        if(UsbCDC.StartBinaryReception(TIMEOUT_LONG_ms) == retvOk) {
+            CsLo();
+            while(Len != 0) {
+                uint32_t BytesToRcv = (Len > BIG_BUF_SZ)? BIG_BUF_SZ : Len;
+                Printf("L: %u; btr: %u\r", Len, BytesToRcv);
+                if(UsbCDC.ContinueBinaryReception(BigBuf, BytesToRcv, TIMEOUT_LONG_ms) == retvOk) {
+//                    Printf("%S\r", BigBuf);
+                    ISpi.Transmit(SpiParams, BigBuf, BytesToRcv);
+                    Len -= BytesToRcv;
+//                    chThdSleepMilliseconds(504);
+                }
+                else {
+                    CsHi();
+                    PShell->Timeout();
+                    return;
+                }
+            } // while
+            CsHi();
+            PShell->Ok();
+        } // StartBinaryReception
+        else PShell->Timeout();
+    }
+
+    else if(PCmd->NameIs("SpiChunks")) {
+        uint8_t Pre;
+        int32_t TotalSz, ChunkSz, Delay;
+        if(PCmd->GetNext<uint8_t>(&Pre)     != retvOk) { PShell->BadParam(); return; }
+        if(PCmd->GetNext<int32_t>(&TotalSz) != retvOk) { PShell->BadParam(); return; }
+        if(PCmd->GetNext<int32_t>(&ChunkSz) != retvOk) { PShell->BadParam(); return; }
+        if(PCmd->GetNext<int32_t>(&Delay)   != retvOk) { PShell->BadParam(); return; }
+        // Receive data
+        if(UsbCDC.StartBinaryReception(TIMEOUT_LONG_ms) == retvOk) {
+            while(TotalSz > 0) {
+                int32_t ChunkToRcv = (TotalSz > ChunkSz)? ChunkSz : TotalSz;
+                CsLo();
+                uint8_t b = Pre;
+                ISpi.Transmit(SpiParams, &b, 1); // b will be overwritten with reply
+                Crc::ChunkStart();
+                Crc::ChunkPutNext(Pre);
+                while(ChunkToRcv > 0) {
+                    uint32_t BytesToRcv = (ChunkToRcv > BIG_BUF_SZ)? BIG_BUF_SZ : ChunkToRcv;
+                    Printf("TSz: %d; CSz: %d; btr: %d\r", TotalSz, ChunkToRcv, BytesToRcv);
+                    if(UsbCDC.ContinueBinaryReception(BigBuf, BytesToRcv, TIMEOUT_LONG_ms) == retvOk) {
+                        Crc::ChunkPutNext(BigBuf, BytesToRcv);
+                        ISpi.Transmit(SpiParams, BigBuf, BytesToRcv);
+                        ChunkToRcv -= BytesToRcv;
+                    }
+                    else {
+                        CsHi();
+                        PShell->Timeout();
+                        return;
+                    }
+                }
+                // Put Crc
+                uint16_t crc = Crc::ChunkGetResult();
+                ISpi.Transmit(SpiParams, (uint8_t*)&crc, 2);
+                CsHi();
+                chThdSleepMilliseconds(Delay);
+                TotalSz -= ChunkSz;
+            }
+            PShell->Ok();
+        }
+        else PShell->Timeout();
+    }
+
+    else if(PCmd->NameIs("SpiChunksPoll")) {
+        uint8_t bCmd;
+        int32_t TotalSz, ChunkSz;
+        if(PCmd->GetNext<uint8_t>(&bCmd)     != retvOk) { PShell->BadParam(); return; }
+        if(PCmd->GetNext<int32_t>(&TotalSz) != retvOk) { PShell->BadParam(); return; }
+        if(PCmd->GetNext<int32_t>(&ChunkSz) != retvOk) { PShell->BadParam(); return; }
+        // Receive data
+        if(UsbCDC.StartBinaryReception(TIMEOUT_LONG_ms) == retvOk) {
+            while(TotalSz > 0) {
+                int32_t ChunkToRcv = (TotalSz > ChunkSz)? ChunkSz : TotalSz;
+                CsLo();
+                uint8_t b = bCmd;
+                ISpi.Transmit(SpiParams, &b, 1); // b will be overwritten with reply
+                Crc::ChunkStart();
+                Crc::ChunkPutNext(bCmd);
+                while(ChunkToRcv > 0) {
+                    uint32_t BytesToRcv = (ChunkToRcv > BIG_BUF_SZ)? BIG_BUF_SZ : ChunkToRcv;
+//                    Printf("TSz: %d; CSz: %d; btr: %d\r", TotalSz, ChunkToRcv, BytesToRcv);
+                    if(UsbCDC.ContinueBinaryReception(BigBuf, BytesToRcv, TIMEOUT_LONG_ms) == retvOk) {
+                        Crc::ChunkPutNext(BigBuf, BytesToRcv);
+                        ISpi.Transmit(SpiParams, BigBuf, BytesToRcv);
+                        ChunkToRcv -= BytesToRcv;
+                    }
+                    else {
+                        CsHi();
+                        PShell->Timeout();
+                        return;
+                    }
+                }
+                // Put Crc
+                uint16_t crc = Crc::ChunkGetResult();
+                ISpi.Transmit(SpiParams, (uint8_t*)&crc, 2);
+                CsHi();
+                TotalSz -= ChunkSz;
+
+                // Poll
+                b = 1;
+                uint8_t id = 0;
+                while(!(id == 0xFE and b == 0)) {
+                    chThdSleepMilliseconds(11);
+                    CsLo();
+                    id = ISpi.ReadWriteByte(0);
+                    PShell->Print("0x%02X ", id);
+                    PShell->Print("0x%02X ", ISpi.ReadWriteByte(0));
+                    PShell->Print("0x%02X ", ISpi.ReadWriteByte(0));
+                    b = ISpi.ReadWriteByte(0);
+                    PShell->Print("0x%02X\r", b);
+                    CsHi();
+                    chThdSleepMilliseconds(11);
+                }
+            }
+            PShell->Ok();
+        }
+        else PShell->Timeout();
     }
 
     else PShell->CmdUnknown();

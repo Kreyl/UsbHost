@@ -125,8 +125,8 @@
 
 #if 1 // ========================== USART ======================================
 #define PRINTF_FLOAT_EN FALSE
-#define UART_TXBUF_SZ   2048
-#define UART_RXBUF_SZ   4096
+#define UART_TXBUF_SZ   512
+#define UART_RXBUF_SZ   512
 
 #define CMD_UART        USART1
 

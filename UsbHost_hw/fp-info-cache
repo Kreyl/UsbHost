@@ -50,14 +50,14 @@ BNC_R
 3
 Connectors
 Chequerwise-9
-Chequerwise{space}9-pin
+Chequerwise 9-pin
 
 0
 9
 9
 Connectors
 Concentric_D5xD14
-Concentric{space}circles
+Concentric circles
 
 0
 2
@@ -120,70 +120,70 @@ NOKIA_ACC
 4
 Connectors
 Pad_2x4_Oval
-Single{space}pad
+Single pad
 
 0
 1
 1
 Connectors
 PBS-2
-Single-line{space}connector{space}2-pin
+Single-line connector 2-pin
 
 0
 2
 2
 Connectors
 PBS-2R
-Receptacle{space}2pin@2.54{space}Right{space}angle
+Receptacle 2pin@2.54 Right angle
 
 0
 2
 2
 Connectors
 PBS-2R-MIRR
-Receptacle{space}2pin@2.54{space}Right{space}angle{space}Mirrored
+Receptacle 2pin@2.54 Right angle Mirrored
 
 0
 2
 2
 Connectors
 PBS-3
-Single-line{space}connector{space}3-pin
+Single-line connector 3-pin
 
 0
 3
 3
 Connectors
 PBS-3_NoHole
-Single-line{space}connector{space}3-pin
+Single-line connector 3-pin
 
 0
 3
 3
 Connectors
 PBS-4R
-Receptacle{space}4pin@2.54{space}Right{space}angle
+Receptacle 4pin@2.54 Right angle
 
 0
 4
 4
 Connectors
 PBS-6R
-Receptacle{space}6pin@2.54{space}Right{space}angle
+Receptacle 6pin@2.54 Right angle
 
 0
 6
 6
 Connectors
 PBS-6R-MIRR
-Receptacle{space}6pin@2.54{space}Right{space}angle{space}Mirrored
+Receptacle 6pin@2.54 Right angle Mirrored
 
 0
 6
 6
 Connectors
 PBS-8
-Single-line{space}8-pin{space}@2.54
+Single-line 8-pin @2.54
 
 0
 8
@@ -204,56 +204,56 @@ PLD-6
 6
 Connectors
 PLD-8
-Double-line{space}2x4pin{space}@2.54
+Double-line 2x4pin @2.54
 
 0
 8
 8
 Connectors
 PLD-10
-Double-line{space}2x5pin{space}@2.54
+Double-line 2x5pin @2.54
 
 0
 10
 10
 Connectors
 PLD-24
-Double-line{space}2x12pin{space}@2.54
+Double-line 2x12pin @2.54
 
 0
 24
 24
 Connectors
 PLS-1Rnd
-Connector{space}1-pin{space}round
+Connector 1-pin round
 
 0
 1
 1
 Connectors
 PLS-1Rnd-NoHole
-Connector{space}1-pin{space}round
+Connector 1-pin round
 
 0
 1
 1
 Connectors
 PLS-1Rnd-NoSilks
-Connector{space}1-pin{space}round
+Connector 1-pin round
 
 0
 1
 1
 Connectors
 PLS-1Square
-Connector{space}1-pin{space}round
+Connector 1-pin round
 
 0
 1
 1
 Connectors
 PLS-2
-Single-line{space}connector{space}2-pin
+Single-line connector 2-pin
 
 0
 2
@@ -267,7 +267,7 @@ PLS-2R
 2
 Connectors
 PLS-3
-Single-line{space}connector{space}3-pin
+Single-line connector 3-pin
 
 0
 3
@@ -281,14 +281,14 @@ PLS-3-PAD
 3
 Connectors
 PLS-4
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 4
 4
 Connectors
 PLS-4-Long
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 4
@@ -302,56 +302,56 @@ PLS-4-PAD
 4
 Connectors
 PLS-5
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 5
 5
 Connectors
 PLS-5-NoHole
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 5
 5
 Connectors
 PLS-6
-Single-line{space}8-pin{space}@2.54
+Single-line 8-pin @2.54
 
 0
 6
 6
 Connectors
 PLS-6-NoHole
-Single-line{space}8-pin{space}@2.54
+Single-line 8-pin @2.54
 
 0
 6
 6
 Connectors
 PLS-8
-Single-line{space}8-pin{space}@2.54
+Single-line 8-pin @2.54
 
 0
 8
 8
 Connectors
 PLS-9
-Single-line{space}9-pin{space}@2.54
+Single-line 9-pin @2.54
 
 0
 9
 9
 Connectors
 PLS2-7
-Single-line{space}7-pin{space}@2
+Single-line 7-pin @2
 
 0
 7
 7
 Connectors
 PLS2-9
-Single-line{space}9-pin{space}@2
+Single-line 9-pin @2
 
 0
 9
@@ -365,7 +365,7 @@ PWL2-02
 2
 Connectors
 RF_SMA_L
-RF{space}SMA{space}connector
+RF SMA connector
 
 0
 5
@@ -379,112 +379,112 @@ RJ11_TJ6_6P6C
 7
 Connectors
 SIL1_ROUND_1MM8
-Connecteurs{space}2{space}pins
-CONN{space}DEV
+Connecteurs 2 pins
+CONN DEV
 0
 1
 1
 Connectors
 SLD_2_2D5
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 2
 2
 Connectors
 SLD_2_2D5_1mm
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 2
 2
 Connectors
 SLD_3_2D5
-Single-line{space}connector{space}3-pin
+Single-line connector 3-pin
 
 0
 3
 3
 Connectors
 SLD_4_2D5
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 4
 4
 Connectors
 SLD_5_2D5
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 5
 5
 Connectors
 SLD_6_2D5
-Single-line{space}connector{space}4-pin
+Single-line connector 4-pin
 
 0
 6
 6
 Connectors
 SLD_7_2D5
-Single-line{space}connector{space}7-pin
+Single-line connector 7-pin
 
 0
 7
 7
 Connectors
 SLD_9_2D5_SMD
-Single-line{space}SMD{space}connector{space}9-pin
+Single-line SMD connector 9-pin
 
 0
 9
 9
 Connectors
 SMA_R
-RF{space}SMA{space}connector
+RF SMA connector
 
 0
 5
 2
 Connectors
 SPRING_TERM_XY123R-3
-Spring{space}terminal{space}2.54pitch,{space}3poles
+Spring terminal 2.54pitch, 3poles
 
 0
 6
 3
 Connectors
 SPRING_TERM_XY124V_A_2
-Spring{space}terminal{space}5mm{space}pitch,{space}2{space}poles
+Spring terminal 5mm pitch, 2 poles
 
 0
 4
 2
 Connectors
 TermiBlockHeader_350_x3_R
-TerminalBlock{space}Header{space}3{space}pos{space}@3.5{space}284512-3
+TerminalBlock Header 3 pos @3.5 284512-3
 
 0
 3
 3
 Connectors
 TermiBlockHeader_508_x2_R
-TerminalBlock{space}Header{space}2{space}pos{space}@5.08{space}282814-2
+TerminalBlock Header 2 pos @5.08 282814-2
 
 0
 2
 2
 Connectors
 TermiBlockHeader_508_x3_R
-TerminalBlock{space}Header{space}3{space}pos{space}@5.08{space}282814-3
+TerminalBlock Header 3 pos @5.08 282814-3
 
 0
 3
 3
 Connectors
 TermiBlockHeader_508_x4_R
-TerminalBlock{space}Header{space}4{space}pos{space}@5.08{space}282814-4
+TerminalBlock Header 4 pos @5.08 282814-4
 
 0
 4
@@ -498,7 +498,7 @@ USBmicro_MOLEX_1050170001
 9
 Connectors
 USBmicro_MOLEX_WM17142
-Molex{space}uUSB,{space}PCB{space}cut{space}needed
+Molex uUSB, PCB cut needed
 
 0
 11
@@ -512,14 +512,14 @@ USB_AM_PCB
 4
 Connectors
 USB_B
-USB{space}conn{space}type{space}B:{space}USBB-1J
+USB conn type B: USBB-1J
 
 0
 6
 5
 Connectors
 uUSB_614105150721
-Vertical{space}uUsb{space}through-hole{space}connector
+Vertical uUsb through-hole connector
 
 0
 7

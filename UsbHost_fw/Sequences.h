@@ -1,7 +1,7 @@
 /*
  * Sequences.h
  *
- *  Created on: 09 ÿíâ. 2015 ã.
+ *  Created on: 09 ï¿½ï¿½ï¿½. 2015 ï¿½.
  *      Author: Kreyl
  */
 
@@ -13,8 +13,6 @@ const LedRGBChunk_t lsqStart[] = {
         {csSetup, 99, clRed},
         {csSetup, 99, clBlue},
         {csSetup, 99, clGreen},
-//        {csSetup, 99, clBlack},
-//        {csSetup, 0, {7,0,0}},
         {csEnd},
 };
 
