@@ -7,3 +7,6 @@ UsbHost_hw/UsbHost.ses
 /Debug/
 UsbHost_fw/Release/
 UsbHost_hw/UsbHostLora-backups/
+*.dsn
+*.rte
+UsbHost_hw/UsbHostLora.ses
