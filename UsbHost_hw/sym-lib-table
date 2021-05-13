@@ -1,9 +1,3 @@
 (sym_lib_table
-  (lib (name "Audio_kl")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/Audio_kl.kicad_sym")(options "")(descr ""))
-  (lib (name "BtnsSwitches")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/BtnsSwitches.kicad_sym")(options "")(descr ""))
-  (lib (name "Connectors_kl")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/Connectors_kl.kicad_sym")(options "")(descr ""))
-  (lib (name "LED_Driver")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/LED_Driver.kicad_sym")(options "")(descr ""))
-  (lib (name "Power_kl")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/Power_kl.kicad_sym")(options "")(descr ""))
-  (lib (name "st_kl")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/st_kl.kicad_sym")(options "")(descr ""))
-  (lib (name "Tittar_kl")(type "KiCad")(uri "${KICAD6_SYMBOL_DIR}/Tittar_kl.kicad_sym")(options "")(descr ""))
+  (lib (name "pcb_details")(type "KiCad")(uri "${KICAD6_FOOTPRINT_DIR}/pcb_details.kicad_sym")(options "")(descr ""))
 )
