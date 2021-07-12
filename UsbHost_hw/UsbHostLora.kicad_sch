@@ -1,4 +1,4 @@
-(kicad_sch (version 20210406) (generator eeschema)
+(kicad_sch (version 20210621) (generator eeschema)
 
   (uuid ed913bb2-fe9f-41df-aeec-64874ccd66d2)
 
@@ -7911,7 +7911,7 @@
     (in_bom yes) (on_board yes)
     (uuid d663e092-b7e2-4a8e-a057-8a63ed211d7e)
     (property "Reference" "L5" (id 0) (at 240.03 226.9236 90))
-    (property "Value" "L" (id 1) (at 240.03 229.235 90))
+    (property "Value" "2.2nH" (id 1) (at 240.03 229.235 90))
     (property "Footprint" "Inductors:IND_0402" (id 2) (at 239.776 230.886 90)
       (effects (font (size 1.016 1.016)) hide)
     )
@@ -9788,7 +9788,7 @@
     (property "Reference" "C23" (id 0) (at 229.87 241.3 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "C" (id 1) (at 229.87 236.22 0)
+    (property "Value" "4.3pF" (id 1) (at 229.87 236.22 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Capacitors:CAP_0402" (id 2) (at 234.95 242.57 90)
@@ -9834,7 +9834,7 @@
     (property "Reference" "C24" (id 0) (at 245.11 241.3 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "C" (id 1) (at 245.11 236.22 0)
+    (property "Value" "DoNotMount" (id 1) (at 241.3 236.22 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Capacitors:CAP_0402" (id 2) (at 250.19 242.57 90)
@@ -10474,10 +10474,10 @@
       (reference "C22") (unit 1) (value "47pF") (footprint "Capacitors:CAP_0402")
     )
     (path "/dc69873b-38e2-47b6-baef-31c68bc4c2cd"
-      (reference "C23") (unit 1) (value "C") (footprint "Capacitors:CAP_0402")
+      (reference "C23") (unit 1) (value "4.3pF") (footprint "Capacitors:CAP_0402")
     )
     (path "/7ff32c8e-447d-4509-9d42-6d840dfd1e25"
-      (reference "C24") (unit 1) (value "C") (footprint "Capacitors:CAP_0402")
+      (reference "C24") (unit 1) (value "DoNotMount") (footprint "Capacitors:CAP_0402")
     )
     (path "/252132bb-e3df-450e-9d85-b98b5fa4beb8"
       (reference "C25") (unit 1) (value "3.3pF") (footprint "Capacitors:CAP_0402")
@@ -10537,7 +10537,7 @@
       (reference "L4") (unit 1) (value "4.7nH") (footprint "Inductors:IND_0402")
     )
     (path "/d663e092-b7e2-4a8e-a057-8a63ed211d7e"
-      (reference "L5") (unit 1) (value "L") (footprint "Inductors:IND_0402")
+      (reference "L5") (unit 1) (value "2.2nH") (footprint "Inductors:IND_0402")
     )
     (path "/c9d3d319-421a-4e5b-bf6c-da7f6ea3ca68"
       (reference "L6") (unit 1) (value "10nH") (footprint "Inductors:IND_0402")
