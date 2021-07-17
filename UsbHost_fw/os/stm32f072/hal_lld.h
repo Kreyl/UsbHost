@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -28,18 +28,19 @@
  *          One of the following macros must also be defined:
  *          - STM32F030x6, STM32F030x8, STM32F030xC, STM32F070x6,
  *            STM32F070xB for Value Line devices.
- *          - STM32F031x6, STM32F038xx, STM32F042x6, STM32F048xx
- *            for Low Density devices.
- *          - STM32F051x8, STM32F058xx, STM32F071xB, STM32F072xB,
- *            STM32F078xx for Medium Density devices.
+ *          - STM32F031x6, STM32F051x8, STM32F071xB, STM32F091xC
+ *            for Access Line devices.
+ *          - STM32F042x6, STM32F072xB for USB Line devices.
+ *          - STM32F038xx, STM32F048xx, STM32F058xx, STM32F078xx,
+ *            STM32F098xx for Low Voltage Line devices.
  *          .
  *
  * @addtogroup HAL
  * @{
  */
 
-#ifndef _HAL_LLD_H_
-#define _HAL_LLD_H_
+#ifndef HAL_LLD_H
+#define HAL_LLD_H
 
 /*
  * Registry definitions.
@@ -54,34 +55,7 @@
  * @name    Platform identification macros
  * @{
  */
-#if defined(STM32F051x8) || defined(__DOXYGEN__)
-#define PLATFORM_NAME           "STM32F051x8 Entry Level Medium Density devices"
-
-#elif defined(STM32F058xx)
-#define PLATFORM_NAME           "STM32F058xx Entry Level Medium Density devices"
-
-#elif defined(STM32F071xB)
-#define PLATFORM_NAME           "STM32F071xB Entry Level Medium Density devices"
-
-#elif defined(STM32F072xB)
-#define PLATFORM_NAME           "STM32F072xB Entry Level Medium Density devices"
-
-#elif defined(STM32F078xx)
-#define PLATFORM_NAME           "STM32F078xx Entry Level Medium Density devices"
-
-#elif defined(STM32F031x6)
-#define PLATFORM_NAME           "STM32F031x6 Entry Level Low Density devices"
-
-#elif defined(STM32F038xx)
-#define PLATFORM_NAME           "STM32F038xx Entry Level Low Density devices"
-
-#elif defined(STM32F042x6)
-#define PLATFORM_NAME           "STM32F042x6 Entry Level Low Density devices"
-
-#elif defined(STM32F048xx)
-#define PLATFORM_NAME           "STM32F048xx Entry Level Low Density devices"
-
-#elif defined(STM32F030x6)
+#if defined(STM32F030x6) || defined(__DOXYGEN__)
 #define PLATFORM_NAME           "STM32F030x6 Entry Level Value Line devices"
 
 #elif defined(STM32F030x8)
@@ -96,14 +70,41 @@
 #elif defined(STM32F070xB)
 #define PLATFORM_NAME           "STM32F070xB Entry Level Value Line devices"
 
+#elif defined(STM32F031x6)
+#define PLATFORM_NAME           "STM32F031x6 Entry Level Access Line devices"
+
+#elif defined(STM32F051x8)
+#define PLATFORM_NAME           "STM32F051x8 Entry Level Access Line devices"
+
+#elif defined(STM32F071xB)
+#define PLATFORM_NAME           "STM32F071xB Entry Level Access Line devices"
+
 #elif defined(STM32F091xC)
-#define PLATFORM_NAME           "STM32F091xC Entry Level Medium Density devices"
+#define PLATFORM_NAME           "STM32F091xC Entry Level Access Line devices"
+
+#elif defined(STM32F042x6)
+#define PLATFORM_NAME           "STM32F042x6 Entry Level USB Line devices"
+
+#elif defined(STM32F072xB)
+#define PLATFORM_NAME           "STM32F072xB Entry Level USB Line devices"
+
+#elif defined(STM32F038xx)
+#define PLATFORM_NAME           "STM32F038xx Entry Level Low Voltage Line devices"
+
+#elif defined(STM32F048xx)
+#define PLATFORM_NAME           "STM32F048xx Entry Level Low Voltage Line devices"
+
+#elif defined(STM32F058xx)
+#define PLATFORM_NAME           "STM32F058xx Entry Level Low Voltage Line devices"
+
+#elif defined(STM32F078xx)
+#define PLATFORM_NAME           "STM32F078xx Entry Level Low Voltage Line devices"
 
 #elif defined(STM32F098xx)
-#define PLATFORM_NAME           "STM32F098xx Entry Level Medium Density devices"
+#define PLATFORM_NAME           "STM32F098xx Entry Level Low Voltage Line devices"
 
 #else
-#error "STM32F0xx device not specified"
+#error "STM32F0xx device unsupported or not specified"
 #endif
 /** @} */
 
@@ -212,9 +213,6 @@
 #define STM32_PPRE_DIV8         (6 << 8)    /**< HCLK divided by 8.         */
 #define STM32_PPRE_DIV16        (7 << 8)    /**< HCLK divided by 16.        */
 
-#define STM32_ADCPRE_DIV2       (0 << 14)   /**< PCLK divided by 2.         */
-#define STM32_ADCPRE_DIV4       (1 << 14)   /**< PCLK divided by 4.         */
-
 #define STM32_PLLSRC_HSI_DIV2   (0 << 15)   /**< PLL clock source is HSI/2. */
 #define STM32_PLLSRC_HSI        (1 << 15)   /**< PLL clock source is HSI    */
 #define STM32_PLLSRC_HSE        (2 << 15)   /**< PLL clock source is HSE.   */
@@ -245,15 +243,25 @@
 /** @} */
 
 /**
- * @name    RCC_BDCR register bits definitions
+ * @name    RCC_CFGR2 register bits definitions
  * @{
  */
-#define STM32_RTCSEL_MASK       (3 << 8)    /**< RTC clock source mask.     */
-#define STM32_RTCSEL_NOCLOCK    (0 << 8)    /**< No clock.                  */
-#define STM32_RTCSEL_LSE        (1 << 8)    /**< LSE used as RTC clock.     */
-#define STM32_RTCSEL_LSI        (2 << 8)    /**< LSI used as RTC clock.     */
-#define STM32_RTCSEL_HSEDIV     (3 << 8)    /**< HSE divided by 32 used as
-                                                 RTC clock.                 */
+#define STM32_PRE_DIV1          (0 << 0)    /**< PLLSRC divided by 1.       */
+#define STM32_PRE_DIV2          (1 << 0)    /**< SYSCLK divided by 2.       */
+#define STM32_PRE_DIV3          (2 << 0)    /**< SYSCLK divided by 3.       */
+#define STM32_PRE_DIV4          (3 << 0)    /**< PLLSRC divided by 4.       */
+#define STM32_PRE_DIV5          (4 << 0)    /**< SYSCLK divided by 5.       */
+#define STM32_PRE_DIV6          (5 << 0)    /**< SYSCLK divided by 6.       */
+#define STM32_PRE_DIV7          (6 << 0)    /**< PLLSRC divided by 7.       */
+#define STM32_PRE_DIV8          (7 << 0)    /**< SYSCLK divided by 8.       */
+#define STM32_PRE_DIV9          (8 << 0)    /**< SYSCLK divided by 9.       */
+#define STM32_PRE_DIV10         (9 << 0)    /**< PLLSRC divided by 10.      */
+#define STM32_PRE_DIV11         (10 << 0)   /**< SYSCLK divided by 11.      */
+#define STM32_PRE_DIV12         (11 << 0)   /**< SYSCLK divided by 12.      */
+#define STM32_PRE_DIV13         (12 << 0)   /**< PLLSRC divided by 13.      */
+#define STM32_PRE_DIV14         (13 << 0)   /**< SYSCLK divided by 14.      */
+#define STM32_PRE_DIV15         (14 << 0)   /**< SYSCLK divided by 15.      */
+#define STM32_PRE_DIV16         (15 << 0)   /**< PLLSRC divided by 16.      */
 /** @} */
 
 /**
@@ -275,9 +283,18 @@
 #define STM32_USBSW_MASK        (1 << 7)    /**< USB clock source mask.     */
 #define STM32_USBSW_HSI48       (0 << 7)    /**< USB clock is HSI48.        */
 #define STM32_USBSW_PCLK        (1 << 7)    /**< USB clock is PCLK.         */
-#define STM32_ADCSW_MASK        (1 << 8)    /**< ADC clock source mask.     */
-#define STM32_ADCSW_HSI14       (0 << 8)    /**< ADC clock is HSI14.        */
-#define STM32_ADCSW_PCLK        (1 << 8)    /**< ADC clock is PCLK/2|4.     */
+/** @} */
+
+/**
+ * @name    RCC_BDCR register bits definitions
+ * @{
+ */
+#define STM32_RTCSEL_MASK       (3 << 8)    /**< RTC clock source mask.     */
+#define STM32_RTCSEL_NOCLOCK    (0 << 8)    /**< No clock.                  */
+#define STM32_RTCSEL_LSE        (1 << 8)    /**< LSE used as RTC clock.     */
+#define STM32_RTCSEL_LSI        (2 << 8)    /**< LSI used as RTC clock.     */
+#define STM32_RTCSEL_HSEDIV     (3 << 8)    /**< HSE divided by 32 used as
+                                                 RTC clock.                 */
 /** @} */
 
 /*===========================================================================*/
@@ -309,7 +326,6 @@
 #define STM32_PLS                           STM32_PLS_LEV0
 #endif
 
-
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
@@ -319,6 +335,16 @@
  */
 #if !defined(STM32F0xx_MCUCONF)
 #error "Using a wrong mcuconf.h file, STM32F0xx_MCUCONF not defined"
+#endif
+
+
+/**
+ * @brief   Flash settings.
+ */
+#if (STM32_HCLK <= 24000000) || defined(__DOXYGEN__)
+#define STM32_FLASHBITS             0x00000010
+#else
+#define STM32_FLASHBITS             0x00000011
 #endif
 
 
@@ -336,6 +362,6 @@ extern "C" {
 }
 #endif
 
-#endif /* _HAL_LLD_H_ */
+#endif /* HAL_LLD_H */
 
 /** @} */

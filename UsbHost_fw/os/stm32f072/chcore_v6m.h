@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2015 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -25,17 +25,40 @@
  * @{
  */
 
-#ifndef _CHCORE_V6M_H_
-#define _CHCORE_V6M_H_
+#ifndef CHCORE_V6M_H
+#define CHCORE_V6M_H
 
 /*===========================================================================*/
 /* Module constants.                                                         */
 /*===========================================================================*/
 
 /**
- * @brief   This port does not support a realtime counter.
+ * @name    Port Capabilities and Constants
+ * @{
+ */
+/**
+ * @brief   This port supports a realtime counter.
  */
 #define PORT_SUPPORTS_RT                FALSE
+
+/**
+ * @brief   Natural alignment constant.
+ * @note    It is the minimum alignment for pointer-size variables.
+ */
+#define PORT_NATURAL_ALIGN              sizeof (void *)
+
+/**
+ * @brief   Stack alignment constant.
+ * @note    It is the alignement required for the stack pointer.
+ */
+#define PORT_STACK_ALIGN                sizeof (stkalign_t)
+
+/**
+ * @brief   Working Areas alignment constant.
+ * @note    It is the alignment to be enforced for thread working areas.
+ */
+#define PORT_WORKING_AREA_ALIGN         PORT_STACK_ALIGN
+/** @} */
 
 /**
  * @brief   PendSV priority level.
@@ -94,6 +117,14 @@
 /*===========================================================================*/
 /* Derived constants and error checks.                                       */
 /*===========================================================================*/
+
+#if !defined(CH_CUSTOMER_LIC_PORT_CM0)
+#error "CH_CUSTOMER_LIC_PORT_CM0 not defined"
+#endif
+
+#if CH_CUSTOMER_LIC_PORT_CM0 == FALSE
+#error "ChibiOS Cortex-M0 port not licensed"
+#endif
 
 /**
  * @name    Architecture and Compiler
@@ -183,22 +214,32 @@ struct port_intctx {
  * @details This code usually setup the context switching frame represented
  *          by an @p port_intctx structure.
  */
-#define PORT_SETUP_CONTEXT(tp, workspace, wsize, pf, arg) {                 \
-  (tp)->p_ctx.r13 = (struct port_intctx *)((uint8_t *)(workspace) +         \
-                                           (wsize) -                        \
-                                           sizeof(struct port_intctx));     \
-  (tp)->p_ctx.r13->r4 = (regarm_t)(pf);                                     \
-  (tp)->p_ctx.r13->r5 = (regarm_t)(arg);                                    \
-  (tp)->p_ctx.r13->lr = (regarm_t)_port_thread_start;                       \
+#define PORT_SETUP_CONTEXT(tp, wbase, wtop, pf, arg) {                      \
+  (tp)->ctx.sp = (struct port_intctx *)((uint8_t *)(wtop) -                 \
+                                        sizeof (struct port_intctx));       \
+  (tp)->ctx.sp->r4 = (regarm_t)(pf);                                        \
+  (tp)->ctx.sp->r5 = (regarm_t)(arg);                                       \
+  (tp)->ctx.sp->lr = (regarm_t)_port_thread_start;                          \
 }
 
 /**
  * @brief   Computes the thread working area global size.
  * @note    There is no need to perform alignments in this macro.
  */
-#define PORT_WA_SIZE(n) (sizeof(struct port_intctx) +                       \
-                         sizeof(struct port_extctx) +                       \
+#define PORT_WA_SIZE(n) (sizeof (struct port_intctx) +                      \
+                         sizeof (struct port_extctx) +                      \
                          ((size_t)(n)) + ((size_t)(PORT_INT_REQUIRED_STACK)))
+
+/**
+ * @brief   Static working area allocation.
+ * @details This macro is used to allocate a static thread working area
+ *          aligned as both position and size.
+ *
+ * @param[in] s         the name to be assigned to the stack array
+ * @param[in] n         the stack size to be assigned to the thread
+ */
+#define PORT_WORKING_AREA(s, n)                                             \
+  stkalign_t s[THD_WORKING_AREA_SIZE(n) / sizeof (stkalign_t)]
 
 /**
  * @brief   IRQ prologue code.
@@ -252,8 +293,8 @@ struct port_intctx {
 #else
 #define port_switch(ntp, otp) {                                             \
   struct port_intctx *r13 = (struct port_intctx *)__get_PSP();              \
-  if ((stkalign_t *)(r13 - 1) < (otp)->p_stklimit) {                        \
-    chSysHalt("stack overflow", __func__);                                            \
+  if ((stkalign_t *)(r13 - 1) < (otp)->wabase) {                            \
+    chSysHalt("stack overflow");                                            \
   }                                                                         \
   _port_switch(ntp, otp);                                                   \
 }
@@ -303,8 +344,8 @@ static inline syssts_t port_get_irq_status(void) {
  * @param[in] sts       the interrupt status word
  *
  * @return              The interrupt status.
- * @retvel false        the word specified a disabled interrupts status.
- * @retvel true         the word specified an enabled interrupts status.
+ * @retval false        the word specified a disabled interrupts status.
+ * @retval true         the word specified an enabled interrupts status.
  */
 static inline bool port_irq_enabled(syssts_t sts) {
 
@@ -402,6 +443,6 @@ static inline void port_wait_for_interrupt(void) {
 
 #endif /* _FROM_ASM_ */
 
-#endif /* _CHCORE_V6M_H_ */
+#endif /* CHCORE_V6M_H */
 
 /** @} */

@@ -5,14 +5,13 @@
  *      Author: Kreyl
  */
 
-#ifndef KL_LIB_CHUNKTYPES_H_
-#define KL_LIB_CHUNKTYPES_H_
+#pragma once
 
 #include "color.h"
 #include "ch.h"
-#include "uart.h"
+#include "MsgQ.h"
 
-enum ChunkSort_t {csSetup, csWait, csGoto, csEnd};
+enum ChunkSort_t {csSetup, csWait, csGoto, csEnd, csRepeat};
 
 // The beginning of any sort of chunk. Everyone must contain it.
 #define BaseChunk_Vars \
@@ -22,6 +21,7 @@ enum ChunkSort_t {csSetup, csWait, csGoto, csEnd};
         uint32_t Volume;            \
         uint32_t Time_ms;           \
         uint32_t ChunkToJumpTo;     \
+        int32_t RepeatCnt;          \
     }
 
 // ==== Different types of chunks ====
@@ -33,6 +33,12 @@ struct BaseChunk_t {
 struct LedRGBChunk_t {
     BaseChunk_Vars;
     Color_t Color;
+} __attribute__((packed));
+
+// HSV LED chunk
+struct LedHSVChunk_t {
+    BaseChunk_Vars;
+    ColorHSV_t Color;
 } __attribute__((packed));
 
 // LED Smooth
@@ -51,51 +57,19 @@ struct BeepChunk_t {   // Value == Volume
 #if 1 // ====================== Base sequencer class ===========================
 enum SequencerLoopTask_t {sltProceed, sltBreak};
 
-class BaseSequenceProcess_t {
-protected:
-    virtual SequencerLoopTask_t ISetup() = 0; // BaseSequencer_t::IProcessSequence() can call this
-    virtual void ISwitchOff() = 0;  // BaseSequencer_t::Stop() can call this
-public:
-    virtual void IProcessSequenceI() = 0;   // Common timer callback can call this
-};
-
-// Common Timer callback
-static void GeneralSequencerTmrCallback(void *p) {
-    chSysLockFromISR();
-    ((BaseSequenceProcess_t*)p)->IProcessSequenceI();
-    chSysUnlockFromISR();
-}
-
 template <class TChunk>
-class BaseSequencer_t : public BaseSequenceProcess_t {
-private:
-    virtual_timer_t ITmr;
+class BaseSequencer_t : private IrqHandler_t {
 protected:
+    virtual_timer_t ITmr;
     const TChunk *IPStartChunk, *IPCurrentChunk;
-    BaseSequencer_t() : IPStartChunk(nullptr), IPCurrentChunk(nullptr) {}
-    void SetupDelay(uint32_t ms) { chVTSetI(&ITmr, MS2ST(ms), GeneralSequencerTmrCallback, this); }
-public:
-    void StartSequence(const TChunk *PChunk) {
-        if(PChunk == nullptr) Stop();
-        else {
-            chSysLock();
-            IPStartChunk = PChunk;   // Save first chunk
-            IPCurrentChunk = PChunk;
-            IProcessSequenceI();
-            chSysUnlock();
-        }
-    }
-    void Stop() {
-        chSysLock();
-        if(chVTIsArmedI(&ITmr)) chVTResetI(&ITmr);
-        ISwitchOff();
-        IPStartChunk = nullptr;
-        IPCurrentChunk = nullptr;
-        chSysUnlock();
-    }
-    const TChunk* GetCurrentSequence() { return IPStartChunk; }
+    int32_t RepeatCounter = -1;
+    EvtMsg_t IEvtMsg;
+    virtual void ISwitchOff() = 0;
+    virtual SequencerLoopTask_t ISetup() = 0;
+    void SetupDelay(uint32_t ms) { chVTSetI(&ITmr, MS2ST(ms), TmrKLCallback, this); }
 
-    void IProcessSequenceI() {
+    // Process sequence
+    void IIrqHandler() {
         if(chVTIsArmedI(&ITmr)) chVTResetI(&ITmr);  // Reset timer
         while(true) {   // Process the sequence
             switch(IPCurrentChunk->ChunkSort) {
@@ -115,17 +89,60 @@ public:
 
                 case csGoto:
                     IPCurrentChunk = IPStartChunk + IPCurrentChunk->ChunkToJumpTo;
+                    if(IEvtMsg.ID != evtIdNone) EvtQMain.SendNowOrExitI(IEvtMsg);
                     SetupDelay(1);
                     return;
                     break;
 
                 case csEnd:
+                    if(IEvtMsg.ID != evtIdNone) EvtQMain.SendNowOrExitI(IEvtMsg);
+                    IPStartChunk = nullptr;
+                    IPCurrentChunk = nullptr;
                     return;
+                    break;
+
+                case csRepeat:
+                    if(RepeatCounter == -1) RepeatCounter = IPCurrentChunk->RepeatCnt;
+                    if(RepeatCounter == 0) {    // All was repeated, goto next
+                        RepeatCounter = -1;     // reset counter
+                        IPCurrentChunk++;
+                    }
+                    else {  // repeating in progress
+                        IPCurrentChunk = IPStartChunk;  // Always from beginning
+                        RepeatCounter--;
+                    }
                     break;
             } // switch
         } // while
     } // IProcessSequenceI
+public:
+    void SetupSeqEndEvt(EvtMsg_t AEvtMsg) { IEvtMsg = AEvtMsg; }
+
+    void StartOrRestart(const TChunk *PChunk) {
+        chSysLock();
+        RepeatCounter = -1;
+        IPStartChunk = PChunk;   // Save first chunk
+        IPCurrentChunk = PChunk;
+        IIrqHandler();
+        chSysUnlock();
+    }
+
+    void StartOrContinue(const TChunk *PChunk) {
+        if(PChunk == IPStartChunk) return; // Same sequence
+        else StartOrRestart(PChunk);
+    }
+
+    void Stop() {
+        if(IPStartChunk != nullptr) {
+            chSysLock();
+            if(chVTIsArmedI(&ITmr)) chVTResetI(&ITmr);
+            IPStartChunk = nullptr;
+            IPCurrentChunk = nullptr;
+            chSysUnlock();
+        }
+        ISwitchOff();
+    }
+    const TChunk* GetCurrentSequence() { return IPStartChunk; }
+    bool IsIdle() { return (IPStartChunk == nullptr and IPCurrentChunk == nullptr); }
 };
 #endif
-
-#endif /* KL_LIB_CHUNKTYPES_H_ */
