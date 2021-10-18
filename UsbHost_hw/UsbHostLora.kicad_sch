@@ -9098,7 +9098,7 @@
     (property "Reference" "C34" (id 0) (at 111.76 273.05 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "18pF" (id 1) (at 111.76 278.13 0)
+    (property "Value" "10pF" (id 1) (at 111.76 278.13 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Capacitors:CAP_0603" (id 2) (at 116.84 279.4 90)
@@ -9282,7 +9282,7 @@
     (property "Reference" "C35" (id 0) (at 125.73 273.05 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
-    (property "Value" "18pF" (id 1) (at 127 278.13 0)
+    (property "Value" "10pF" (id 1) (at 127 278.13 0)
       (effects (font (size 1.27 1.27)) (justify left))
     )
     (property "Footprint" "Capacitors:CAP_0603" (id 2) (at 121.92 279.4 90)
@@ -10507,10 +10507,10 @@
       (reference "C33") (unit 1) (value "0.1u") (footprint "Capacitors:CAP_0402")
     )
     (path "/ba3cbddd-b2b3-4fb3-a4c0-21fdcc08cb98"
-      (reference "C34") (unit 1) (value "18pF") (footprint "Capacitors:CAP_0603")
+      (reference "C34") (unit 1) (value "10pF") (footprint "Capacitors:CAP_0603")
     )
     (path "/4285ac09-5692-4e40-bbb4-97d0b6ed77ba"
-      (reference "C35") (unit 1) (value "18pF") (footprint "Capacitors:CAP_0603")
+      (reference "C35") (unit 1) (value "10pF") (footprint "Capacitors:CAP_0603")
     )
     (path "/07ee0de6-6063-409b-83b9-51169694bd72"
       (reference "DA1") (unit 1) (value "MCP1700") (footprint "SOT:SOT23-3A")

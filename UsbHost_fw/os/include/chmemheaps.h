@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -18,15 +18,15 @@
 */
 
 /**
- * @file    chheap.h
- * @brief   Heaps macros and structures.
+ * @file    chmemheaps.h
+ * @brief   Memory heaps macros and structures.
  *
- * @addtogroup heaps
+ * @addtogroup oslib_memheaps
  * @{
  */
 
-#ifndef CHHEAP_H
-#define CHHEAP_H
+#ifndef CHMEMHEAPS_H
+#define CHMEMHEAPS_H
 
 #if (CH_CFG_USE_HEAP == TRUE) || defined(__DOXYGEN__)
 
@@ -80,7 +80,6 @@ typedef union heap_header heap_header_t;
  * @brief   Memory heap block header.
  */
 union heap_header {
-  stkalign_t align;
   struct {
     heap_header_t       *next;      /**< @brief Next block in free list.    */
     size_t              pages;      /**< @brief Size of the area in pages.  */
@@ -95,10 +94,10 @@ union heap_header {
  * @brief   Structure describing a memory heap.
  */
 struct memory_heap {
-  memgetfunc_t          provider;   /**< @brief Memory blocks provider for
+  memgetfunc2_t         provider;   /**< @brief Memory blocks provider for
                                                 this heap.                  */
   heap_header_t         header;     /**< @brief Free blocks list header.    */
-#if CH_CFG_USE_MUTEXES == TRUE
+#if (CH_CFG_USE_MUTEXES == TRUE) || defined(__DOXYGEN__)
   mutex_t               mtx;        /**< @brief Heap access mutex.          */
 #else
   semaphore_t           sem;        /**< @brief Heap access semaphore.      */
@@ -163,16 +162,17 @@ static inline void *chHeapAlloc(memory_heap_t *heapp, size_t size) {
  *          same value aligned to the next @p CH_HEAP_ALIGNMENT multiple.
  *
  * @param[in] p         pointer to the memory block
+ * @return              Size of the block.
  *
  * @api
  */
 static inline size_t chHeapGetSize(const void *p) {
 
-  return ((heap_header_t *)p)->used.size;
+  return ((heap_header_t *)p - 1U)->used.size;
 }
 
 #endif /* CH_CFG_USE_HEAP == TRUE */
 
-#endif /* CHHEAP_H */
+#endif /* CHMEMHEAPS_H */
 
 /** @} */

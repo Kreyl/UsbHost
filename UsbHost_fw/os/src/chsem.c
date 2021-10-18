@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -217,7 +217,7 @@ msg_t chSemWaitS(semaphore_t *sp) {
  * @brief   Performs a wait operation on a semaphore with timeout specification.
  *
  * @param[in] sp        pointer to a @p semaphore_t structure
- * @param[in] time      the number of ticks before the operation timeouts,
+ * @param[in] timeout   the number of ticks before the operation timeouts,
  *                      the following special values are allowed:
  *                      - @a TIME_IMMEDIATE immediate timeout.
  *                      - @a TIME_INFINITE no timeout.
@@ -232,11 +232,11 @@ msg_t chSemWaitS(semaphore_t *sp) {
  *
  * @api
  */
-msg_t chSemWaitTimeout(semaphore_t *sp, systime_t time) {
+msg_t chSemWaitTimeout(semaphore_t *sp, sysinterval_t timeout) {
   msg_t msg;
 
   chSysLock();
-  msg = chSemWaitTimeoutS(sp, time);
+  msg = chSemWaitTimeoutS(sp, timeout);
   chSysUnlock();
 
   return msg;
@@ -246,7 +246,7 @@ msg_t chSemWaitTimeout(semaphore_t *sp, systime_t time) {
  * @brief   Performs a wait operation on a semaphore with timeout specification.
  *
  * @param[in] sp        pointer to a @p semaphore_t structure
- * @param[in] time      the number of ticks before the operation timeouts,
+ * @param[in] timeout   the number of ticks before the operation timeouts,
  *                      the following special values are allowed:
  *                      - @a TIME_IMMEDIATE immediate timeout.
  *                      - @a TIME_INFINITE no timeout.
@@ -261,7 +261,7 @@ msg_t chSemWaitTimeout(semaphore_t *sp, systime_t time) {
  *
  * @sclass
  */
-msg_t chSemWaitTimeoutS(semaphore_t *sp, systime_t time) {
+msg_t chSemWaitTimeoutS(semaphore_t *sp, sysinterval_t timeout) {
 
   chDbgCheckClassS();
   chDbgCheck(sp != NULL);
@@ -270,7 +270,7 @@ msg_t chSemWaitTimeoutS(semaphore_t *sp, systime_t time) {
               "inconsistent semaphore");
 
   if (--sp->cnt < (cnt_t)0) {
-    if (TIME_IMMEDIATE == time) {
+    if (TIME_IMMEDIATE == timeout) {
       sp->cnt++;
 
       return MSG_TIMEOUT;
@@ -278,7 +278,7 @@ msg_t chSemWaitTimeoutS(semaphore_t *sp, systime_t time) {
     currp->u.wtsemp = sp;
     sem_insert(currp, &sp->queue);
 
-    return chSchGoSleepTimeoutS(CH_STATE_WTSEM, time);
+    return chSchGoSleepTimeoutS(CH_STATE_WTSEM, timeout);
   }
 
   return MSG_OK;
@@ -294,11 +294,11 @@ msg_t chSemWaitTimeoutS(semaphore_t *sp, systime_t time) {
 void chSemSignal(semaphore_t *sp) {
 
   chDbgCheck(sp != NULL);
+
+  chSysLock();
   chDbgAssert(((sp->cnt >= (cnt_t)0) && queue_isempty(&sp->queue)) ||
               ((sp->cnt < (cnt_t)0) && queue_notempty(&sp->queue)),
               "inconsistent semaphore");
-
-  chSysLock();
   if (++sp->cnt <= (cnt_t)0) {
     chSchWakeupS(queue_fifo_remove(&sp->queue), MSG_OK);
   }
@@ -379,14 +379,14 @@ msg_t chSemSignalWait(semaphore_t *sps, semaphore_t *spw) {
   msg_t msg;
 
   chDbgCheck((sps != NULL) && (spw != NULL));
+
+  chSysLock();
   chDbgAssert(((sps->cnt >= (cnt_t)0) && queue_isempty(&sps->queue)) ||
               ((sps->cnt < (cnt_t)0) && queue_notempty(&sps->queue)),
               "inconsistent semaphore");
   chDbgAssert(((spw->cnt >= (cnt_t)0) && queue_isempty(&spw->queue)) ||
               ((spw->cnt < (cnt_t)0) && queue_notempty(&spw->queue)),
               "inconsistent semaphore");
-
-  chSysLock();
   if (++sps->cnt <= (cnt_t)0) {
     chSchReadyI(queue_fifo_remove(&sps->queue))->u.rdymsg = MSG_OK;
   }

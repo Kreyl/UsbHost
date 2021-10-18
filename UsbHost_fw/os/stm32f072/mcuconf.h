@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio
 
     Licensed under the Apache License, Version 2.0 (the "License");
     you may not use this file except in compliance with the License.
@@ -58,24 +58,14 @@
  * DAC driver system settings.
  */
 #define STM32_DAC_DUAL_MODE                 FALSE
-#define STM32_DAC_USE_DAC1_CH1              TRUE
-#define STM32_DAC_USE_DAC1_CH2              TRUE
-#define STM32_DAC_DAC1_CH1_IRQ_PRIORITY     10
-#define STM32_DAC_DAC1_CH2_IRQ_PRIORITY     10
+#define STM32_DAC_USE_DAC1_CH1              FALSE
+#define STM32_DAC_USE_DAC1_CH2              FALSE
+#define STM32_DAC_DAC1_CH1_IRQ_PRIORITY     2
+#define STM32_DAC_DAC1_CH2_IRQ_PRIORITY     2
 #define STM32_DAC_DAC1_CH1_DMA_PRIORITY     2
 #define STM32_DAC_DAC1_CH2_DMA_PRIORITY     2
 #define STM32_DAC_DAC1_CH1_DMA_STREAM       STM32_DMA_STREAM_ID(1, 3)
 #define STM32_DAC_DAC1_CH2_DMA_STREAM       STM32_DMA_STREAM_ID(1, 4)
-
-/*
- * EXT driver system settings.
- */
-#define STM32_EXT_EXTI0_1_IRQ_PRIORITY      3
-#define STM32_EXT_EXTI2_3_IRQ_PRIORITY      3
-#define STM32_EXT_EXTI4_15_IRQ_PRIORITY     3
-#define STM32_EXT_EXTI16_IRQ_PRIORITY       3
-#define STM32_EXT_EXTI17_20_IRQ_PRIORITY    3
-#define STM32_EXT_EXTI21_22_IRQ_PRIORITY    3
 
 /*
  * GPT driver system settings.
@@ -128,25 +118,6 @@
 #define STM32_I2S_DMA_ERROR_HOOK(i2sp)      osalSysHalt("DMA failure")
 
 /*
- * I2S driver system settings.
- */
-#define STM32_I2S_USE_SPI1                  FALSE
-#define STM32_I2S_USE_SPI2                  FALSE
-#define STM32_I2S_SPI1_MODE                 (STM32_I2S_MODE_MASTER |        \
-                                             STM32_I2S_MODE_RX)
-#define STM32_I2S_SPI2_MODE                 (STM32_I2S_MODE_MASTER |        \
-                                             STM32_I2S_MODE_RX)
-#define STM32_I2S_SPI1_IRQ_PRIORITY         2
-#define STM32_I2S_SPI2_IRQ_PRIORITY         2
-#define STM32_I2S_SPI1_DMA_PRIORITY         1
-#define STM32_I2S_SPI2_DMA_PRIORITY         1
-#define STM32_I2S_SPI1_RX_DMA_STREAM        STM32_DMA_STREAM_ID(1, 2)
-#define STM32_I2S_SPI1_TX_DMA_STREAM        STM32_DMA_STREAM_ID(1, 3)
-#define STM32_I2S_SPI2_RX_DMA_STREAM        STM32_DMA_STREAM_ID(1, 4)
-#define STM32_I2S_SPI2_TX_DMA_STREAM        STM32_DMA_STREAM_ID(1, 5)
-#define STM32_I2S_DMA_ERROR_HOOK(i2sp)      osalSysHalt("DMA failure")
-
-/*
  * ICU driver system settings.
  */
 #define STM32_ICU_USE_TIM1                  FALSE
@@ -170,10 +141,13 @@
 /*
  * SERIAL driver system settings.
  */
-#define STM32_SERIAL_USE_USART1             TRUE
+#define STM32_SERIAL_USE_USART1             FALSE
 #define STM32_SERIAL_USE_USART2             FALSE
+#define STM32_SERIAL_USE_USART3             FALSE
+#define STM32_SERIAL_USE_UART4              FALSE
 #define STM32_SERIAL_USART1_PRIORITY        3
 #define STM32_SERIAL_USART2_PRIORITY        3
+#define STM32_SERIAL_USART3_8_PRIORITY      3
 
 /*
  * SPI driver system settings.
@@ -193,22 +167,31 @@
 /*
  * ST driver system settings.
  */
-#define STM32_ST_IRQ_PRIORITY               2
-#define STM32_ST_USE_TIMER                  2
+//#define STM32_ST_IRQ_PRIORITY               2
+//#define STM32_ST_USE_TIMER                  2
 
 /*
  * UART driver system settings.
  */
 #define STM32_UART_USE_USART1               FALSE
 #define STM32_UART_USE_USART2               FALSE
+#define STM32_UART_USE_USART3               FALSE
+#define STM32_UART_USE_UART4                FALSE
 #define STM32_UART_USART1_IRQ_PRIORITY      3
 #define STM32_UART_USART2_IRQ_PRIORITY      3
+#define STM32_UART_USART3_8_IRQ_PRIORITY    3
 #define STM32_UART_USART1_DMA_PRIORITY      0
 #define STM32_UART_USART2_DMA_PRIORITY      0
+#define STM32_UART_USART3_DMA_PRIORITY      0
+#define STM32_UART_UART4_DMA_PRIORITY       0
 #define STM32_UART_USART1_RX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 3)
 #define STM32_UART_USART1_TX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 2)
 #define STM32_UART_USART2_RX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 5)
 #define STM32_UART_USART2_TX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 4)
+#define STM32_UART_USART3_RX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 3)
+#define STM32_UART_USART3_TX_DMA_STREAM     STM32_DMA_STREAM_ID(1, 2)
+#define STM32_UART_UART4_RX_DMA_STREAM      STM32_DMA_STREAM_ID(1, 6)
+#define STM32_UART_UART4_TX_DMA_STREAM      STM32_DMA_STREAM_ID(1, 7)
 #define STM32_UART_DMA_ERROR_HOOK(uartp)    osalSysHalt("DMA failure")
 
 /*

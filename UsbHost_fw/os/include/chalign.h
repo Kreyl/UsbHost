@@ -1,5 +1,5 @@
 /*
-    ChibiOS - Copyright (C) 2006..2016 Giovanni Di Sirio.
+    ChibiOS - Copyright (C) 2006..2018 Giovanni Di Sirio.
 
     This file is part of ChibiOS.
 
@@ -18,10 +18,11 @@
 */
 
 /**
- * @file    chmem.h
+ * @file    chalign.h
  * @brief   Memory alignment macros and structures.
  *
  * @addtogroup mem
+ * @details Memory Alignment services.
  * @{
  */
 
@@ -70,7 +71,7 @@
   /*lint -restore*/
 
 /**
- * @brief   Aligns to the new aligned memory address.
+ * @brief   Aligns to the next aligned memory address.
  *
  * @param[in] p         variable to be aligned
  * @param[in] a         alignment, must be a power of two
