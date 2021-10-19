@@ -22,11 +22,14 @@ const PinOutput_t PillPwr {PILL_PWR_PIN};
 LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
 
 // [2; 20]
-#define TX_PWR_dBm      5
-
-#define LORA_BW         bwLora125kHz
-#define LORA_SPREADRFCT sprfact128chipsPersym
-#define LORA_CODERATE   coderate4s5
+#define TX_PWR_dBm      11
+// bwLora125kHz, bwLora250kHz, bwLora500kHz
+#define LORA_BW         bwLora250kHz
+// sprfact64chipsPersym, sprfact128chipsPersym, sprfact256chipsPersym, sprfact512chipsPersym,
+// sprfact1024chipsPersym, sprfact2048chipsPersym, sprfact4096chipsPersym
+#define LORA_SPREADRFCT sprfact1024chipsPersym
+// coderate4s5, coderate4s6, coderate4s7, coderate4s8
+#define LORA_CODERATE   coderate4s8
 #endif
 
 int main(void) {
@@ -140,6 +143,28 @@ SXCodingRate_t CR[4] = {
         coderate4s5, coderate4s6, coderate4s7, coderate4s8
 };
 
+#if 1 // =========================== Pkt_t =====================================
+union rPkt_t {
+    struct {
+        int16_t Grif, Slyze, Rave, Huff;
+        uint32_t SaltPnt;
+    } __attribute__((__packed__));
+    struct {
+        uint32_t Reply;
+        uint32_t SaltRply;
+    } __attribute__((__packed__));
+//    rPkt_t& operator = (const rPkt_t &Right) {
+//        DW32 = Right.DW32;
+//        return *this;
+//    }
+} __attribute__ ((__packed__));
+#endif
+
+#define RPKT_SALT   0xF1170511 // Fly to sly
+#define RPKT_LEN    sizeof(rPkt_t)
+
+rPkt_t PktTx;
+
 #if 1 // ================= Command processing ====================
 static uint8_t FBuf[LORA_FIFO_SZ];
 void OnCmd(Shell_t *PShell) {
@@ -168,27 +193,27 @@ void OnCmd(Shell_t *PShell) {
         else PShell->CmdError();
     }
 
-    else if(PCmd->NameIs("SetPix")) {
-        uint8_t b, Len=0;
-        while(PCmd->GetNext<uint8_t>(&b) == retvOk) {
-            FBuf[Len++] = b;
-            if(Len == LORA_FIFO_SZ) break;
+    // ==== App specific ====
+    else if(PCmd->NameIs("SetPoints")) {
+        if(PCmd->GetNext<int16_t>(&PktTx.Grif) != retvOk)  { PShell->CmdError(); return; }
+        if(PCmd->GetNext<int16_t>(&PktTx.Slyze) != retvOk) { PShell->CmdError(); return; }
+        if(PCmd->GetNext<int16_t>(&PktTx.Rave) != retvOk)  { PShell->CmdError(); return; }
+        if(PCmd->GetNext<int16_t>(&PktTx.Huff) != retvOk)  { PShell->CmdError(); return; }
+        PktTx.SaltPnt = RPKT_SALT;
+        Lora.SetupTxConfigLora(TX_PWR_dBm, LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit);
+        Lora.TransmitByLora((uint8_t*)&PktTx, RPKT_LEN);
+        uint8_t Len = LORA_FIFO_SZ;
+        Lora.SetupRxConfigLora(LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit, 64);
+        uint8_t Rslt = Lora.ReceiveByLora(FBuf, &Len, 1520);
+        rPkt_t *PktRx = (rPkt_t*)FBuf;
+        if(Rslt == retvOk) {// and Len == RPKT_LEN and PktRx->Salt == RPKT_SALT) {
+            PShell->Print("Rply: %X; SNR: %d; RSSI: %d\r", PktRx->Reply, Lora.RxParams.SNR, Lora.RxParams.RSSI);
         }
-        if(Len) {
-            Lora.SetupTxConfigLora(TX_PWR_dBm, LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit);
-            Lora.SetupRxConfigLora(LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit, 64);
-            Lora.TransmitByLora(FBuf, Len);
-            Len = LORA_FIFO_SZ;
-            uint8_t Rslt = Lora.ReceiveByLora(FBuf, &Len, 1520);
-            if(Rslt == retvOk) {
-                PShell->Print("Ok SNR: %d; RSSI: %d\r", Lora.RxParams.SNR, Lora.RxParams.RSSI);
-            }
-            else if(Rslt == retvCRCError) PShell->Print("CRCErr\r");
-            else PShell->Print("Timeout\r");
-        }
-        else PShell->CmdError();
+        else if(Rslt == retvCRCError) PShell->Print("CRCErr\r");
+        else PShell->Print("Timeout\r");
     }
 
+    // ==== Lora params ====
     else if(PCmd->NameIs("SetParams")) {
         uint8_t Pwr, BWIndx, SFIndx, CRIndx;
         if(PCmd->GetParams<uint8_t>(4, &Pwr, &BWIndx, &SFIndx, &CRIndx) == retvOk) {

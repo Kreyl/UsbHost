@@ -9,7 +9,7 @@
 
 // ==== General ====
 #define BOARD_NAME          "UsbHostLora"
-#define APP_NAME            "UsbHostLora"
+#define APP_NAME            "UsbHostFlasks"
 
 // MCU type as defined in the ST header.
 #define STM32F072xB     // no matter, 8 or B
