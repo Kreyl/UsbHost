@@ -194,23 +194,31 @@ void OnCmd(Shell_t *PShell) {
     }
 
     // ==== App specific ====
-    else if(PCmd->NameIs("SetPoints")) {
+    else if(PCmd->NameIs("Set")) {
         if(PCmd->GetNext<int16_t>(&PktTx.Grif) != retvOk)  { PShell->CmdError(); return; }
         if(PCmd->GetNext<int16_t>(&PktTx.Slyze) != retvOk) { PShell->CmdError(); return; }
         if(PCmd->GetNext<int16_t>(&PktTx.Rave) != retvOk)  { PShell->CmdError(); return; }
         if(PCmd->GetNext<int16_t>(&PktTx.Huff) != retvOk)  { PShell->CmdError(); return; }
         PktTx.SaltPnt = RPKT_SALT;
-        Lora.SetupTxConfigLora(TX_PWR_dBm, LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit);
-        Lora.TransmitByLora((uint8_t*)&PktTx, RPKT_LEN);
-        uint8_t Len = LORA_FIFO_SZ;
-        Lora.SetupRxConfigLora(LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit, 64);
-        uint8_t Rslt = Lora.ReceiveByLora(FBuf, &Len, 1520);
-        rPkt_t *PktRx = (rPkt_t*)FBuf;
-        if(Rslt == retvOk) {// and Len == RPKT_LEN and PktRx->Salt == RPKT_SALT) {
-            PShell->Print("Rply: %X; SNR: %d; RSSI: %d\r", PktRx->Reply, Lora.RxParams.SNR, Lora.RxParams.RSSI);
-        }
-        else if(Rslt == retvCRCError) PShell->Print("CRCErr\r");
-        else PShell->Print("Timeout\r");
+        // Try several times
+        for(uint8_t i=0; i<4; i++) {
+            PShell->Print("Try %u: ", i);
+            Lora.SetupTxConfigLora(TX_PWR_dBm, LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit);
+            Lora.TransmitByLora((uint8_t*)&PktTx, RPKT_LEN);
+            uint8_t Len = LORA_FIFO_SZ;
+            Lora.SetupRxConfigLora(LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit, 64);
+            uint8_t Rslt = Lora.ReceiveByLora(FBuf, &Len, 270);
+            rPkt_t *PktRx = (rPkt_t*)FBuf;
+            if(Rslt == retvOk and Len == RPKT_LEN and PktRx->SaltRply == RPKT_SALT) {
+                PShell->Print("Ok  SNR: %d; RSSI: %d\r\n", Lora.RxParams.SNR, Lora.RxParams.RSSI);
+                return;
+//                PShell->Print("Rply: %X; SNR: %d; RSSI: %d\r", PktRx->Reply, Lora.RxParams.SNR, Lora.RxParams.RSSI);
+            }
+            else if(Rslt == retvCRCError) PShell->Print("CRCErr\r");
+            else PShell->Print("Timeout\r");
+            chThdSleepMilliseconds(270);
+        } // for
+        PShell->Print("Result: Fail\r");
     }
 
     // ==== Lora params ====
