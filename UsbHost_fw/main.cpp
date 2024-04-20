@@ -19,7 +19,7 @@ void OnCmd(Shell_t *PShell);
 void ITask();
 
 const PinOutput_t PillPwr {PILL_PWR_PIN};
-LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN };
+LedRGB_t Led { LED_R_PIN, LED_G_PIN, LED_B_PIN, 1000 };
 
 // [2; 20]
 #define TX_PWR_dBm      11
@@ -101,7 +101,7 @@ void ITask() {
                 break;
             case evtIdUsbReady:
                 Printf("USB ready\r");
-//                Led.StartOrRestart(lsqUsbReady);
+                Led.StartOrRestart(lsqUsbReady);
                 break;
 #endif
 
@@ -214,11 +214,11 @@ void OnCmd(Shell_t *PShell) {
                 return;
 //                PShell->Print("Rply: %X; SNR: %d; RSSI: %d\r", PktRx->Reply, Lora.RxParams.SNR, Lora.RxParams.RSSI);
             }
-            else if(Rslt == retvCRCError) PShell->Print("CRCErr\r");
-            else PShell->Print("Timeout\r");
+            else if(Rslt == retvCRCError) PShell->Print("CRCErr\r\n");
+            else PShell->Print("Timeout\r\n");
             chThdSleepMilliseconds(270);
         } // for
-        PShell->Print("Result: Fail\r");
+        PShell->Print("Result: Fail\r\n");
     }
 
     // ==== Lora params ====

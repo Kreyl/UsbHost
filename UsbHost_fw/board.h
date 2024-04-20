@@ -44,8 +44,8 @@
 
 // LED
 #define LED_R_PIN       { GPIOC, 6, TIM3, 1, invNotInverted, omPushPull, 255 }
-#define LED_G_PIN       { GPIOC, 7, TIM3, 2, invNotInverted, omPushPull, 255 }
-#define LED_B_PIN       { GPIOC, 8, TIM3, 3, invNotInverted, omPushPull, 255 }
+#define LED_G_PIN       { GPIOC, 8, TIM3, 2, invNotInverted, omPushPull, 255 }
+#define LED_B_PIN       { GPIOC, 7, TIM3, 3, invNotInverted, omPushPull, 255 }
 
 // I2C and Pill
 #define I2C_PILL        i2c1
