@@ -145,8 +145,8 @@ union rPkt_t {
 };
 #pragma pack(pop)
 
-static const uint8_t kcmd_set_shown = 0;
-static const uint8_t kcmd_set_hidden = 1;
+static const uint8_t kcmd_set_shown = 1;
+static const uint8_t kcmd_set_hidden = 0;
 static const uint8_t kcmd_set_time = 7;
 
 #define RPKT_SALT   0xF1170511 // Fly to sly
@@ -157,7 +157,6 @@ static uint8_t rxbuf[LORA_FIFO_SZ];
 
 void TryToTxRpkt(Shell_t *PShell) {
     for(uint8_t i=0; i<4; i++) { // Try several times
-        PShell->Print("Try %u\r\n", i);
         Lora.SetupTxConfigLora(TX_PWR_dBm, LORA_BW, LORA_SPREADRFCT, LORA_CODERATE, hdrmodeExplicit);
         Lora.TransmitByLora((uint8_t*)&rpkt, RPKT_LEN);
         uint8_t len = LORA_FIFO_SZ;
@@ -169,9 +168,9 @@ void TryToTxRpkt(Shell_t *PShell) {
             return;
 //                PShell->Print("Rply: %X; SNR: %d; RSSI: %d\r", PktRx->Reply, Lora.RxParams.SNR, Lora.RxParams.RSSI);
         }
-        else if(Rslt == retvCRCError) PShell->Print("Result: CRCErr\r\n");
-        else PShell->Print("Result: Timeout\r\n");
-        chThdSleepMilliseconds(270);
+        else if(Rslt == retvCRCError) PShell->Print("CRCErr\r\n");
+        else PShell->Print("%u: Timeout\r\n", i);
+        chThdSleepMilliseconds(180);
     } // for
     PShell->Print("Result: Fail\r\n");
 }
@@ -213,7 +212,7 @@ void OnCmd(Shell_t *PShell) {
             rpkt.slyze = arr[1];
             rpkt.rave  = arr[2];
             rpkt.huff  = arr[3];
-            rpkt.cmd = arr[4]? kcmd_set_hidden : kcmd_set_shown;
+            rpkt.cmd = arr[4]? kcmd_set_shown : kcmd_set_hidden;
             TryToTxRpkt(PShell);
         }
         else PShell->BadParam();
@@ -248,8 +247,8 @@ void OnCmd(Shell_t *PShell) {
     else if(PCmd->NameIs("Sta")) Lora.PrintState();
 
     else if(PCmd->NameIs("help")) {
-        Printf( "SetTime <Year> <Month> <Day> <H> <M>\r"
-                "Set <Grif> <Slyze> <Rave> <Huff> <is_hidden> - set points\r"
+        PShell->Print( "SetTime <Year> <Month> <Day> <H> <M>\r"
+                "Set <Grif> <Slyze> <Rave> <Huff> <show_points> - set points\r"
         );
     }
 
