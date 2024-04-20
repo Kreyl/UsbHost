@@ -5,7 +5,8 @@
  *      Author: Kreyl
  */
 
-#pragma once
+#ifndef DESCRIPTORS_CDC_H__
+#define DESCRIPTORS_CDC_H__
 
 // Endpoints to be used for CDC
 #define EP_CDC_DATA_IN      1
@@ -24,3 +25,5 @@ const USBDescriptor *GetDescriptor(USBDriver *usbp, uint8_t dtype, uint8_t dinde
 #ifdef __cplusplus
 }
 #endif
+
+#endif //DESCRIPTORS_CDC_H__

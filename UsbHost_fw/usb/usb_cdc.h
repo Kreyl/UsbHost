@@ -5,7 +5,8 @@
  *      Author: Kreyl
  */
 
-#pragma once
+#ifndef USB_CDC_H__
+#define USB_CDC_H__
 
 #include "hal.h"
 #include "shell.h"
@@ -31,3 +32,5 @@ public:
 };
 
 extern UsbCDC_t UsbCDC;
+
+#endif //USB_CDC_H__
