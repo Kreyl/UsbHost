@@ -72,7 +72,7 @@ void PrintMemoryInfo() {
 }
 
 extern "C"
-caddr_t _sbrk(int incr) {
+void* _sbrk(int incr) {
     extern uint8_t __heap_base__;
     extern uint8_t __heap_end__;
 
@@ -82,10 +82,10 @@ caddr_t _sbrk(int incr) {
     incr = (incr + 3) & (~3);
     if(current_end + incr > &__heap_end__) {
         errno = ENOMEM;
-        return (caddr_t) -1;
+        return (void*) -1;
     }
     current_end += incr;
-    return (caddr_t)current_block_address;
+    return (void*)current_block_address;
 }
 
 #if 1 // ============================ kl_string ================================
@@ -1989,7 +1989,7 @@ void Clk_t::SwitchToHsi() {
 void __early_init(void) {
     // Enable HSI. It is enabled by default, but who knows.
     RCC->CR |= RCC_CR_HSION;
-    while(!(RCC->CR & RCC_CR_HSIRDY));
+    while(!(RCC->CR & RCC_CR_HSIRDY)) {}
     // SYSCFG clock enabled here because it is a multi-functional unit
     // shared among multiple drivers using external IRQs
     // DMA depends on it, too

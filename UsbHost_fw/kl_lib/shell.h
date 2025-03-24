@@ -25,12 +25,12 @@ private:
     systime_t LastCharTimestamp = 0;
     // Inner strtok
     char* last = nullptr;
-    char* IStrTok(register char* s, register const char* delim) {
+    char* IStrTok(char* s, const char* delim) {
         if(s == nullptr and (s = last) == nullptr) return nullptr;
-        register char* spanp;
+        char* spanp;
         // Skip leading delimiters
         cont:
-        register char c = *s++, sc;
+        char c = *s++, sc;
         for(spanp = (char*)delim; (sc = *spanp++) != 0;) {
             if(c == sc) goto cont;
         }

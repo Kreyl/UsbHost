@@ -31,7 +31,7 @@ void CsHi() { PinSetHi(GPIOA, 3); }
 void CsLo() { PinSetLo(GPIOA, 3); }
 #endif
 
-int main(void) {
+void main(void) {
     // ==== Init Clock system ====
     Clk.EnablePrefetch();
     Clk.SetupFlashLatency(48000000);

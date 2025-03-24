@@ -544,8 +544,8 @@ uint8_t CmdUart_t::TransmitBinaryFromBuf(uint8_t *ptr, uint32_t Len, uint32_t Ti
     }
     // Wait for previousTX to complete
     dmaWaitCompletion(PDmaTx);
-    while(!(Params->Uart->ISR & USART_ISR_TXE));
-    while(!(Params->Uart->ISR & USART_ISR_TC));
+    while(!(Params->Uart->ISR & USART_ISR_TXE)) {}
+    while(!(Params->Uart->ISR & USART_ISR_TC)) {}
     // Setup DMA to given buffer
     dmaStreamSetMemory0(PDmaTx, ptr);
     dmaStreamSetTransactionSize(PDmaTx, Len);
