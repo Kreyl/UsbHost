@@ -1,3 +1,0 @@
-(sym_lib_table
-  (lib (name "pcb_details")(type "KiCad")(uri "${KICAD6_FOOTPRINT_DIR}/pcb_details.kicad_sym")(options "")(descr ""))
-)

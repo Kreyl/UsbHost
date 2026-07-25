@@ -3,17 +3,17 @@
 <!--   File    : UsbHostLora.fsproj      -->
 <!--   Format  : TopoR Project file      -->
 <!--   Version : 2                       -->
-<!--   Program : TopoR 8 Layer 7.0.18661 -->
-<!--   Date    : Thursday, May 13, 2021  -->
-<!--   Time    : 20:09                   -->
+<!--   Program : TopoR 8 Layer 7.0.18746 -->
+<!--   Date    : Saturday, July 25, 2026 -->
+<!--   Time    : 15:39                   -->
 <!--*************************************-->
 
 <Project>
    <Version current="2"/>
-   <GUID>{1DA001CF-971D-47FC-848D-C4AEE1251745}</GUID>
+   <GUID>{53F53737-3E59-455B-92FD-BC04CBDB4714}</GUID>
    <Documents>
       <Section name="PCB" isExpanded="true">
-         <File path=".\UsbHostLora.fsx" isopened="1" dateChange="2021-05-13 14:57:42"/>
+         <File path=".\UsbHostLora.fsx" isopened="1" dateChange="2026-07-25 14:39:29"/>
       </Section>
       <Section name="AutoRouting" isExpanded="false"/>
    </Documents>
